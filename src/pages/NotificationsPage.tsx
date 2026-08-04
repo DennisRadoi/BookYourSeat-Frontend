@@ -84,20 +84,20 @@ export default function NotificationsPage() {
   const unreadCount = notificationsData.filter((n) => n.isUnread).length
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-4xl mx-auto">
       {}
-      <div className="flex items-start justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 sm:gap-0 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-3xl font-serif text-slate-800 mb-1 uppercase tracking-wide">
+          <h1 className="text-2xl sm:text-3xl font-serif text-slate-800 mb-1 uppercase tracking-wide">
             NOTIFICARI
           </h1>
-          <p className="text-sm font-medium text-slate-500">
+          <p className="text-xs sm:text-sm font-medium text-slate-500">
             Echipa/colegi actualizari recente
           </p>
         </div>
         
         {}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 self-end sm:self-auto">
           <Button variant="outline" size="icon" className="rounded-full shadow-sm border-slate-200">
             <Moon size={18} className="text-slate-700" />
           </Button>
@@ -124,10 +124,10 @@ export default function NotificationsPage() {
       <Card className="border-none shadow-md overflow-hidden bg-white rounded-xl">
         <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 bg-white py-4 px-6 space-y-0">
           <div className="flex items-center gap-2">
-            <CardTitle className="text-sm font-semibold text-slate-800">
+            <CardTitle className="text-xs sm:text-sm font-semibold text-slate-800">
               {totalNotifications} notificari
             </CardTitle>
-            <span className="text-sm font-medium text-slate-500">
+            <span className="text-xs sm:text-sm font-medium text-slate-500">
               {unreadCount} necitite
             </span>
           </div>
@@ -144,27 +144,28 @@ export default function NotificationsPage() {
               <div
                 key={notif.id}
                 className={cn(
-                  "flex items-center justify-between px-6 py-4 border-b border-slate-50 last:border-0 transition-colors",
+                  "flex items-center justify-between px-3 sm:px-6 py-3.5 sm:py-4 border-b border-slate-50 last:border-0 transition-colors gap-2 sm:gap-4",
                   notif.isUnread ? "bg-[#F2FCFA]" : "bg-white"
                 )}
               >
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-teal-100/60 text-teal-600 shrink-0">
-                    <Icon size={18} strokeWidth={2.5} />
+                <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+                  <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-teal-100/60 text-teal-600 shrink-0">
+                     <Icon size={16} className="sm:hidden" strokeWidth={2.5} />
+                    <Icon size={18} className="hidden sm:block" strokeWidth={2.5} />
                   </div>
                   
-                  <div className="w-4 flex justify-center shrink-0">
+                  <div className="w-2.5 sm:w-4 flex justify-center shrink-0">
                     {notif.isUnread && (
                       <div className="w-2 h-2 rounded-full bg-teal-500 shadow-sm" />
                     )}
                   </div>
                   
-                  <p className="text-[13px] md:text-sm text-slate-700 font-medium leading-tight">
+                  <p className="text-xs sm:text-sm text-slate-700 font-medium leading-snug truncate sm:whitespace-normal">
                     {notif.text}
                   </p>
                 </div>
                 
-                <span className="text-xs text-slate-500 font-medium whitespace-nowrap pl-4">
+                <span className="text-[11px] sm:text-xs text-slate-400 sm:text-slate-500 font-medium whitespace-nowrap shrink-0 pl-1">
                   {notif.time}
                 </span>
               </div>
