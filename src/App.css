@@ -10,7 +10,7 @@
 .app-main {
   flex: 1;
   overflow-x: hidden;
-  padding: 32px;
+  min-width: 0;
   transition: margin-left 0.3s ease;
 }
 

@@ -85,7 +85,7 @@ export default function NotificationsPage() {
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
-      {/* Header Pagina */}
+      {}
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-3xl font-serif text-slate-800 mb-1 uppercase tracking-wide">
@@ -96,7 +96,7 @@ export default function NotificationsPage() {
           </p>
         </div>
         
-        {/* Optiuni Header Dreapta */}
+        {}
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" className="rounded-full shadow-sm border-slate-200">
             <Moon size={18} className="text-slate-700" />
@@ -120,7 +120,7 @@ export default function NotificationsPage() {
         </div>
       </div>
 
-      {/* Lista Notificari */}
+      {}
       <Card className="border-none shadow-md overflow-hidden bg-white rounded-xl">
         <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 bg-white py-4 px-6 space-y-0">
           <div className="flex items-center gap-2">
