@@ -1,27 +1,28 @@
 import { useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
-import {
-  Home,
-  Users,
-  Bell,
-  BarChart2,
-  User,
-  Settings,
-  PanelLeft,
-  CalendarCheck,
-} from "lucide-react"
+import { PanelLeft, CalendarCheck } from "lucide-react"
+
+// Small helper that renders an SVG from public/icons/
+const SvgIcon = ({ src, alt, size = 20, className }: { src: string; alt: string; size?: number; className?: string }) => (
+  <img
+    src={src}
+    alt={alt}
+    className={className}
+    style={{ width: size, height: size, objectFit: "contain", flexShrink: 0 }}
+  />
+)
 
 const navLinks = [
-  { to: "/",            label: "Dashboard",  icon: Home      },
-  { to: "/companie",    label: "Companie",   icon: Users     },
-  { to: "/notificari",  label: "Notificari", icon: Bell      },
-  { to: "/analytics",   label: "Analytics",  icon: BarChart2 },
+  { to: "/",           label: "Dashboard",  iconSrc: "/icons/home.svg"       },
+  { to: "/companie",   label: "Companie",   iconSrc: "/icons/companie.svg"   },
+  { to: "/notificari", label: "Notificari", iconSrc: "/icons/notificari.svg" },
+  { to: "/analytics",  label: "Analytics",  iconSrc: "/icons/Analytics.svg"  },
 ]
 
 const bottomLinks = [
-  { to: "/cont",   label: "Cont",   icon: User     },
-  { to: "/setari", label: "Setari", icon: Settings },
+  { to: "/cont",   label: "Cont",   iconSrc: "/icons/cont.svg"     },
+  { to: "/setari", label: "Setari", iconSrc: "/icons/settings.svg" },
 ]
 
 export default function Sidebar() {
@@ -50,7 +51,7 @@ export default function Sidebar() {
 
         {/* Main nav */}
         <nav className="sidebar__nav">
-          {navLinks.map(({ to, label, icon: Icon }) => {
+          {navLinks.map(({ to, label, iconSrc }) => {
             const active = pathname === to
             return (
               <Link
@@ -59,7 +60,7 @@ export default function Sidebar() {
                 className={cn("sidebar__link", active && "sidebar__link--active")}
                 title={collapsed ? label : undefined}
               >
-                <Icon size={20} className="sidebar__link-icon" />
+                <SvgIcon src={iconSrc} alt={label} size={20} className="sidebar__link-icon" />
                 {!collapsed && <span className="sidebar__link-label">{label}</span>}
               </Link>
             )
@@ -71,7 +72,7 @@ export default function Sidebar() {
 
         {/* Bottom nav */}
         <nav className="sidebar__nav sidebar__nav--bottom">
-          {bottomLinks.map(({ to, label, icon: Icon }) => {
+          {bottomLinks.map(({ to, label, iconSrc }) => {
             const active = pathname === to
             return (
               <Link
@@ -80,7 +81,7 @@ export default function Sidebar() {
                 className={cn("sidebar__link", active && "sidebar__link--active")}
                 title={collapsed ? label : undefined}
               >
-                <Icon size={20} className="sidebar__link-icon" />
+                <SvgIcon src={iconSrc} alt={label} size={20} className="sidebar__link-icon" />
                 {!collapsed && <span className="sidebar__link-label">{label}</span>}
               </Link>
             )
