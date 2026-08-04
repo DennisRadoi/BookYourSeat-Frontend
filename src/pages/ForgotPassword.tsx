@@ -36,7 +36,7 @@ export default function ForgotPassword() {
   if (isSent) {
     return (
       <AuthShell>
-        <div className="w-full max-w-[460px] rounded-[28px] border border-border/60 bg-card p-10 text-center shadow-[0_20px_70px_rgba(15,23,42,0.08)] sm:p-11">
+        <div className="w-full max-w-[500px] rounded-[28px] border border-border/60 bg-card p-10 text-center shadow-[0_20px_70px_rgba(15,23,42,0.08)] sm:p-11">
           <div className="mx-auto mb-5 flex h-15 w-15 items-center justify-center rounded-2xl bg-accent">
             <CheckCircle2 className="h-8 w-8 text-accent-foreground" strokeWidth={1.75} />
           </div>
@@ -54,7 +54,7 @@ export default function ForgotPassword() {
             <a href="mailto:">Deschide aplicatia de email</a>
           </Button>
 
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Nu a ajuns emailul?{" "}
             <button
               type="button"
@@ -71,12 +71,12 @@ export default function ForgotPassword() {
 
   return (
     <AuthShell>
-      <div className="w-full max-w-[460px] rounded-[28px] border border-border/60 bg-card p-10 shadow-[0_20px_70px_rgba(15,23,42,0.08)] sm:p-11">
+      <div className="w-full max-w-[500px] rounded-[28px] border border-border/60 bg-card p-10 shadow-[0_20px_70px_rgba(15,23,42,0.08)] sm:p-11">
         <h2 className="mb-2 font-serif text-3xl font-bold text-foreground">
           Ai uitat parola?
         </h2>
         <p className="mb-8 text-sm text-muted-foreground">
-          Iti trimitem un link de resetare pe emailul de companie
+          Iti trimitem un link de resetare pe emailul de companie.
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">

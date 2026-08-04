@@ -95,23 +95,23 @@ export default function Register() {
       headline={"Alătură-te echipei\nîn câteva secunde."}
       description="Folosește adresa de email a companiei. Contul tău va fi verificat automat după domeniu și vei putea rezerva un loc din prima zi."
     >
-      <div className="w-full rounded-[32px] border border-border/60 bg-card p-8 shadow-[0_20px_70px_rgba(15,23,42,0.08)] sm:p-10 lg:p-12">
-        <div className="mb-6">
-          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.24em] text-primary">
+      <div className="w-full rounded-3xl border border-border/60 bg-card p-8 shadow-xl sm:p-10 lg:p-12">
+        <div className="mb-8">
+          <p className="mb-2 text-sm font-bold uppercase tracking-[0.22em] text-primary">
             Creează-ți cont
           </p>
-          <h2 className="font-sans text-2xl font-semibold text-foreground">
+          <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
             Creează-ți cont
           </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-3 text-lg text-muted-foreground">
             E nevoie doar de un minut.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <div className="flex flex-col gap-4 sm:flex-row">
             <div className="w-full flex-1">
-              <label htmlFor="firstName" className="mb-1.5 block text-xs font-medium text-muted-foreground">
+              <label htmlFor="firstName" className="mb-2 block text-sm font-bold uppercase tracking-wider text-muted-foreground">
                 Prenume
               </label>
               <Input
@@ -122,11 +122,11 @@ export default function Register() {
                 placeholder="Claudiu"
                 value={firstName}
                 onChange={(event) => setFirstName(event.target.value)}
-                className="h-12 w-full"
+                className="h-14 w-full px-4 text-lg shadow-sm"
               />
             </div>
             <div className="w-full flex-1">
-              <label htmlFor="lastName" className="mb-1.5 block text-xs font-medium text-muted-foreground">
+              <label htmlFor="lastName" className="mb-2 block text-sm font-bold uppercase tracking-wider text-muted-foreground">
                 Nume
               </label>
               <Input
@@ -137,13 +137,13 @@ export default function Register() {
                 placeholder="Ionescu"
                 value={lastName}
                 onChange={(event) => setLastName(event.target.value)}
-                className="h-12 w-full"
+                className="h-14 w-full px-4 text-lg shadow-sm"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="email" className="mb-1.5 block text-xs font-medium text-muted-foreground">
+            <label htmlFor="email" className="mb-2 block text-sm font-bold uppercase tracking-wider text-muted-foreground">
               Email companie
             </label>
             <Input
@@ -154,7 +154,7 @@ export default function Register() {
               placeholder="nume@companie.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="h-12 w-full"
+              className="h-14 w-full px-4 text-lg shadow-sm"
             />
           </div>
 
@@ -173,7 +173,7 @@ export default function Register() {
                   placeholder="********"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  className="h-12 w-full pr-12"
+                  className="h-14 w-full pr-12 px-4 text-lg shadow-sm"
                   aria-describedby="password-help"
                 />
                 <PasswordToggle
@@ -200,7 +200,7 @@ export default function Register() {
                   placeholder="********"
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
-                  className="h-12 w-full pr-12"
+                  className="h-14 w-full pr-12 px-4 text-lg shadow-sm"
                 />
                 <PasswordToggle
                   isVisible={showConfirmPassword}
@@ -237,7 +237,7 @@ export default function Register() {
           </label>
 
           {error && (
-            <p id="form-error" className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            <p id="form-error" className="rounded-lg bg-destructive/10 px-3 py-3 text-sm font-semibold text-destructive">
               {error}
             </p>
           )}
@@ -245,7 +245,7 @@ export default function Register() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="mt-1 h-12 w-full rounded-full font-semibold shadow-sm"
+            className="mt-1 h-14 w-full rounded-full bg-primary text-white font-semibold shadow-sm"
           >
             {isSubmitting ? "Se creează contul..." : "Creează cont"}
           </Button>

@@ -44,7 +44,7 @@ export default function ResetPassword() {
 
   return (
     <AuthShell>
-      <div className="w-full max-w-[460px] rounded-[28px] border border-border/60 bg-card p-10 shadow-[0_20px_70px_rgba(15,23,42,0.08)] sm:p-11">
+      <div className="w-full max-w-[500px] rounded-[28px] border border-border/60 bg-card p-10 shadow-[0_20px_70px_rgba(15,23,42,0.08)] sm:p-11">
         <h2 className="mb-2 font-serif text-3xl font-bold text-foreground">
           Seteaza o parola noua
         </h2>
