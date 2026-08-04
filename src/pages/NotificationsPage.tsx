@@ -85,7 +85,7 @@ export default function NotificationsPage() {
 
   return (
     <div className="w-full min-h-screen bg-[#F0F2F5] flex flex-col">
-      {/* Header-ul gri pe toată lățimea */}
+      {}
       <header className="w-full bg-[#E3E5E8] px-6 sm:px-10 py-5 flex items-center justify-between border-b border-slate-300/60">
         <div>
           <h1 className="text-xl sm:text-2xl font-serif font-bold text-slate-900 tracking-wider">
