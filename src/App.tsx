@@ -1,5 +1,6 @@
 import { Routes, Route, Outlet } from "react-router-dom"
 import Sidebar from "@/components/Sidebar"
+import CompanyPage from "@/pages/CompanyPage"
 import HomePage from "@/pages/HomePage"
 import SeatsPage from "@/pages/SeatsPage"
 import Login from "@/pages/Login"
@@ -15,6 +16,11 @@ function AppLayout() {
       <Sidebar />
       <main className="app-main">
         <Outlet />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/companie" element={<CompanyPage />} />
+          <Route path="/seats" element={<SeatsPage />} />
+        </Routes>
       </main>
     </div>
   )
