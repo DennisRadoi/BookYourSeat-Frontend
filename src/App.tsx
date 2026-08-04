@@ -3,6 +3,7 @@ import Sidebar from "@/components/Sidebar"
 import CompanyPage from "@/pages/CompanyPage"
 import HomePage from "@/pages/HomePage"
 import SeatsPage from "@/pages/SeatsPage"
+import NotificationsPage from "@/pages/NotificationsPage"
 import Login from "@/pages/Login"
 import ForgotPassword from "@/pages/ForgotPassword"
 import ResetPassword from "@/pages/ResetPassword"
@@ -20,6 +21,7 @@ function AppLayout() {
           <Route path="/" element={<HomePage />} />
           <Route path="/companie" element={<CompanyPage />} />
           <Route path="/seats" element={<SeatsPage />} />
+          <Route path="/notificari" element={<NotificationsPage />} />
         </Routes>
       </main>
     </div>
