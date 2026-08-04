@@ -84,41 +84,41 @@ export default function NotificationsPage() {
   const unreadCount = notificationsData.filter((n) => n.isUnread).length
 
   return (
-    <div className="p-4 sm:p-8 max-w-4xl mx-auto">
-      {}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 sm:gap-0 mb-6 sm:mb-8">
+    <div className="w-full min-h-screen bg-[#F0F2F5] flex flex-col">
+      {/* Header-ul gri pe toată lățimea */}
+      <header className="w-full bg-[#E3E5E8] px-6 sm:px-10 py-5 flex items-center justify-between border-b border-slate-300/60">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-serif text-slate-800 mb-1 uppercase tracking-wide">
+          <h1 className="text-xl sm:text-2xl font-serif font-bold text-slate-900 tracking-wider">
             NOTIFICARI
           </h1>
-          <p className="text-xs sm:text-sm font-medium text-slate-500">
+          <p className="text-xs text-slate-600 font-medium">
             Echipa/colegi actualizari recente
           </p>
         </div>
-        
-        {}
-        <div className="flex items-center gap-3 self-end sm:self-auto">
-          <Button variant="outline" size="icon" className="rounded-full shadow-sm border-slate-200">
-            <Moon size={18} className="text-slate-700" />
-          </Button>
-          
-          <Button variant="outline" size="icon" className="rounded-full shadow-sm border-slate-200 relative">
-            <Bell size={18} className="text-slate-700" />
-            {unreadCount > 0 && (
-              <Badge 
-                variant="destructive" 
-                className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] p-0 flex items-center justify-center text-[10px]"
-              >
-                {unreadCount}
-              </Badge>
-            )}
-          </Button>
 
-          <Button variant="ghost" size="icon" className="rounded-full bg-teal-100 hover:bg-teal-200 shadow-sm">
-            <User size={18} className="text-teal-800" />
-          </Button>
+        <div className="flex items-center gap-3">
+          <button className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-slate-700 shadow-sm">
+            <Moon size={18} />
+          </button>
+          
+          <button className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-slate-700 shadow-sm relative">
+            <Bell size={18} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+
+          <button className="w-9 h-9 rounded-full bg-[#D1F2E8] flex items-center justify-center text-[#0D9488] shadow-sm">
+            <User size={18} />
+          </button>
         </div>
-      </div>
+      </header>
+
+      {}
+      <main className="flex-1 p-4 sm:p-8 max-w-5xl w-full mx-auto">
+      </main>
 
       {}
       <Card className="border-none shadow-md overflow-hidden bg-white rounded-xl">
@@ -132,7 +132,7 @@ export default function NotificationsPage() {
             </span>
           </div>
           
-          <Button variant="link" className="text-teal-600 hover:text-teal-800 p-0 h-auto font-medium text-sm">
+          <Button variant="link" className="text-[#008767] hover:text-[#006b52] p-0 h-auto font-medium text-xs sm:text-sm">
             Marcheaza toate ca citite
           </Button>
         </CardHeader>
@@ -145,18 +145,18 @@ export default function NotificationsPage() {
                 key={notif.id}
                 className={cn(
                   "flex items-center justify-between px-3 sm:px-6 py-3.5 sm:py-4 border-b border-slate-50 last:border-0 transition-colors gap-2 sm:gap-4",
-                  notif.isUnread ? "bg-[#F2FCFA]" : "bg-white"
+                  notif.isUnread ? "bg-[#E8F7F3]" : "bg-white"
                 )}
               >
                 <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
-                  <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-teal-100/60 text-teal-600 shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-[#CEF3E6] text-[#008767] flex items-center justify-center shrink-0">
                      <Icon size={16} className="sm:hidden" strokeWidth={2.5} />
                     <Icon size={18} className="hidden sm:block" strokeWidth={2.5} />
                   </div>
                   
                   <div className="w-2.5 sm:w-4 flex justify-center shrink-0">
                     {notif.isUnread && (
-                      <div className="w-2 h-2 rounded-full bg-teal-500 shadow-sm" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#00A884]" />
                     )}
                   </div>
                   
