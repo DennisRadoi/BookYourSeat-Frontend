@@ -1,5 +1,9 @@
 import { Routes, Route, Outlet } from "react-router-dom"
 import Sidebar from "@/components/Sidebar"
+import Navbar from "@/components/Navbar"
+import HomePage from "@/pages/HomePage"
+import SeatsPage from "@/pages/SeatsPage"
+import ContPage from "@/pages/ContPage"
 import CompanyPage from "@/pages/CompanyPage"
 import HomePage from "@/pages/HomePage"
 import SeatsPage from "@/pages/SeatsPage"
@@ -15,6 +19,16 @@ function AppLayout() {
   return (
     <div className="app-layout">
       <Sidebar />
+      <div className="app-content">
+        <Navbar />
+        <main className="app-main">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/seats" element={<SeatsPage />} />
+            <Route path="/cont" element={<ContPage />} />
+          </Routes>
+        </main>
+      </div>
       <main className="app-main">
         <Outlet />
         <Routes>
