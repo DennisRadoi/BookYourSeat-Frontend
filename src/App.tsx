@@ -17,12 +17,6 @@ function AppLayout() {
       <Sidebar />
       <main className="app-main">
         <Outlet />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/companie" element={<CompanyPage />} />
-          <Route path="/seats" element={<SeatsPage />} />
-          <Route path="/notificari" element={<NotificationsPage />} />
-        </Routes>
       </main>
     </div>
   )
@@ -36,11 +30,12 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-
       {/* Authenticated app routes — wrapped in Sidebar layout */}
       <Route element={<AppLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/seats" element={<SeatsPage />} />
+        <Route path="/companie" element={<CompanyPage />} />
+        <Route path="/notificari" element={<NotificationsPage />} />
       </Route>
     </Routes>
   )

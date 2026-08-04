@@ -43,6 +43,8 @@ export default function CompanyPage() {
   }
 
   return (
+    
+    
     <section className="min-h-screen bg-[#f7f8fa] text-[#24312f]">
       <div className="h-[72px] border-b border-[#dde0e2] bg-[#e4e5e6]" aria-label="Header placeholder" />
 
