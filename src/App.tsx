@@ -1,19 +1,39 @@
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, Outlet } from "react-router-dom"
 import Sidebar from "@/components/Sidebar"
 import HomePage from "@/pages/HomePage"
 import SeatsPage from "@/pages/SeatsPage"
+import Login from "@/pages/Login"
+import ForgotPassword from "@/pages/ForgotPassword"
+import ResetPassword from "@/pages/ResetPassword"
 import "./App.css"
+import Register from "./pages/Register"
 
-export default function App() {
+/** Shell for authenticated app routes: Sidebar + page content via <Outlet /> */
+function AppLayout() {
   return (
     <div className="app-layout">
       <Sidebar />
       <main className="app-main">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/seats" element={<SeatsPage />} />
-        </Routes>
+        <Outlet />
       </main>
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <Routes>
+      {/* Public routes — no Sidebar */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+
+      {/* Authenticated app routes — wrapped in Sidebar layout */}
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/seats" element={<SeatsPage />} />
+      </Route>
+    </Routes>
   )
 }
