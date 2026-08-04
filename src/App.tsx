@@ -3,6 +3,7 @@ import Sidebar from "@/components/Sidebar"
 import Navbar from "@/components/Navbar"
 import HomePage from "@/pages/HomePage"
 import SeatsPage from "@/pages/SeatsPage"
+import ContPage from "@/pages/ContPage"
 import "./App.css"
 
 export default function App() {
@@ -15,6 +16,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/seats" element={<SeatsPage />} />
+            <Route path="/cont" element={<ContPage />} />
           </Routes>
         </main>
       </div>

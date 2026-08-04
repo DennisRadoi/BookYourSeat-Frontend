@@ -22,6 +22,216 @@
 }
 
 /* ─────────────────────────────────────────────────────────────
+   Cont (Profile) Page
+───────────────────────────────────────────────────────────── */
+.cont-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 700px;
+}
+
+/* Shared card shell */
+.cont-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 28px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* Profile header card */
+.cont-card--profile {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Avatar circle */
+.cont-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #b2e8d4;
+  border: 3px solid var(--sidebar-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--sidebar-active-text);
+  flex-shrink: 0;
+}
+
+.cont-profile-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cont-profile-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.cont-profile-meta {
+  margin: 0;
+  font-size: 13px;
+  color: #555;
+}
+
+.cont-profile-meta--muted {
+  color: #999;
+  font-size: 12px;
+}
+
+/* Section title */
+.cont-section-title {
+  margin: 0 0 18px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+/* 2-column form grid */
+.cont-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 20px;
+}
+
+.cont-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.cont-label {
+  font-size: 12px;
+  color: #888;
+  font-weight: 500;
+}
+
+.cont-input {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 14px;
+  color: #222;
+  background: #fafafa;
+  outline: none;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.cont-input:focus {
+  border-color: var(--sidebar-accent);
+  background: #fff;
+}
+
+.cont-input:disabled {
+  background: #fafafa;
+  color: #555;
+  cursor: default;
+}
+
+/* Preferences row */
+.cont-preferences {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cont-pref-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+/* Tag chip */
+.cont-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #333;
+  background: #fff;
+  white-space: nowrap;
+}
+
+.cont-tag__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.cont-tag__remove:hover {
+  color: #c0392b;
+}
+
+/* Inline preference input */
+.cont-tag-input {
+  border: 1px solid var(--sidebar-accent);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 13px;
+  outline: none;
+  width: 120px;
+  background: #fff;
+}
+
+/* Shared button styles */
+.cont-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Outlined green (Edit profile) */
+.cont-btn--outline {
+  border: 1px solid var(--sidebar-accent);
+  background: transparent;
+  color: var(--sidebar-accent);
+}
+
+.cont-btn--outline:hover {
+  background: var(--sidebar-active-bg);
+}
+
+/* Filled green (Add preference) */
+.cont-btn--accent {
+  border: none;
+  background: var(--sidebar-accent);
+  color: #fff;
+}
+
+.cont-btn--accent:hover {
+  background: var(--sidebar-accent-hover);
+}
+
+/* ─────────────────────────────────────────────────────────────
    Navbar
 ───────────────────────────────────────────────────────────── */
 .navbar {
