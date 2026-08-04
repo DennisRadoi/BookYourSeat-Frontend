@@ -83,43 +83,7 @@ export default function NotificationsPage() {
   const unreadCount = notificationsData.filter((n) => n.isUnread).length
 
   return (
-    <div className="w-full min-h-screen bg-[#F0F2F5] flex flex-col">
-      {}
-      <header className="w-full bg-[#E3E5E8] px-6 sm:px-10 py-5 flex items-center justify-between border-b border-slate-300/60">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-serif font-bold text-slate-900 tracking-wider">
-            NOTIFICARI
-          </h1>
-          <p className="text-xs text-slate-600 font-medium">
-            Echipa/colegi actualizari recente
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-slate-700 shadow-sm">
-            <Moon size={18} />
-          </button>
-          
-          <button className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-slate-700 shadow-sm relative">
-            <Bell size={18} />
-            {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
-                {unreadCount}
-              </span>
-            )}
-          </button>
-
-          <button className="w-9 h-9 rounded-full bg-[#D1F2E8] flex items-center justify-center text-[#0D9488] shadow-sm">
-            <User size={18} />
-          </button>
-        </div>
-      </header>
-
-      {}
-      <main className="flex-1 p-4 sm:p-8 max-w-5xl w-full mx-auto">
-      </main>
-
-      {}
+    <div className="w-full bg-[#F0F2F5]">
       <Card className="border-none shadow-md overflow-hidden bg-white rounded-xl">
         <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 bg-white py-4 px-6 space-y-0">
           <div className="flex items-center gap-2">

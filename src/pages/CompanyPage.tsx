@@ -46,7 +46,7 @@ export default function CompanyPage() {
     
     
     <section className="min-h-screen bg-[#f7f8fa] text-[#24312f]">
-      <div className="h-[72px] border-b border-[#dde0e2] bg-[#e4e5e6]" aria-label="Header placeholder" />
+
 
       <div className="px-4 py-6 sm:px-6 sm:py-9 lg:px-12 lg:py-10">
         <div className="mb-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
