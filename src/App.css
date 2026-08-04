@@ -3,7 +3,8 @@
 ───────────────────────────────────────────────────────────── */
 .app-layout {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;          /* lock to viewport height */
+  overflow: hidden;       /* prevent the whole page from scrolling */
   background: #f5f6fa;
 }
 
@@ -12,6 +13,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  overflow-y: auto;       /* only the right side scrolls */
   overflow-x: hidden;
 }
 
