@@ -1,12 +1,9 @@
-// Business entity types for Book Your Seat
 
-// ─── Primitives ────────────────────────────────────────────
 export type ReservationStatus = "confirmed" | "pending" | "completed" | "cancelled"
 export type SeatArea = "window" | "quiet" | "team" | "open"
 export type SeatType = "standard" | "standing" | "phone-booth"
 export type Weekday = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday"
 
-// ─── User ──────────────────────────────────────────────────
 export interface UserPreferences {
   preferredFloor: number
   preferredArea: SeatArea
@@ -29,7 +26,6 @@ export interface User {
   preferences: UserPreferences
 }
 
-// ─── Seat ──────────────────────────────────────────────────
 export interface Seat {
   id: number
   code: string
@@ -39,7 +35,6 @@ export interface Seat {
   isAvailable: boolean
 }
 
-// ─── Floor ────────────────────────────────────────────────
 export interface Floor {
   id: number
   number: number
@@ -47,7 +42,6 @@ export interface Floor {
   seats: Seat[]
 }
 
-// ─── Building & Location ───────────────────────────────────
 export interface Building {
   id: number
   name: string
@@ -66,21 +60,19 @@ export interface Location {
   floors: Floor[]
 }
 
-// ─── Reservation ──────────────────────────────────────────
 export interface Reservation {
   id: number
   userId: number
   locationId: number
   floorId: number
   seatId: number
-  date: string        // ISO date: "YYYY-MM-DD"
-  startTime: string   // "09:00"
-  endTime: string     // "18:00"
+  date: string       
+  startTime: string 
+  endTime: string   
   status: ReservationStatus
-  createdAt: string   // ISO datetime
+  createdAt: string 
 }
 
-// ─── Detailed Reservation (Joined data) ────────────────────
 export interface ReservationLocation {
   id: number
   name: string
@@ -107,7 +99,6 @@ export interface DetailedReservation extends Reservation {
   seat: ReservationSeat | null
 }
 
-// ─── Colleague ────────────────────────────────────────────
 export interface Colleague {
   id: number
   initials: string
@@ -120,7 +111,6 @@ export interface Colleague {
   department?: string
 }
 
-// ─── Notification ─────────────────────────────────────────
 export type NotificationType =
   | "favorite"
   | "freed"
@@ -140,7 +130,6 @@ export interface Notification {
   isUnread: boolean
 }
 
-// ─── User Settings ────────────────────────────────────────
 export interface UserSettings {
   autoReserve: boolean
   notificationsEnabled: boolean
@@ -151,13 +140,16 @@ export interface UserSettings {
   preferredDays: Weekday[]
 }
 
-// ─── AI Insights ──────────────────────────────────────────
+
 export interface DepartureInsight {
   time: string
   minutesToLeave: number
   durationMin: number
   distanceKm: number
   trafficLevel: "Scăzut" | "Moderat" | "Ridicat"
+  originAddress?: string
+  destinationAddress?: string
+  routeVia?: string
 }
 
 export interface WeatherInsight {

@@ -4,7 +4,7 @@ import type { UserSettings } from "@/types"
 export const defaultSettings: UserSettings = {
   autoReserve: true,
   notificationsEnabled: true,
-  defaultStartTime: "09:00",
+  defaultStartTime: "15:00",
   defaultEndTime: "18:00",
   preferredFloor: 0,
   preferredArea: "window",
