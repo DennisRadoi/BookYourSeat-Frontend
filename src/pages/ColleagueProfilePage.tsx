@@ -1,5 +1,6 @@
 import { CalendarDays, Clock3, MapPin, Star, Users } from "lucide-react"
 import { useParams } from "react-router-dom"
+import { ProfileMetricCard } from "@/components/profile/ProfileMetricCard"
 
 const profiles = {
   "ciupitu-claudiu": {
@@ -41,10 +42,10 @@ export default function ColleagueProfilePage() {
           </article>
 
           <div className="grid grid-cols-1 gap-3 min-[430px]:grid-cols-2 sm:grid-cols-4">
-            <Metric icon={<CalendarDays size={14} />} value={colleague.reservations} label="Rezervări / săpt." color="bg-[var(--secondary)] text-[var(--secondary-foreground)]" />
-            <Metric icon={<MapPin size={14} />} value={colleague.floor} label="Floor preferat" color="bg-[var(--secondary)] text-[var(--secondary-foreground)]" />
-            <Metric icon={<Clock3 size={14} />} value={colleague.start} label="Începe de obicei" color="bg-[var(--warning)] text-[var(--warning)]" />
-            <Metric icon={<Users size={14} />} value={colleague.department} label="Departament" color="bg-[var(--secondary)] text-[var(--secondary-foreground)]" />
+            <ProfileMetricCard icon={<CalendarDays size={14} />} value={colleague.reservations} label="Rezervări / săpt." color="bg-[var(--secondary)] text-[var(--secondary-foreground)]" />
+            <ProfileMetricCard icon={<MapPin size={14} />} value={colleague.floor} label="Floor preferat" color="bg-[var(--secondary)] text-[var(--secondary-foreground)]" />
+            <ProfileMetricCard icon={<Clock3 size={14} />} value={colleague.start} label="Începe de obicei" color="bg-[var(--warning)] text-[var(--warning)]" />
+            <ProfileMetricCard icon={<Users size={14} />} value={colleague.department} label="Departament" color="bg-[var(--secondary)] text-[var(--secondary-foreground)]" />
           </div>
 
           <article className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[0_1px_6px_rgba(0,0,0,0.04)] sm:p-5">
@@ -83,16 +84,6 @@ export default function ColleagueProfilePage() {
         </div>
       </div>
     </section>
-  )
-}
-
-function Metric({ icon, value, label, color }: { icon: React.ReactNode; value: string; label: string; color: string }) {
-  return (
-    <article className="min-w-0 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 shadow-[0_1px_6px_rgba(0,0,0,0.04)]">
-      <span className={`grid size-6 place-items-center rounded-md ${color}`}>{icon}</span>
-      <p className="mt-2 truncate text-xs font-bold text-[var(--foreground)]">{value}</p>
-      <p className="mt-0.5 truncate text-[9px] text-[var(--muted-foreground)]">{label}</p>
-    </article>
   )
 }
 

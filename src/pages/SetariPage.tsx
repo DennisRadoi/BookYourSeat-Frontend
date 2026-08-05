@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react"
-import { Check, Eye, EyeOff } from "lucide-react"
+import { Check } from "lucide-react"
 import { getUserSettings, updateUserSettings } from "@/services"
 import { availableFloors, availableWorkspaceTypes, availableWeekdays } from "@/data"
+import { ToggleSwitch } from "@/components/common/ToggleSwitch"
+import { PasswordField } from "@/components/common/PasswordField"
 
 interface ToggleRowProps {
   title: string
@@ -17,48 +19,8 @@ function ToggleRow({ title, description, enabled, onChange }: ToggleRowProps) {
         <p className="text-xs font-semibold text-[var(--foreground)]">{title}</p>
         <p className="mt-0.5 text-[10px] text-[var(--muted-foreground)]">{description}</p>
       </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={enabled}
-        onClick={() => onChange(!enabled)}
-        className={`relative mt-0.5 h-5 w-9 shrink-0 rounded-full transition sm:mt-0 ${enabled ? "bg-[var(--primary)]" : "bg-[var(--border)]"}`}
-      >
-        <span
-          className={`absolute top-1 size-3 rounded-full bg-[var(--card-foreground)] shadow transition ${enabled ? "left-5" : "left-1"}`}
-        />
-      </button>
+      <ToggleSwitch checked={enabled} onCheckedChange={onChange} label={title} />
     </div>
-  )
-}
-
-interface PasswordFieldProps {
-  label: string
-  placeholder: string
-  showPassword: boolean
-  onToggle: () => void
-}
-
-function PasswordField({ label, placeholder, showPassword, onToggle }: PasswordFieldProps) {
-  return (
-    <label className="block text-[10px] text-[var(--muted-foreground)]">
-      {label}
-      <span className="relative mt-1 block">
-        <input
-          type={showPassword ? "text" : "password"}
-          placeholder={placeholder}
-          className="h-8 w-full rounded-lg border border-[var(--border)] bg-[var(--muted)] px-2 pr-8 text-xs text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] focus:border-[var(--primary)]"
-        />
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-label={showPassword ? "Ascunde parola" : "Arată parola"}
-          className="absolute inset-y-0 right-2 text-[var(--muted-foreground)] hover:text-[var(--primary)]"
-        >
-          {showPassword ? <EyeOff size={13} /> : <Eye size={13} />}
-        </button>
-      </span>
-    </label>
   )
 }
 
