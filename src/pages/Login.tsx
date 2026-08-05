@@ -2,7 +2,7 @@
 // Login.tsx
 import { useState, type FormEvent } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { AuthLayout } from "@/components/AuthLayout"
+import { AuthLayout } from "@/layouts"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 

@@ -1,22 +1,22 @@
+import { useEffect, useMemo, useState } from "react"
 import { Search, Star } from "lucide-react"
 import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
-type Colleague = {
-  name: string
-  role: string
-  status: "La birou" | "Remote"
-  location: string[]
-  favorite: boolean
-}
+export default function CompanyPage() {
+  const [colleaguesList, setColleaguesList] = useState<Colleague[]>([])
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isOfficeOnly, setIsOfficeOnly] = useState(false)
 
-const colleagues: Colleague[] = [
-  { name: "Ruxandra Bituleanu", role: "Product Designer", status: "La birou", location: ["Stand-up Chat room", "T1, Etaj 1"], favorite: true },
-  { name: "Denis Radoi", role: "Backend Engineer", status: "Remote", location: ["Remote azi"], favorite: false },
-  { name: "Ana Hirceanu", role: "Frontend Engineer", status: "La birou", location: ["404", "T2, Etaj 2"], favorite: true },
-  { name: "Bunea George", role: "QA", status: "Remote", location: ["Remote azi"], favorite: false },
-  { name: "Ciupitu Claudiu", role: "HR", status: "La birou", location: ["Lounge", "T1, Parter"], favorite: false },
-]
+  useEffect(() => {
+    async function loadColleagues() {
+      try {
+        const data = await getColleagues()
+        setColleaguesList(data)
+      } catch (error) {
+        console.error("Eroare la încărcarea listei de colegi:", error)
+      }
+    }
 
 function initials(name: string) {
   return name.split(" ").map((part) => part[0]).join("").slice(0, 2)
@@ -29,51 +29,54 @@ export default function CompanyPage() {
   const [favorites, setFavorites] = useState(() => new Set(colleagues.filter(({ favorite }) => favorite).map(({ name }) => name)))
 
   const visibleColleagues = useMemo(() => {
-    const normalisedQuery = query.trim().toLocaleLowerCase("ro-RO")
-    return colleagues.filter((colleague) => {
+    const normalisedQuery = searchQuery.trim().toLocaleLowerCase("ro-RO")
+    return colleaguesList.filter((colleague) => {
       const matchesQuery = colleague.name.toLocaleLowerCase("ro-RO").includes(normalisedQuery)
-      return matchesQuery && (!officeOnly || colleague.status === "La birou")
+      return matchesQuery && (!isOfficeOnly || colleague.status === "La birou")
     })
-  }, [query, officeOnly])
+  }, [colleaguesList, searchQuery, isOfficeOnly])
 
-  function toggleFavorite(name: string) {
-    setFavorites((current) => {
-      const next = new Set(current)
-      next.has(name) ? next.delete(name) : next.add(name)
-      return next
-    })
+  async function handleToggleFavorite(colleagueId: number) {
+    try {
+      const updated = await toggleFavoriteColleague(colleagueId)
+      setColleaguesList((current) =>
+        current.map((c) => (c.id === updated.id ? updated : c)),
+      )
+    } catch (error) {
+      console.error("Eroare la actualizarea favoritului:", error)
+    }
   }
 
   return (
-    
-    
-    <section className="min-h-screen bg-[#f7f8fa] text-[#24312f]">
-
-
-      <div className="px-4 py-6 sm:px-6 sm:py-9 lg:px-12 lg:py-10">
+    <section className="min-h-screen bg-[#f3f4f6] text-[#1f2937]">
+      <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <div className="mb-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-          <label className="flex min-h-12 max-w-[690px] flex-1 items-center gap-2.5 rounded-[14px] border border-[#e7eaec] bg-white px-4 text-[#69736f] shadow-[0_1px_2px_rgba(24,39,35,0.03)] transition focus-within:border-[#0da879] focus-within:shadow-[0_0_0_3px_rgba(13,168,121,0.12)]">
-            <Search size={19} aria-hidden="true" />
+          <label className="flex min-h-12 max-w-[690px] flex-1 items-center gap-2.5 rounded-[14px] border border-[#e5e7eb] bg-white px-4 text-[#6b7280] shadow-sm transition focus-within:border-[#059669] focus-within:ring-2 focus-within:ring-[#059669]/20">
+            <Search size={19} className="text-[#059669]" aria-hidden="true" />
             <input
               type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Caută un coleg după nume"
               aria-label="Caută un coleg după nume"
-              className="w-full border-0 bg-transparent text-sm text-[#26312e] outline-none placeholder:text-[#8a9390]"
+              className="w-full border-0 bg-transparent text-sm text-[#1f2937] outline-none placeholder:text-[#6b7280]"
             />
           </label>
           <button
             type="button"
-            className={`min-h-[42px] self-end rounded-[13px] border bg-white px-[18px] text-sm font-semibold transition sm:self-auto ${officeOnly ? "border-[#0da879] text-[#087a59]" : "border-[#e4e7e8] text-[#4e5955] hover:border-[#0da879] hover:text-[#087a59]"}`}
-            onClick={() => setOfficeOnly((active) => !active)}
-            aria-pressed={officeOnly}
+            className={`min-h-[42px] self-end rounded-[13px] border bg-white px-[18px] text-sm font-semibold transition sm:self-auto ${
+              isOfficeOnly
+                ? "border-[#059669] bg-[#d1fae5] text-[#059669]"
+                : "border-[#e5e7eb] text-[#1f2937] hover:border-[#059669] hover:text-[#059669]"
+            }`}
+            onClick={() => setIsOfficeOnly((active) => !active)}
+            aria-pressed={isOfficeOnly}
           >
             Filtru
           </button>
         </div>
 
-        <div className="max-w-[920px] overflow-x-auto rounded-[20px] border border-[#e8ebec] bg-white shadow-[0_3px_5px_rgba(30,49,44,0.12)]">
+        <div className="max-w-[920px] overflow-x-auto rounded-[20px] border border-[#e5e7eb] bg-white shadow-[0_1px_6px_rgba(0,0,0,0.04)]">
           <table className="w-full min-w-[680px] table-fixed border-collapse">
             <colgroup>
               <col style={{ width: "35%" }} />
@@ -83,35 +86,43 @@ export default function CompanyPage() {
               <col style={{ width: "10%" }} />
             </colgroup>
             <thead>
-              <tr>
-                <th scope="col" className="py-3 pt-[17px] pr-3 pb-3 pl-[22px] text-left text-xs font-semibold text-[#606a67]">Coleg</th>
-                <th scope="col" className="px-3 py-3 pt-[17px] text-left text-xs font-semibold text-[#606a67]">Status</th>
-                <th scope="col" className="px-3 py-3 pt-[17px] text-left text-xs font-semibold text-[#606a67]">Locație</th>
-                <th scope="col" className="px-3 py-3 pt-[17px] text-left text-xs font-semibold text-[#606a67]">Favorit</th>
-                <th scope="col" className="py-3 pt-[17px] pr-[22px] pl-3 text-left text-xs font-semibold text-[#606a67]"><span className="sr-only">Profil</span></th>
+              <tr className="border-b border-[#e5e7eb]">
+                <th scope="col" className="py-3 pt-[17px] pr-3 pb-3 pl-[22px] text-left text-xs font-semibold text-[#6b7280]">Coleg</th>
+                <th scope="col" className="px-3 py-3 pt-[17px] text-left text-xs font-semibold text-[#6b7280]">Status</th>
+                <th scope="col" className="px-3 py-3 pt-[17px] text-left text-xs font-semibold text-[#6b7280]">Locație</th>
+                <th scope="col" className="px-3 py-3 pt-[17px] text-left text-xs font-semibold text-[#6b7280]">Favorit</th>
+                <th scope="col" className="py-3 pt-[17px] pr-[22px] pl-3 text-left text-xs font-semibold text-[#6b7280]"><span className="sr-only">Profil</span></th>
               </tr>
             </thead>
             <tbody>
               {visibleColleagues.map((colleague) => {
-                const isFavorite = favorites.has(colleague.name)
+                const isFavorite = colleague.isFavorite
                 return (
-                  <tr key={colleague.name} className="border-b border-[#eef0f1] last:border-0 hover:bg-[#f9fcfb]">
+                  <tr key={colleague.id} className="border-b border-[#e5e7eb] last:border-0 hover:bg-[#f3f4f6]/60 transition">
                     <td className="py-3 pr-3 pl-[22px] align-middle text-[13px]">
                       <div className="flex items-center gap-[13px]">
-                        <span className="grid size-[30px] shrink-0 place-items-center rounded-full border-2 border-[#00a873] bg-[#d9fae8] text-[11px] font-bold text-[#087a59]" aria-hidden="true">{initials(colleague.name)}</span>
+                        <span className="grid size-[30px] shrink-0 place-items-center rounded-full border-2 border-[#059669] bg-[#d1fae5] text-[11px] font-bold text-[#059669]" aria-hidden="true">
+                          {getInitials(colleague.name)}
+                        </span>
                         <div>
-                          <div className="leading-[1.1] font-bold text-[#26312e]">{colleague.name}</div>
-                          <div className="mt-[3px] text-[11px] leading-[1.1] text-[#5f6966]">{colleague.role}</div>
+                          <div className="leading-[1.1] font-bold text-[#1f2937]">{colleague.name}</div>
+                          <div className="mt-[3px] text-[11px] leading-[1.1] text-[#6b7280]">{colleague.role}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-3 py-3 align-middle text-[13px]"><span className={`inline-flex min-w-[74px] justify-center rounded-full px-2.5 py-1 text-[11px] font-bold ${colleague.status === "La birou" ? "bg-[#d8fae9] text-[#0b9b6c]" : "bg-[#ffe4e6] text-[#ee737b]"}`}>{colleague.status}</span></td>
-                    <td className="px-3 py-3 align-middle text-xs leading-[1.2] font-semibold text-[#47524e]">{colleague.location.map((line) => <span key={line} className="block">{line}</span>)}</td>
+                    <td className="px-3 py-3 align-middle text-[13px]">
+                      <span className={`inline-flex min-w-[74px] justify-center rounded-full px-2.5 py-1 text-[11px] font-bold ${colleague.status === "La birou" ? "bg-[#d1fae5] text-[#059669]" : "bg-[#fee2e2] text-[#ef4444]"}`}>
+                        {colleague.status}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 align-middle text-xs leading-[1.2] font-semibold text-[#1f2937]">
+                      <span className="block">{colleague.floor}</span>
+                    </td>
                     <td className="px-3 py-3 align-middle text-[13px]">
                       <button
                         type="button"
-                        className={`p-1 leading-none transition ${isFavorite ? "text-[#f7a300]" : "text-[#d9dfe0] hover:text-[#f7a300]"}`}
-                        onClick={() => toggleFavorite(colleague.name)}
+                        className={`p-1 leading-none transition ${isFavorite ? "text-[#f59e0b]" : "text-[#e5e7eb] hover:text-[#f59e0b]"}`}
+                        onClick={() => handleToggleFavorite(colleague.id)}
                         aria-label={`${isFavorite ? "Elimină" : "Adaugă"} ${colleague.name} ${isFavorite ? "din" : "la"} favorite`}
                       >
                         <Star size={19} fill={isFavorite ? "currentColor" : "none"} aria-hidden="true" />
@@ -122,7 +133,11 @@ export default function CompanyPage() {
                 )
               })}
               {visibleColleagues.length === 0 && (
-                <tr><td className="px-6 py-[42px] text-center text-[#66716d]" colSpan={5}>Nu am găsit colegi care să corespundă căutării.</td></tr>
+                <tr>
+                  <td className="px-6 py-[42px] text-center text-[#6b7280]" colSpan={5}>
+                    Nu am găsit colegi care să corespundă căutării.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
