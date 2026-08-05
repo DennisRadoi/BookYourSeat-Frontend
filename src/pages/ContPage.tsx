@@ -1,0 +1,150 @@
+import { Pencil, Plus, X, Check } from "lucide-react"
+import { useEffect, useState } from "react"
+import { getCurrentUser, updateUserProfile, updateUserPreferences } from "@/services"
+import type { User } from "@/types"
+
+export default function ContPage() {
+  const [user, setUser] = useState<User | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [preferences, setPreferences] = useState<string[]>([])
+  const [newPreference, setNewPreference] = useState("")
+  const [addingPreference, setAddingPreference] = useState(false)
+  const [savedSuccess, setSavedSuccess] = useState(false)
+  const [form, setForm] = useState({
+    name: "Claudiu Ciupitu",
+    email: "claudiu.ciupitu@bys.ro",
+    department: "Engineering",
+    domiciliu: "București, Nițu Vasile 58",
+  })
+
+  useEffect(() => {
+    async function loadUserData() {
+      try {
+        const currentUser = await getCurrentUser()
+        setUser(currentUser)
+        setPreferences(currentUser.preferences.workPreferences || [])
+        setForm({
+          name: `${currentUser.firstName} ${currentUser.lastName}`.trim(),
+          email: currentUser.email,
+          department: currentUser.department || "",
+          domiciliu: currentUser.domiciliu || "București, Nițu Vasile 58",
+        })
+      } catch (err) {
+        console.error("Error loading user in ContPage:", err)
+      }
+    }
+    loadUserData()
+  }, [])
+
+  async function handleToggleEdit() {
+    if (editing && user) {
+      const nameParts = form.name.split(" ")
+      const firstName = nameParts[0] || user.firstName
+      const lastName = nameParts.slice(1).join(" ") || user.lastName
+
+      await updateUserProfile(user.id, {
+        firstName,
+        lastName,
+        email: form.email,
+        department: form.department,
+        domiciliu: form.domiciliu,
+      })
+
+      await updateUserPreferences(user.id, {
+        workPreferences: preferences,
+      })
+
+      setSavedSuccess(true)
+      setTimeout(() => setSavedSuccess(false), 2500)
+    }
+    setEditing((val) => !val)
+  }
+
+  function removePreference(preference: string) {
+    setPreferences((current) => current.filter((item) => item !== preference))
+  }
+
+  function addPreference() {
+    const value = newPreference.trim()
+    if (value && !preferences.includes(value)) setPreferences((current) => [...current, value])
+    setNewPreference("")
+    setAddingPreference(false)
+  }
+
+  return (
+    <section className="w-full max-w-[760px] space-y-5 text-[#1f2937] sm:space-y-6">
+      <div className="flex flex-col gap-4 rounded-xl bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)] sm:flex-row sm:items-center sm:p-5">
+        <div className="grid size-12 shrink-0 place-items-center rounded-full border-2 border-[#059669] bg-[#d1fae9] text-sm font-bold text-[#059669] sm:size-16">
+          {user?.initials || "CC"}
+        </div>
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-sm font-bold text-[#1f2937] sm:text-base">{form.name}</h2>
+          <p className="truncate text-xs text-[#6b7280]">{form.email}</p>
+          <p className="mt-0.5 text-[11px] text-[#6b7280]">
+            Domiciliu: <strong className="text-[#1f2937] font-medium">{form.domiciliu}</strong>
+          </p>
+        </div>
+        <button
+          id="cont-edit-profile-btn"
+          type="button"
+          onClick={handleToggleEdit}
+          className="inline-flex h-9 w-full shrink-0 items-center justify-center gap-1.5 rounded-lg bg-[#d1fae9] px-3 text-xs font-bold text-[#059669] transition hover:bg-[#a7f3d0] focus:outline-none focus:ring-2 focus:ring-[#059669] focus:ring-offset-2 sm:w-auto cursor-pointer"
+        >
+          {editing ? <Check size={14} /> : <Pencil size={14} />}
+          {editing ? "Salvează" : "Editează profilul"}
+        </button>
+      </div>
+
+      {savedSuccess && (
+        <div className="rounded-lg bg-[#d1fae9] border border-[#10b981] p-3 text-xs text-[#059669] font-semibold flex items-center gap-2">
+          <Check size={14} /> Profilul și adresa de domiciliu au fost salvate cu succes! AI-ul va recalcula traseul.
+        </div>
+      )}
+
+      <section className="rounded-xl bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)] sm:p-5">
+        <h3 className="text-xs font-bold text-[#1f2937]">Informații personale & Domiciliu (Ruta AI)</h3>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-4">
+          <ProfileField label="Nume complet" value={form.name} disabled={!editing} onChange={(name) => setForm({ ...form, name })} />
+          <ProfileField label="Email" type="email" value={form.email} disabled={!editing} onChange={(email) => setForm({ ...form, email })} />
+          <ProfileField label="Departament" value={form.department} disabled={!editing} placeholder="ex: Engineering" onChange={(department) => setForm({ ...form, department })} />
+          <ProfileField label="Adresă domiciliu (Plecare)" value={form.domiciliu} disabled={!editing} placeholder="ex: București, Nițu Vasile 58" onChange={(domiciliu) => setForm({ ...form, domiciliu })} />
+        </div>
+      </section>
+
+      <section className="rounded-xl bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)] sm:p-5">
+        <h3 className="text-xs font-bold text-[#1f2937]">Preferințe muncă</h3>
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 flex-wrap gap-2">
+            {preferences.map((preference) => (
+              <span key={preference} className="inline-flex max-w-full items-center gap-1 rounded-full border border-[#e5e7eb] bg-[#f3f4f6] px-2.5 py-1 text-[10px] font-medium text-[#1f2937]">
+                <span className="truncate">{preference}</span>
+                {editing && <button type="button" onClick={() => removePreference(preference)} aria-label={`Șterge ${preference}`} className="shrink-0 rounded-full text-[#9ca3af] hover:text-[#ef4444]"><X size={12} /></button>}
+              </span>
+            ))}
+            {addingPreference && <input autoFocus value={newPreference} onChange={(event) => setNewPreference(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") addPreference(); if (event.key === "Escape") { setAddingPreference(false); setNewPreference("") } }} placeholder="Adaugă..." className="h-7 min-w-24 rounded-full border border-[#059669] px-2 text-[10px] outline-none" />}
+          </div>
+          <button id="cont-add-pref-btn" type="button" onClick={() => addingPreference ? addPreference() : setAddingPreference(true)} className="inline-flex h-9 w-full shrink-0 items-center justify-center gap-1.5 rounded-lg bg-[#d1fae9] px-3 text-xs font-bold text-[#059669] transition hover:bg-[#a7f3d0] sm:w-auto cursor-pointer">
+            <Plus size={14} />
+            {addingPreference ? "Adaugă" : "Adaugă preferințe"}
+          </button>
+        </div>
+      </section>
+    </section>
+  )
+}
+
+function ProfileField({ label, type = "text", value, placeholder, disabled, onChange }: { label: string; type?: string; value: string; placeholder?: string; disabled: boolean; onChange: (value: string) => void }) {
+  return (
+    <label className="block min-w-0 text-[10px] font-medium text-[#4b5563]">
+      {label}
+      <input
+        type={type}
+        value={value}
+        disabled={disabled}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-1 h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-2.5 text-xs text-[#1f2937] outline-none placeholder:text-[#9ca3af] focus:border-[#059669] focus:ring-2 focus:ring-[#059669]/15 disabled:cursor-not-allowed disabled:bg-[#f9fafb]"
+      />
+    </label>
+  )
+}

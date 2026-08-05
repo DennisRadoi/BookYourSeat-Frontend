@@ -10,7 +10,6 @@ import {
   Users,
   CloudRain,
   Repeat,
-  X,
   type LucideIcon,
 } from "lucide-react"
 import { getNotifications, markAllNotificationsAsRead, markNotificationAsRead } from "@/services"
@@ -30,7 +29,6 @@ const notificationIconMap: Record<NotificationType, LucideIcon> = {
 
 export default function NotificationsPage() {
   const [notificationsList, setNotificationsList] = useState<Notification[]>([])
-  const [selectedNotif, setSelectedNotif] = useState<Notification | null>(null) 
 
   useEffect(() => {
     async function loadNotifications() {
@@ -54,18 +52,14 @@ export default function NotificationsPage() {
     }
   }
 
-  async function handleNotificationClick(notif: Notification) {
-    setSelectedNotif(notif) 
-
-    if (notif.isUnread) {
-      try {
-        const updated = await markNotificationAsRead(notif.id)
-        setNotificationsList((current) =>
-          current.map((n) => (n.id === updated.id ? updated : n)),
-        )
-      } catch (error) {
-        console.error("Eroare la marcarea notificării:", error)
-      }
+  async function handleNotificationClick(id: number) {
+    try {
+      const updated = await markNotificationAsRead(id)
+      setNotificationsList((current) =>
+        current.map((n) => (n.id === updated.id ? updated : n)),
+      )
+    } catch (error) {
+      console.error("Eroare la marcarea notificării:", error)
     }
   }
 
@@ -73,7 +67,7 @@ export default function NotificationsPage() {
   const unreadCount = notificationsList.filter((n) => n.isUnread).length
 
   return (
-    <div className="w-full bg-[#f3f4f6] relative">
+    <div className="w-full bg-[#f3f4f6]">
       <Card className="border border-[#e5e7eb] shadow-[0_1px_6px_rgba(0,0,0,0.04)] overflow-hidden bg-white rounded-xl">
         <CardHeader className="flex flex-row items-center justify-between border-b border-[#e5e7eb] bg-white py-4 px-6 space-y-0">
           <div className="flex items-center gap-2">
@@ -100,7 +94,7 @@ export default function NotificationsPage() {
             return (
               <div
                 key={notif.id}
-                onClick={() => handleNotificationClick(notif)} 
+                onClick={() => handleNotificationClick(notif.id)}
                 className={cn(
                   "flex items-center justify-between px-3 sm:px-6 py-3.5 sm:py-4 border-b border-[#e5e7eb] last:border-0 transition-colors gap-2 sm:gap-4 cursor-pointer",
                   notif.isUnread ? "bg-[#d1fae5]/30 hover:bg-[#d1fae5]/50" : "bg-white hover:bg-[#f3f4f6]",

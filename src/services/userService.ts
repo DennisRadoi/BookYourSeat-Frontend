@@ -1,0 +1,46 @@
+import { users, currentUserId } from "@/data"
+import type { User, UserPreferences } from "@/types"
+
+const delay = (ms = 150) => new Promise((resolve) => setTimeout(resolve, ms))
+
+// TODO: Replace mock data with backend API integration
+export async function getCurrentUser(): Promise<User> {
+  await delay()
+  const user = users.find((item) => item.id === currentUserId)
+  if (!user) {
+    throw new Error("Utilizatorul curent nu a fost găsit.")
+  }
+  return structuredClone(user)
+}
+
+export async function updateUserProfile(
+  userId: number,
+  updates: Partial<Pick<User, "firstName" | "lastName" | "email" | "department" | "domiciliu">>,
+): Promise<User> {
+  await delay()
+  const userIndex = users.findIndex((item) => item.id === userId)
+  if (userIndex === -1) {
+    throw new Error(`Utilizatorul cu ID-ul ${userId} nu a fost găsit.`)
+  }
+  users[userIndex] = {
+    ...users[userIndex],
+    ...updates,
+  }
+  return structuredClone(users[userIndex])
+}
+
+export async function updateUserPreferences(
+  userId: number,
+  preferenceUpdates: Partial<UserPreferences>,
+): Promise<User> {
+  await delay()
+  const userIndex = users.findIndex((item) => item.id === userId)
+  if (userIndex === -1) {
+    throw new Error(`Utilizatorul cu ID-ul ${userId} nu a fost găsit.`)
+  }
+  users[userIndex].preferences = {
+    ...users[userIndex].preferences,
+    ...preferenceUpdates,
+  }
+  return structuredClone(users[userIndex])
+}

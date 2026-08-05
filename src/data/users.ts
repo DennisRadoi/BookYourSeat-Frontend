@@ -1,4 +1,6 @@
-export const users = [
+import type { User } from "@/types"
+
+export const users: User[] = [
   {
     id: 1,
     firstName: "Claudiu",
@@ -9,26 +11,15 @@ export const users = [
     department: "Engineering",
     isOnline: true,
     avatarUrl: null,
-
+    domiciliu: "București, Nițu Vasile 58",
     preferences: {
       preferredFloor: 1,
       preferredArea: "window",
-      preferredStartTime: "09:00",
-      preferredDays: [
-        "monday",
-        "tuesday",
-        "wednesday",
-        "thursday",
-        "friday",
-      ],
-      workPreferences: [
-        "Lângă fereastră",
-        "Zone liniștite",
-        "Aproape de Ana P.",
-      ],
+      preferredStartTime: "15:00",
+      preferredDays: ["monday", "tuesday", "wednesday", "thursday", "friday"],
+      workPreferences: ["Lângă fereastră", "Zone liniștite", "Aproape de Ana P."],
     },
   },
-
   {
     id: 2,
     firstName: "Ana",
@@ -39,7 +30,6 @@ export const users = [
     department: "Design",
     isOnline: false,
     avatarUrl: null,
-
     preferences: {
       preferredFloor: 2,
       preferredArea: "quiet",
@@ -48,7 +38,6 @@ export const users = [
       workPreferences: ["Zone liniștite", "Aproape de echipă"],
     },
   },
-
   {
     id: 3,
     firstName: "Mihai",
@@ -59,7 +48,6 @@ export const users = [
     department: "Engineering",
     isOnline: true,
     avatarUrl: null,
-
     preferences: {
       preferredFloor: 1,
       preferredArea: "team",
@@ -68,6 +56,6 @@ export const users = [
       workPreferences: ["Aproape de echipă", "Birou reglabil"],
     },
   },
-];
+]
 
-export const currentUserId = 1;
+export const currentUserId = 1

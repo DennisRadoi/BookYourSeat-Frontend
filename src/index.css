@@ -3,33 +3,43 @@
 :root {
   --radius: 0.75rem;
 
-  --background: #ffffff;
+  /* shadcn/ui tokens */
+  --background: #f3f4f6;
   --foreground: #1f2937;
-
   --card: #ffffff;
   --card-foreground: #1f2937;
-
   --primary: #059669;
   --primary-foreground: #ffffff;
-
-  --secondary: #f3f4f6;
-  --secondary-foreground: #1f2937;
-
+  --secondary: #d1fae5;
+  --secondary-foreground: #059669;
   --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
-
+  --muted-foreground: #4b5563;
   --accent: #d1fae5;
-  --accent-foreground: #047857;
-
+  --accent-foreground: #059669;
+  --success: #10b981;
+  --warning: #f59e0b;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-
   --border: #e5e7eb;
   --input: #e5e7eb;
   --ring: #059669;
+
+  /* Tema site — sidebar + dashboard */
+  --sidebar-bg: #f3f4f6;
+  --sidebar-expanded-w: 240px;
+  --sidebar-collapsed-w: 72px;
+  --sidebar-accent: #059669;
+  --sidebar-accent-hover: #047857;
+  --sidebar-active-bg: #d1fae5;
+  --sidebar-active-text: #059669;
+  --sidebar-text: #1f2937;
+  --sidebar-muted: #6b7280;
+  --sidebar-border: #e5e7eb;
+  --sidebar-transition: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @theme inline {
+  /* shadcn/ui tokens */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -42,12 +52,35 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
+
+  --color-sb-bg: var(--sidebar-bg);
+  --color-sb-accent: var(--sidebar-accent);
+  --color-sb-accent-hover: var(--sidebar-accent-hover);
+  --color-sb-active-bg: var(--sidebar-active-bg);
+  --color-sb-active-text: var(--sidebar-active-text);
+  --color-sb-text: var(--sidebar-text);
+  --color-sb-muted: var(--sidebar-muted);
+  --color-sb-border: var(--sidebar-border);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Merriweather", Georgia, serif;
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
 }
