@@ -10,6 +10,7 @@ import {
   Users,
   CloudRain,
   Repeat,
+  X,
   type LucideIcon,
 } from "lucide-react"
 import { getNotifications, markAllNotificationsAsRead, markNotificationAsRead } from "@/services"
@@ -29,6 +30,7 @@ const notificationIconMap: Record<NotificationType, LucideIcon> = {
 
 export default function NotificationsPage() {
   const [notificationsList, setNotificationsList] = useState<Notification[]>([])
+  const [selectedNotif, setSelectedNotif] = useState<Notification | null>(null)
 
   useEffect(() => {
     async function loadNotifications() {
@@ -52,14 +54,17 @@ export default function NotificationsPage() {
     }
   }
 
-  async function handleNotificationClick(id: number) {
-    try {
-      const updated = await markNotificationAsRead(id)
-      setNotificationsList((current) =>
-        current.map((n) => (n.id === updated.id ? updated : n)),
-      )
-    } catch (error) {
-      console.error("Eroare la marcarea notificării:", error)
+  async function handleNotificationClick(notif: Notification) {
+    setSelectedNotif(notif)
+    if (notif.isUnread) {
+      try {
+        const updated = await markNotificationAsRead(notif.id)
+        setNotificationsList((current) =>
+          current.map((n) => (n.id === updated.id ? updated : n)),
+        )
+      } catch (error) {
+        console.error("Eroare la marcarea notificării:", error)
+      }
     }
   }
 
@@ -94,7 +99,7 @@ export default function NotificationsPage() {
             return (
               <div
                 key={notif.id}
-                onClick={() => handleNotificationClick(notif.id)}
+                onClick={() => handleNotificationClick(notif)}
                 className={cn(
                   "flex items-center justify-between px-3 sm:px-6 py-3.5 sm:py-4 border-b border-[#e5e7eb] last:border-0 transition-colors gap-2 sm:gap-4 cursor-pointer",
                   notif.isUnread ? "bg-[#d1fae5]/30 hover:bg-[#d1fae5]/50" : "bg-white hover:bg-[#f3f4f6]",
@@ -124,23 +129,28 @@ export default function NotificationsPage() {
         </CardContent>
       </Card>
 
-      {}
+      {/* Modal Detaliu Notificare */}
       {selectedNotif && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200"
-          onClick={() => setSelectedNotif(null)} 
+          onClick={() => setSelectedNotif(null)}
         >
-          <Card 
-            className="w-full max-w-sm bg-white shadow-xl animate-in zoom-in-95 duration-200" 
-            onClick={(e) => e.stopPropagation()} 
+          <Card
+            className="w-full max-w-sm bg-white shadow-xl animate-in zoom-in-95 duration-200 border border-[#e5e7eb] rounded-xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
           >
-            <CardHeader className="flex flex-row items-center justify-between border-b border-[#e5e7eb] pb-3">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-[#e5e7eb] pb-3 pt-4 px-5">
               <CardTitle className="text-sm font-semibold text-[#1f2937]">Detaliu Notificare</CardTitle>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-[#6b7280] hover:text-[#1f2937]" onClick={() => setSelectedNotif(null)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-[#6b7280] hover:text-[#1f2937]"
+                onClick={() => setSelectedNotif(null)}
+              >
                 <X size={18} />
               </Button>
             </CardHeader>
-            <CardContent className="pt-5 flex flex-col gap-4">
+            <CardContent className="pt-5 px-5 pb-5 flex flex-col gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-[#d1fae5] text-[#059669] flex items-center justify-center shrink-0">
                   {(() => {
@@ -150,12 +160,15 @@ export default function NotificationsPage() {
                 </div>
                 <span className="text-xs font-medium text-[#6b7280]">{selectedNotif.time}</span>
               </div>
-              
+
               <p className="text-sm text-[#1f2937] leading-relaxed break-words">
                 {selectedNotif.text}
               </p>
-              
-              <Button className="mt-2 w-full bg-[#059669] hover:bg-[#047857] text-white" onClick={() => setSelectedNotif(null)}>
+
+              <Button
+                className="mt-2 w-full bg-[#059669] hover:bg-[#047857] text-white"
+                onClick={() => setSelectedNotif(null)}
+              >
                 Am înțeles
               </Button>
             </CardContent>
