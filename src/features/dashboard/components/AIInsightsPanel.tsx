@@ -28,19 +28,19 @@ export function AIInsightsPanel({
     <Card className="overflow-hidden border border-[var(--border)] bg-[var(--card)] shadow-[0_1px_6px_rgba(0,0,0,0.04)] rounded-2xl p-0 gap-0">
       <div className="flex items-center justify-between px-[18px] py-4 bg-[var(--primary)] text-[var(--primary-foreground)]">
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 text-white">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--card)] text-[var(--card-foreground)]">
             <Sparkles size={15} />
           </div>
-          <span className="text-[15px] font-bold text-white tracking-[0.3px]">AI Insights</span>
+          <span className="text-[15px] font-bold text-[var(--card-foreground)] tracking-[0.3px]">AI Insights</span>
         </div>
         <div className="flex items-center gap-2">
           {hasApiKey ? (
-            <span className="flex items-center gap-1 rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-extrabold tracking-[1px] text-white">
-              <span className="animate-blink h-1.5 w-1.5 rounded-full bg-white" />
+            <span className="flex items-center gap-1 rounded-full bg-[var(--card)] px-2 py-0.5 text-[10px] font-extrabold tracking-[1px] text-[var(--card-foreground)]">
+              <span className="animate-blink h-1.5 w-1.5 rounded-full bg-[var(--card)]" />
               LIVE
             </span>
           ) : (
-            <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold tracking-[1px] text-white">
+            <span className="rounded-full bg-[var(--card)] px-2 py-0.5 text-[10px] font-bold tracking-[1px] text-[var(--card-foreground)]">
               DEMO
             </span>
           )}
@@ -48,7 +48,7 @@ export function AIInsightsPanel({
             onClick={onRefresh}
             disabled={isLoading}
             aria-label="Regenerează insights"
-            className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 text-white cursor-pointer border-0 transition hover:bg-white/35 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--card)] text-[var(--card-foreground)] cursor-pointer border-0 transition hover:bg-[var(--sidebar-accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <RefreshCw size={13} className={isLoading ? "animate-spin" : ""} />
           </button>

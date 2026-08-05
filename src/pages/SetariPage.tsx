@@ -25,7 +25,7 @@ function ToggleRow({ title, description, enabled, onChange }: ToggleRowProps) {
         className={`relative mt-0.5 h-5 w-9 shrink-0 rounded-full transition sm:mt-0 ${enabled ? "bg-[var(--primary)]" : "bg-[var(--border)]"}`}
       >
         <span
-          className={`absolute top-1 size-3 rounded-full bg-white shadow transition ${enabled ? "left-5" : "left-1"}`}
+          className={`absolute top-1 size-3 rounded-full bg-[var(--card-foreground)] shadow transition ${enabled ? "left-5" : "left-1"}`}
         />
       </button>
     </div>

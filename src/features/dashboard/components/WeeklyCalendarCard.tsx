@@ -55,7 +55,7 @@ export function WeeklyCalendarCard({
                     : "border-[var(--day-border)] bg-[var(--muted)] text-[var(--foreground)] hover:bg-[var(--secondary)] hover:border-[var(--primary)]",
                 )}
               >
-                <span className={cn("text-[11px] font-bold uppercase tracking-[0.5px] opacity-75", isToday && "opacity-90 text-white")}>
+                <span className={cn("text-[11px] font-bold uppercase tracking-[0.5px] opacity-75", isToday && "opacity-90 text-[var(--primary-foreground)]")}>
                   {DAY_LABELS_SHORT[day.getDay()]}
                 </span>
                 <span className="text-xl font-extrabold leading-none">{day.getDate()}</span>

@@ -30,30 +30,30 @@ export function AuthLayout({
           </div>
 
           <div className="my-auto py-8 max-w-2xl">
-            <div className="mb-5 h-12 w-12 rounded-xl border border-white/20 bg-white/15" />
+            <div className="mb-5 h-12 w-12 rounded-xl border border-[var(--border)] bg-[var(--card)]" />
             <h1 className="mb-5 whitespace-pre-line text-3xl font-bold leading-tight text-primary-foreground sm:text-4xl lg:text-[3.25rem]">
               {headline}
             </h1>
-            <p className="max-w-xl text-base leading-relaxed text-white/85 sm:text-lg">
+            <p className="max-w-xl text-base leading-relaxed text-[var(--primary-foreground)] sm:text-lg">
               {description}
             </p>
           </div>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pt-4 border-t border-white/10">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pt-4 border-t border-[var(--border)]">
             <div className="flex items-center gap-2">
               {[0, 1, 2].map((dot) => (
                 <span
                   key={dot}
                   className={
                     dot === activeDot
-                      ? "h-2 w-8 rounded-full bg-white"
-                      : "h-2 w-2 rounded-full bg-white/40"
+                      ? "h-2 w-8 rounded-full bg-[var(--card)]"
+                      : "h-2 w-2 rounded-full bg-[var(--card)]/60"
                   }
                 />
               ))}
             </div>
 
-            <p className="max-w-md text-xs leading-relaxed text-white/70">
+            <p className="max-w-md text-xs leading-relaxed text-[var(--primary-foreground)]">
               Aleea Tibleș 26, Sector 6 &middot; București, România | CUI 41251980, J40/77...
             </p>
           </div>
