@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { Search, Star } from "lucide-react"
-import { getColleagues, toggleFavoriteColleague } from "@/services"
-import { getInitials } from "@/utils"
-import type { Colleague } from "@/types"
+import { useMemo, useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 export default function CompanyPage() {
   const [colleaguesList, setColleaguesList] = useState<Colleague[]>([])
@@ -19,8 +18,15 @@ export default function CompanyPage() {
       }
     }
 
-    loadColleagues()
-  }, [])
+function initials(name: string) {
+  return name.split(" ").map((part) => part[0]).join("").slice(0, 2)
+}
+
+export default function CompanyPage() {
+  const navigate = useNavigate()
+  const [query, setQuery] = useState("")
+  const [officeOnly, setOfficeOnly] = useState(false)
+  const [favorites, setFavorites] = useState(() => new Set(colleagues.filter(({ favorite }) => favorite).map(({ name }) => name)))
 
   const visibleColleagues = useMemo(() => {
     const normalisedQuery = searchQuery.trim().toLocaleLowerCase("ro-RO")
@@ -122,11 +128,7 @@ export default function CompanyPage() {
                         <Star size={19} fill={isFavorite ? "currentColor" : "none"} aria-hidden="true" />
                       </button>
                     </td>
-                    <td className="py-3 pr-[22px] pl-3 align-middle text-[13px]">
-                      <button type="button" className="whitespace-nowrap bg-transparent p-0 text-xs font-bold text-[#059669] hover:text-[#047857] hover:underline">
-                        Vezi profil
-                      </button>
-                    </td>
+                    <td className="py-3 pr-[22px] pl-3 align-middle text-[13px]"><button type="button" onClick={() => navigate(`/companie/${colleague.name.toLocaleLowerCase("ro-RO").replaceAll(" ", "-")}`)} className="whitespace-nowrap bg-transparent p-0 text-xs font-bold text-[#11a878] hover:text-[#087a59] hover:underline">Vezi profil</button></td>
                   </tr>
                 )
               })}

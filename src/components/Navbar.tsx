@@ -108,7 +108,9 @@ export default function Navbar({ onBurgerClick }: NavbarProps) {
   const navigate = useNavigate()
   const [isDarkMode, setIsDarkMode] = useState(false)
 
-  const meta = navMeta[pathname] ?? { title: "Book Your Seat", subtitle: () => null }
+  const meta = pathname.startsWith("/companie/")
+    ? { title: "Profil", subtitle: () => <span className="navbar__subtitle">Info coleg</span> }
+    : navMeta[pathname] ?? { title: "Book Your Seat", subtitle: () => null }
 
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-[#e5e7eb] bg-[#f3f4f6] px-8 py-[18px] md:pl-14">
