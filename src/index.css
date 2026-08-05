@@ -24,6 +24,20 @@
   --input: #e5e7eb;
   --ring: #059669;
 
+  /* Chart palette (overrideable for dark mode) */
+  --chart-1: #6366f1; /* indigo */
+  --chart-2: #fb7185; /* rose */
+  --chart-3: #22d3ee; /* cyan */
+
+  /* Accent palette for avatars / tags */
+  --accent-1: #8b5cf6;
+  --accent-2: #2db874;
+  --accent-3: #3b82f6;
+  --accent-4: #f59e0b;
+  --accent-5: #ec4899;
+  --accent-6: #10b981;
+  --accent-7: #6366f1;
+
   /* Tema site — sidebar + dashboard */
   --sidebar-bg: #f3f4f6;
   --sidebar-expanded-w: 240px;
@@ -36,6 +50,12 @@
   --sidebar-muted: #6b7280;
   --sidebar-border: #e5e7eb;
   --sidebar-transition: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* shimmer animation colors */
+  --shimmer-1: #f0f0f0;
+  --shimmer-2: #e8e8e8;
+  /* day border: transparent in light, visible in dark */
+  --day-border: transparent;
 }
 
 @theme inline {
@@ -72,6 +92,80 @@
   --color-sb-text: var(--sidebar-text);
   --color-sb-muted: var(--sidebar-muted);
   --color-sb-border: var(--sidebar-border);
+}
+
+:root.dark {
+  /* Background */
+  --background: #0f172a;
+  --foreground: #f8fafc;
+
+  /* Cards */
+  --card: #1e293b;
+  --card-foreground: #f8fafc;
+
+  /* Primary */
+  --primary: #10b981;
+  --primary-foreground: #ffffff;
+
+  /* Secondary */
+  --secondary: #134e4a;
+  --secondary-foreground: #a7f3d0;
+
+  /* Muted */
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+
+  /* Accent */
+  --accent: #064e3b;
+  --accent-foreground: #6ee7b7;
+
+  /* States */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  /* Borders */
+  --border: #334155;
+  --input: #334155;
+  --ring: #10b981;
+
+  /* Chart palette dark overrides */
+  --chart-1: #818cf8; /* slightly lighter indigo for contrast */
+  --chart-2: #fb7185; /* keep rose */
+  --chart-3: #22d3ee; /* keep cyan */
+
+  /* Accent palette dark overrides */
+  --accent-1: #7c3aed;
+  --accent-2: #25a86b;
+  --accent-3: #3b82f6;
+  --accent-4: #f59e0b;
+  --accent-5: #db2777;
+  --accent-6: #16a34a;
+  --accent-7: #6366f1;
+
+  /* Sidebar */
+  --sidebar-bg: #111827;
+  --sidebar-expanded-w: 240px;
+  --sidebar-collapsed-w: 72px;
+
+  --sidebar-accent: #10b981;
+  --sidebar-accent-hover: #059669;
+
+  --sidebar-active-bg: #064e3b;
+  --sidebar-active-text: #6ee7b7;
+
+  --sidebar-text: #e2e8f0;
+  --sidebar-muted: #94a3b8;
+  --sidebar-border: #1f2937;
+
+  --sidebar-transition: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* shimmer dark variants */
+  --shimmer-1: #1f2937;
+  --shimmer-2: #111827;
+  /* day border in dark mode */
+  --day-border: var(--border);
 }
 
 *, *::before, *::after {

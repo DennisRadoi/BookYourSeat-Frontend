@@ -72,14 +72,14 @@ export default function NotificationsPage() {
   const unreadCount = notificationsList.filter((n) => n.isUnread).length
 
   return (
-    <div className="w-full bg-[#f3f4f6]">
-      <Card className="border border-[#e5e7eb] shadow-[0_1px_6px_rgba(0,0,0,0.04)] overflow-hidden bg-white rounded-xl">
-        <CardHeader className="flex flex-row items-center justify-between border-b border-[#e5e7eb] bg-white py-4 px-6 space-y-0">
+    <div className="w-full bg-[var(--background)]">
+      <Card className="border border-[var(--border)] shadow-[0_1px_6px_rgba(0,0,0,0.04)] overflow-hidden bg-[var(--card)] rounded-xl">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-[var(--border)] bg-[var(--card)] py-4 px-6 space-y-0">
           <div className="flex items-center gap-2">
-            <CardTitle className="text-xs sm:text-sm font-semibold text-[#1f2937]">
+            <CardTitle className="text-xs sm:text-sm font-semibold text-[var(--foreground)]">
               {totalNotifications} notificări
             </CardTitle>
-            <span className="text-xs sm:text-sm font-medium text-[#6b7280]">
+            <span className="text-xs sm:text-sm font-medium text-[var(--muted-foreground)]">
               {unreadCount} necitite
             </span>
           </div>
@@ -87,7 +87,7 @@ export default function NotificationsPage() {
           <Button
             variant="link"
             onClick={handleMarkAllAsRead}
-            className="text-[#059669] hover:text-[#047857] p-0 h-auto font-medium text-xs sm:text-sm"
+            className="text-[var(--primary)] hover:text-[var(--sidebar-accent-hover)] p-0 h-auto font-medium text-xs sm:text-sm"
           >
             Marchează toate ca citite
           </Button>
@@ -101,26 +101,26 @@ export default function NotificationsPage() {
                 key={notif.id}
                 onClick={() => handleNotificationClick(notif)}
                 className={cn(
-                  "flex items-center justify-between px-3 sm:px-6 py-3.5 sm:py-4 border-b border-[#e5e7eb] last:border-0 transition-colors gap-2 sm:gap-4 cursor-pointer",
-                  notif.isUnread ? "bg-[#d1fae5]/30 hover:bg-[#d1fae5]/50" : "bg-white hover:bg-[#f3f4f6]",
+                  "flex items-center justify-between px-3 sm:px-6 py-3.5 sm:py-4 border-b border-[var(--border)] last:border-0 transition-colors gap-2 sm:gap-4 cursor-pointer",
+                  notif.isUnread ? "bg-[var(--secondary)]/30 hover:bg-[var(--secondary)]/50" : "bg-[var(--card)] hover:bg-[var(--muted)]",
                 )}
               >
                 <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
-                  <div className="w-9 h-9 rounded-lg bg-[#d1fae5] text-[#059669] flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] flex items-center justify-center shrink-0">
                     <Icon size={16} className="sm:hidden" strokeWidth={2.5} />
                     <Icon size={18} className="hidden sm:block" strokeWidth={2.5} />
                   </div>
 
                   <div className="w-2.5 sm:w-4 flex justify-center shrink-0">
-                    {notif.isUnread && <div className="w-2.5 h-2.5 rounded-full bg-[#10b981]" />}
+                    {notif.isUnread && <div className="w-2.5 h-2.5 rounded-full bg-[var(--success)]" />}
                   </div>
 
-                  <p className="text-xs sm:text-sm text-[#1f2937] font-medium leading-snug truncate sm:whitespace-normal">
+                  <p className="text-xs sm:text-sm text-[var(--foreground)] font-medium leading-snug truncate sm:whitespace-normal">
                     {notif.text}
                   </p>
                 </div>
 
-                <span className="text-[11px] sm:text-xs text-[#6b7280] font-medium whitespace-nowrap shrink-0 pl-1">
+                <span className="text-[11px] sm:text-xs text-[var(--muted-foreground)] font-medium whitespace-nowrap shrink-0 pl-1">
                   {notif.time}
                 </span>
               </div>
@@ -136,15 +136,15 @@ export default function NotificationsPage() {
           onClick={() => setSelectedNotif(null)}
         >
           <Card
-            className="w-full max-w-sm bg-white shadow-xl animate-in zoom-in-95 duration-200 border border-[#e5e7eb] rounded-xl overflow-hidden"
+            className="w-full max-w-sm bg-[var(--card)] shadow-xl animate-in zoom-in-95 duration-200 border border-[var(--border)] rounded-xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <CardHeader className="flex flex-row items-center justify-between border-b border-[#e5e7eb] pb-3 pt-4 px-5">
-              <CardTitle className="text-sm font-semibold text-[#1f2937]">Detaliu Notificare</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between border-b border-[var(--border)] pb-3 pt-4 px-5">
+              <CardTitle className="text-sm font-semibold text-[var(--foreground)]">Detaliu Notificare</CardTitle>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-[#6b7280] hover:text-[#1f2937]"
+                className="h-8 w-8 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                 onClick={() => setSelectedNotif(null)}
               >
                 <X size={18} />
@@ -152,21 +152,21 @@ export default function NotificationsPage() {
             </CardHeader>
             <CardContent className="pt-5 px-5 pb-5 flex flex-col gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-[#d1fae5] text-[#059669] flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] flex items-center justify-center shrink-0">
                   {(() => {
                     const SelectedIcon = notificationIconMap[selectedNotif.type] ?? Bell
                     return <SelectedIcon size={20} strokeWidth={2.5} />
                   })()}
                 </div>
-                <span className="text-xs font-medium text-[#6b7280]">{selectedNotif.time}</span>
+                <span className="text-xs font-medium text-[var(--muted-foreground)]">{selectedNotif.time}</span>
               </div>
 
-              <p className="text-sm text-[#1f2937] leading-relaxed break-words">
+              <p className="text-sm text-[var(--foreground)] leading-relaxed break-words">
                 {selectedNotif.text}
               </p>
 
               <Button
-                className="mt-2 w-full bg-[#059669] hover:bg-[#047857] text-white"
+                className="mt-2 w-full bg-[var(--primary)] hover:bg-[var(--sidebar-accent-hover)] text-[var(--primary-foreground)]"
                 onClick={() => setSelectedNotif(null)}
               >
                 Am înțeles

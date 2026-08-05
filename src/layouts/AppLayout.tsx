@@ -7,7 +7,7 @@ export function AppLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f3f4f6] text-[#1f2937]">
+    <div className="flex h-screen overflow-hidden bg-[var(--background)] text-[var(--foreground)]">
       <Sidebar
         mobileOpen={isMobileMenuOpen}
         onMobileClose={() => setIsMobileMenuOpen(false)}

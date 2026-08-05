@@ -1,36 +1,30 @@
-import { useState } from "react"
+import { useState, type ComponentType, type SVGProps } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/utils"
-import { PanelLeft, CalendarCheck, X } from "lucide-react"
+import {
+  PanelLeft,
+  CalendarCheck,
+  X,
+  Home,
+  Building2,
+  Bell,
+  BarChart3,
+  User,
+  Settings,
+} from "lucide-react"
 
-interface SvgIconProps {
-  src: string
-  alt: string
-  size?: number
-  className?: string
-}
+type IconComponent = ComponentType<SVGProps<SVGSVGElement>>
 
-function SvgIcon({ src, alt, size = 20, className }: SvgIconProps) {
-  return (
-    <img
-      src={src}
-      alt={alt}
-      className={className}
-      style={{ width: size, height: size, objectFit: "contain", flexShrink: 0 }}
-    />
-  )
-}
-
-const navLinks = [
-  { to: "/", label: "Dashboard", iconSrc: "/icons/home.svg" },
-  { to: "/companie", label: "Companie", iconSrc: "/icons/companie.svg" },
-  { to: "/notificari", label: "Notificari", iconSrc: "/icons/notificari.svg" },
-  { to: "/analytics", label: "Analytics", iconSrc: "/icons/Analytics.svg" },
+const navLinks: Array<{ to: string; label: string; Icon: IconComponent }> = [
+  { to: "/", label: "Dashboard", Icon: Home },
+  { to: "/companie", label: "Companie", Icon: Building2 },
+  { to: "/notificari", label: "Notificari", Icon: Bell },
+  { to: "/analytics", label: "Analytics", Icon: BarChart3 },
 ]
 
-const bottomLinks = [
-  { to: "/cont", label: "Cont", iconSrc: "/icons/cont.svg" },
-  { to: "/setari", label: "Setari", iconSrc: "/icons/settings.svg" },
+const bottomLinks: Array<{ to: string; label: string; Icon: IconComponent }> = [
+  { to: "/cont", label: "Cont", Icon: User },
+  { to: "/setari", label: "Setari", Icon: Settings },
 ]
 
 interface SidebarProps {
@@ -55,7 +49,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
         mobileOpen ? "max-md:translate-x-0" : "max-md:-translate-x-full",
       )}
     >
-      <aside className="flex h-screen w-full flex-col overflow-hidden border-r border-[#e5e7eb] bg-[#f3f4f6] px-3 py-5 box-border">
+      <aside className="flex h-screen w-full flex-col overflow-hidden border-r border-[var(--sidebar-border)] bg-[var(--sidebar-bg)] px-3 py-5 box-border">
         <div className="mb-5 flex min-h-[44px] items-center gap-2">
           <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center">
             <img src="/Logo.svg" alt="BYS logo" width={36} height={36} />
@@ -63,7 +57,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
 
           <span
             className={cn(
-              "flex-1 overflow-hidden whitespace-nowrap text-xs font-bold tracking-[0.6px] text-[#1f2937] transition-[opacity,max-width] duration-300",
+              "flex-1 overflow-hidden whitespace-nowrap text-xs font-bold tracking-[0.6px] text-[var(--sidebar-text)] transition-[opacity,max-width] duration-300",
               isCollapsed ? "max-w-0 opacity-0 max-md:max-w-[200px] max-md:opacity-100" : "max-w-[140px] opacity-100",
             )}
           >
@@ -71,7 +65,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
           </span>
 
           <button
-            className="ml-auto hidden max-md:flex items-center justify-center h-8 w-8 rounded-lg border border-[#e5e7eb] bg-transparent text-[#6b7280] cursor-pointer transition hover:bg-[#d1fae5] hover:text-[#059669]"
+            className="ml-auto hidden max-md:flex items-center justify-center h-8 w-8 rounded-lg border border-[var(--sidebar-border)] bg-transparent text-[var(--sidebar-muted)] cursor-pointer transition hover:bg-[var(--sidebar-active-bg)] hover:text-[var(--sidebar-active-text)]"
             onClick={onMobileClose}
             aria-label="Închide meniu"
           >
@@ -83,7 +77,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
           <Link
             to="/seats"
             onClick={handleLinkClick}
-            className="flex w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-[10px] bg-[#059669] px-4 py-[10px] text-sm font-semibold text-white no-underline transition hover:bg-[#047857] hover:shadow-[0_4px_14px_rgba(5,150,105,0.30)]"
+            className="flex w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-[10px] bg-[var(--primary)] px-4 py-[10px] text-sm font-semibold text-[var(--primary-foreground)] no-underline transition hover:bg-[var(--sidebar-accent-hover)] hover:shadow-[0_4px_14px_rgba(5,150,105,0.30)]"
           >
             <CalendarCheck size={18} className="flex-shrink-0" />
             {!isCollapsed && <span>Book a seat</span>}
@@ -91,7 +85,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
         </div>
 
         <nav className="flex flex-col gap-1">
-          {navLinks.map(({ to, label, iconSrc }) => {
+          {navLinks.map(({ to, label, Icon }) => {
             const isActive = pathname === to
             return (
               <Link
@@ -102,11 +96,11 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
                 className={cn(
                   "flex items-center gap-3 overflow-hidden whitespace-nowrap rounded-[10px] px-3 py-[10px] text-sm font-medium no-underline transition-colors",
                   isActive
-                    ? "bg-[#d1fae5] font-semibold text-[#059669]"
-                    : "text-[#1f2937] hover:bg-[#d1fae5]/50 hover:text-[#059669]",
+                    ? "bg-[var(--sidebar-active-bg)] font-semibold text-[var(--sidebar-active-text)]"
+                    : "text-[var(--sidebar-text)] hover:bg-[var(--sidebar-active-bg)]/50 hover:text-[var(--sidebar-active-text)]",
                 )}
               >
-                <SvgIcon src={iconSrc} alt={label} size={20} className="flex-shrink-0" />
+                <Icon size={20} className="flex-shrink-0" />
                 <span
                   className={cn(
                     "overflow-hidden transition-[opacity] duration-300",
@@ -121,10 +115,10 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
         </nav>
 
         <div className="flex-1" />
-        <hr className="my-[10px] border-none border-t border-[#e5e7eb]" />
+        <hr className="my-[10px] border-none border-t border-[var(--sidebar-border)]" />
 
         <nav className="mb-2 flex flex-col gap-1">
-          {bottomLinks.map(({ to, label, iconSrc }) => {
+          {bottomLinks.map(({ to, label, Icon }) => {
             const isActive = pathname === to
             return (
               <Link
@@ -135,11 +129,11 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
                 className={cn(
                   "flex items-center gap-3 overflow-hidden whitespace-nowrap rounded-[10px] px-3 py-[10px] text-sm font-medium no-underline transition-colors",
                   isActive
-                    ? "bg-[#d1fae5] font-semibold text-[#059669]"
-                    : "text-[#1f2937] hover:bg-[#d1fae5]/50 hover:text-[#059669]",
+                    ? "bg-[var(--sidebar-active-bg)] font-semibold text-[var(--sidebar-active-text)]"
+                    : "text-[var(--sidebar-text)] hover:bg-[var(--sidebar-active-bg)]/50 hover:text-[var(--sidebar-active-text)]",
                 )}
               >
-                <SvgIcon src={iconSrc} alt={label} size={20} className="flex-shrink-0" />
+                <Icon size={20} className="flex-shrink-0" />
                 <span
                   className={cn(
                     "overflow-hidden transition-[opacity] duration-300",
@@ -158,8 +152,8 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
         className={cn(
           "absolute top-4 -right-[40px] z-20 hidden md:flex",
           "h-[30px] w-[30px] items-center justify-center rounded-lg",
-          "border border-[#e5e7eb] bg-[#f3f4f6] shadow-[2px_0_6px_rgba(0,0,0,0.06)]",
-          "cursor-pointer text-[#6b7280] transition hover:bg-[#059669] hover:text-white hover:border-[#059669] hover:shadow-[0_2px_10px_rgba(5,150,105,0.35)]",
+          "border border-[var(--border)] bg-[var(--card)] shadow-[2px_0_6px_rgba(0,0,0,0.06)]",
+          "cursor-pointer text-[var(--muted-foreground)] transition hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] hover:border-[var(--accent)] hover:shadow-[0_2px_10px_rgba(5,150,105,0.35)]",
         )}
         onClick={() => setIsCollapsed(!isCollapsed)}
         aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}

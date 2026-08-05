@@ -14,9 +14,9 @@ const weeklyBookings = [
 ]
 
 const zoneSegments = [
-  { label: "Langa fereastra", value: 24, color: "#6366f1" },
-  { label: "Zona linistita", value: 38, color: "#fb7185" },
-  { label: "Alt filtru", value: 25, color: "#22d3ee" },
+  { label: "Langa fereastra", value: 24, color: "var(--chart-1)" },
+  { label: "Zona linistita", value: 38, color: "var(--chart-2)" },
+  { label: "Alt filtru", value: 25, color: "var(--chart-3)" },
 ]
 
 const occupancyRate = [

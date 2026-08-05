@@ -86,7 +86,7 @@ export function WeeklyBookingsChart({ data, maxValue = 40 }: WeeklyBookingsChart
                 width={barW}
                 height={hSali}
                 rx={4}
-                fill="#f59e0b"
+                fill="var(--warning)"
               />
               <text
                 x={groupX + groupW / 2}
@@ -107,7 +107,7 @@ export function WeeklyBookingsChart({ data, maxValue = 40 }: WeeklyBookingsChart
           <span className="h-2.5 w-2.5 rounded-sm bg-primary" /> Birouri
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-sm bg-[#f59e0b]" /> Sali
+          <span className="h-2.5 w-2.5 rounded-sm bg-[var(--warning)]" /> Sali
         </span>
       </div>
     </div>

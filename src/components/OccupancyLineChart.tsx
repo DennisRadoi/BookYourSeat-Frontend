@@ -78,12 +78,12 @@ export function OccupancyLineChart({ data, maxValue = 100 }: OccupancyLineChartP
         )
       })}
 
-      <path d={areaPath} fill="#38bdf8" fillOpacity={0.12} stroke="none" />
-      <path d={linePath} fill="none" stroke="#38bdf8" strokeWidth={2.5} strokeLinecap="round" />
+      <path d={areaPath} fill="var(--primary)" fillOpacity={0.12} stroke="none" />
+      <path d={linePath} fill="none" stroke="var(--primary)" strokeWidth={2.5} strokeLinecap="round" />
 
       {points.map((p, i) => (
         <g key={data[i].label}>
-          <circle cx={p.x} cy={p.y} r={3.5} fill="#38bdf8" stroke="white" strokeWidth={1.5} />
+          <circle cx={p.x} cy={p.y} r={3.5} fill="var(--primary)" stroke="var(--card)" strokeWidth={1.5} />
           <text
             x={p.x}
             y={CHART_H - PAD_BOTTOM + 16}

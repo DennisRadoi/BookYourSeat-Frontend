@@ -25,8 +25,8 @@ export function AIInsightsPanel({
   const { departure, weather, trafficAlerts, seatRec, history } = insightsData
 
   return (
-    <Card className="overflow-hidden border border-[#e5e7eb] bg-white shadow-[0_1px_6px_rgba(0,0,0,0.04)] rounded-2xl p-0 gap-0">
-      <div className="flex items-center justify-between px-[18px] py-4 bg-[#059669] text-white">
+    <Card className="overflow-hidden border border-[var(--border)] bg-[var(--card)] shadow-[0_1px_6px_rgba(0,0,0,0.04)] rounded-2xl p-0 gap-0">
+      <div className="flex items-center justify-between px-[18px] py-4 bg-[var(--primary)] text-[var(--primary-foreground)]">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 text-white">
             <Sparkles size={15} />
@@ -55,13 +55,13 @@ export function AIInsightsPanel({
         </div>
       </div>
 
-      <CardContent className="flex flex-col gap-2.5 p-3 bg-white">
+      <CardContent className="flex flex-col gap-2.5 p-3 bg-[var(--card)]">
         {isLoading ? (
           <div className="flex flex-col gap-2.5 py-1">
             <div className="animate-shimmer h-[72px] rounded-xl" />
             <div className="animate-shimmer animate-shimmer-delay-1 h-[72px] rounded-xl" />
             <div className="animate-shimmer animate-shimmer-delay-2 h-[60px] rounded-xl" />
-            <p className="mt-1 text-center text-xs text-[#6b7280]">Generez insights personalizate…</p>
+            <p className="mt-1 text-center text-xs text-[var(--muted-foreground)]">Generez insights personalizate…</p>
           </div>
         ) : (
           <>
