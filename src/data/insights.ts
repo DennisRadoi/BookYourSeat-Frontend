@@ -15,11 +15,11 @@ export const defaultInsights: AIInsightsData = {
     routeVia: "via Pasajul Basarab / Șos. Grozăvești",
   },
   weather: {
-    temp: 22,
-    condition: "Parțial Înnorat",
-    humidity: 83,
-    windKmh: 14,
-    rainChance: 10,
+    temp: 34,
+    condition: "Predominant senin",
+    humidity: 31,
+    windKmh: 7,
+    rainChance: 0,
     city: "București",
   },
   trafficAlerts: [
