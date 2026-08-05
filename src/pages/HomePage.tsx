@@ -10,8 +10,8 @@ import {
   getCurrentUser,
   getDetailedReservationsByUserId,
   getColleagues,
-  getDefaultInsights,
-  getAIInsights,
+  calculateRouteInsights,
+  OFFICE_ADDRESS,
   type InsightContext,
 } from "@/services"
 import { formatDateIso } from "@/utils"
@@ -31,45 +31,80 @@ export default function HomePage() {
 
   const hasApiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY)
 
-  useEffect(() => {
-    async function loadInitialData() {
-      try {
-        const [userData, defaultInsightData, allColleagues] = await Promise.all([
-          getCurrentUser(),
-          getDefaultInsights(),
-          getColleagues(),
-        ])
-        setCurrentUser(userData)
-        setInsightsData(defaultInsightData)
-        setColleaguesList(allColleagues)
+  const loadData = useCallback(async () => {
+    try {
+      const [userData, allColleagues] = await Promise.all([
+        getCurrentUser(),
+        getColleagues(),
+      ])
+      setCurrentUser(userData)
+      setColleaguesList(allColleagues)
 
-        const userReservations = await getDetailedReservationsByUserId(userData.id)
-        setReservations(userReservations)
-      } catch (error) {
-        console.error("Eroare la încărcarea datelor:", error)
+      const userReservations = await getDetailedReservationsByUserId(userData.id)
+      setReservations(userReservations)
+
+      const context: InsightContext = {
+        user: {
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          role: userData.role,
+          department: userData.department,
+          domiciliu: userData.domiciliu || "București, Nițu Vasile 58",
+          preferences: {
+            preferredFloor: userData.preferences.preferredFloor,
+            preferredArea: userData.preferences.preferredArea,
+            preferredDays: userData.preferences.preferredDays,
+            workPreferences: userData.preferences.workPreferences,
+            preferredStartTime: userData.preferences.preferredStartTime || "09:00",
+          },
+        },
+        officeAddress: OFFICE_ADDRESS,
+        reservations: userReservations.map((r) => ({
+          date: r.date,
+          startTime: r.startTime,
+          endTime: r.endTime,
+          status: r.status,
+          seat: r.seat,
+          floor: r.floor,
+          location: r.location,
+        })),
+        colleaguesInOfficeToday: allColleagues.filter((c) => c.status === "La birou").length,
+        totalColleagues: 30,
+        currentDate: today.toLocaleDateString("ro-RO", { weekday: "long", day: "numeric", month: "long" }),
+        currentTime: today.toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit" }),
       }
-    }
 
-    loadInitialData()
-  }, [])
+      const generatedInsights = await calculateRouteInsights(context)
+      setInsightsData(generatedInsights)
+    } catch (error) {
+      console.error("Eroare la încărcarea datelor:", error)
+    }
+  }, [today])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const handleFetchAiInsights = useCallback(async () => {
-    if (!currentUser || !insightsData) return
+    if (!currentUser) return
     setIsAiLoading(true)
     try {
-      const insightContext: InsightContext = {
+      const context: InsightContext = {
         user: {
           firstName: currentUser.firstName,
           lastName: currentUser.lastName,
           role: currentUser.role,
           department: currentUser.department,
+          domiciliu: currentUser.domiciliu || "București, Nițu Vasile 58",
           preferences: {
             preferredFloor: currentUser.preferences.preferredFloor,
             preferredArea: currentUser.preferences.preferredArea,
             preferredDays: currentUser.preferences.preferredDays,
             workPreferences: currentUser.preferences.workPreferences,
+            preferredStartTime: currentUser.preferences.preferredStartTime || "09:00",
           },
         },
+        officeAddress: OFFICE_ADDRESS,
         reservations: reservations.map((r) => ({
           date: r.date,
           startTime: r.startTime,
@@ -85,27 +120,12 @@ export default function HomePage() {
         currentTime: today.toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit" }),
       }
 
-      await getAIInsights(insightContext)
-
-      const leaveTime = new Date(new Date().getTime() + 23 * 60000)
-      const hours = String(leaveTime.getHours()).padStart(2, "0")
-      const minutes = String(leaveTime.getMinutes()).padStart(2, "0")
-
-      setInsightsData((prev) =>
-        prev
-          ? {
-              ...prev,
-              departure: {
-                ...prev.departure,
-                time: `${hours}:${minutes}`,
-              },
-            }
-          : null,
-      )
+      const freshInsights = await calculateRouteInsights(context)
+      setInsightsData(freshInsights)
     } finally {
       setIsAiLoading(false)
     }
-  }, [currentUser, reservations, colleaguesList, insightsData, today])
+  }, [currentUser, reservations, colleaguesList, today])
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">

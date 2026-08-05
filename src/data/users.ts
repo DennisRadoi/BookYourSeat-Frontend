@@ -11,10 +11,11 @@ export const users: User[] = [
     department: "Engineering",
     isOnline: true,
     avatarUrl: null,
+    domiciliu: "București, Nițu Vasile 58",
     preferences: {
       preferredFloor: 1,
       preferredArea: "window",
-      preferredStartTime: "09:00",
+      preferredStartTime: "15:00",
       preferredDays: ["monday", "tuesday", "wednesday", "thursday", "friday"],
       workPreferences: ["Lângă fereastră", "Zone liniștite", "Aproape de Ana P."],
     },

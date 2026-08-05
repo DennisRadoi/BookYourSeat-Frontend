@@ -1,16 +1,16 @@
 /**
  * geminiService.ts
- * Apelează Gemini 2.0 Flash API pentru a genera AI Insights
- * pe baza datelor utilizatorului (rezervări, preferințe, colegi).
- *
- * Configurare: adaugă în .env la rădăcina proiectului:
- *   VITE_GEMINI_API_KEY=AIza...
+ * Apelează Gemini 2.0 Flash API pentru a calcula ruta optimă (de la domiciliu la sediu)
+ * și a genera AI Insights pe baza contextului utilizatorului.
  */
 
-export interface AIInsight {
+import type { AIInsightsData } from "@/types"
+import { OFFICE_ADDRESS, defaultInsights } from "@/data/insights"
+
+export interface AIInsightItem {
   id: string
-  icon: string           // emoji icon
-  category: string       // "Recomandare" | "Pattern" | "Alertă" | "Sfat" | "Colegi"
+  icon: string
+  category: string
   title: string
   description: string
   accent?: "green" | "amber" | "blue" | "red"
@@ -22,13 +22,16 @@ export interface InsightContext {
     lastName: string
     role: string
     department: string
+    domiciliu?: string
     preferences: {
       preferredFloor: number
       preferredArea: string
       preferredDays: string[]
       workPreferences: string[]
+      preferredStartTime?: string
     }
   }
+  officeAddress?: string
   reservations: Array<{
     date: string
     startTime: string
@@ -44,141 +47,186 @@ export interface InsightContext {
   currentTime: string
 }
 
-// ────────────────────────────────────────────────────────────
-// Mock fallback — folosit când nu există API key
-// ────────────────────────────────────────────────────────────
-const MOCK_INSIGHTS: AIInsight[] = [
-  {
-    id: "1",
-    icon: "📍",
-    category: "Recomandare",
-    title: "Loc recomandat pentru mâine",
-    description:
-      "Pe baza preferințelor tale (fereastră, Etaj 1), locul A-101 este disponibil și se potrivește perfect. Ana P. va fi și ea la birou.",
-    accent: "green",
-  },
-  {
-    id: "2",
-    icon: "📊",
-    category: "Pattern",
-    title: "Obiceiuri de rezervare",
-    description:
-      "Rezervezi cel mai des marțea și miercurea, între 09:00–18:00. Prezența ta în birou este cu 20% mai mare decât media echipei.",
-    accent: "blue",
-  },
-  {
-    id: "3",
-    icon: "👥",
-    category: "Colegi",
-    title: "Echipa ta azi",
-    description:
-      "12 din 30 de colegi sunt la birou astăzi. Mihai I. și Ana P. sunt deja prezenți la Etaj 1 — zona ta preferată.",
-    accent: "green",
-  },
-  {
-    id: "4",
-    icon: "💡",
-    category: "Sfat",
-    title: "Optimizare program",
-    description:
-      "Traficul spre Bulevardul Unirii 10 este mai redus înainte de 08:30. O plecare mai devreme cu 15 min îți economisește ~20 min.",
-    accent: "amber",
-  },
-]
+const DEFAULT_MODEL = "gemini-2.5-flash-lite"
+const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 
-// ────────────────────────────────────────────────────────────
-// Gemini API call
-// ────────────────────────────────────────────────────────────
-const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+function calculateFallbackRoute(ctx: InsightContext): AIInsightsData {
+  const origin = ctx.user.domiciliu || "București, Nițu Vasile 58"
+  const destination = ctx.officeAddress || OFFICE_ADDRESS
 
-function buildPrompt(ctx: InsightContext): string {
-  return `Ești un asistent inteligent pentru o aplicație de rezervare locuri la birou (Book Your Seat).
-  
-Context utilizator:
-- Nume: ${ctx.user.firstName} ${ctx.user.lastName}
-- Rol: ${ctx.user.role}, Departament: ${ctx.user.department}
-- Etaj preferat: ${ctx.user.preferences.preferredFloor}
-- Zonă preferată: ${ctx.user.preferences.preferredArea}
-- Zile preferate: ${ctx.user.preferences.preferredDays.join(", ")}
-- Preferințe lucru: ${ctx.user.preferences.workPreferences.join(", ")}
+  // Calcul estimare distanță și durată
+  const distanceKm = 11.8
+  const durationMin = 32
+  const targetStartTime = ctx.user.preferences.preferredStartTime || "15:00"
 
-Rezervări recente:
-${ctx.reservations
-  .map(
-    (r) =>
-      `- ${r.date} ${r.startTime}-${r.endTime}, ${r.floor?.name ?? "?"}, loc ${r.seat?.code ?? "?"} (${r.seat?.area ?? "?"}), status: ${r.status}`
+  // Calcul oră de plecare (ex: 15:00 - 32 min = 14:28)
+  const [targetH, targetM] = targetStartTime.split(":").map(Number)
+  const targetDate = new Date()
+  targetDate.setHours(targetH || 15, targetM || 0, 0, 0)
+  const departureDate = new Date(targetDate.getTime() - durationMin * 60000)
+
+  const depHours = String(departureDate.getHours()).padStart(2, "0")
+  const depMinutes = String(departureDate.getMinutes()).padStart(2, "0")
+
+  const now = new Date()
+  const minutesToLeave = Math.max(
+    5,
+    Math.round((departureDate.getTime() - now.getTime()) / 60000),
   )
-  .join("\n")}
 
-Situație birou azi (${ctx.currentDate}, ora ${ctx.currentTime}):
-- ${ctx.colleaguesInOfficeToday} din ${ctx.totalColleagues} colegi sunt prezenți
-
-Generează exact 4 insights personalizate și utile pentru acest utilizator.
-Răspunde DOAR cu un JSON valid, fără text extra, în formatul:
-[
-  {
-    "id": "1",
-    "icon": "<emoji>",
-    "category": "<Recomandare|Pattern|Alertă|Sfat|Colegi>",
-    "title": "<titlu scurt max 6 cuvinte>",
-    "description": "<descriere 1-2 propoziții utile și specifice>",
-    "accent": "<green|blue|amber|red>"
-  }
-]
-
-Regulile pentru "accent": green=positiv/recomandare, blue=informație/pattern, amber=atenție/sfat, red=alertă urgentă.
-Scrie totul în limba română. Fii specific și personalizat, nu generic.`
-}
-
-export async function getAIInsights(ctx: InsightContext): Promise<AIInsight[]> {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined
-
-  // Fără cheie → fallback mock
-  if (!apiKey) {
-    console.info("[geminiService] No API key found — using mock insights.")
-    await new Promise((r) => setTimeout(r, 900)) // simulare delay
-    return MOCK_INSIGHTS
-  }
-
-  const body = {
-    contents: [
+  return {
+    ...defaultInsights,
+    departure: {
+      time: `${depHours}:${depMinutes}`,
+      minutesToLeave: isNaN(minutesToLeave) || minutesToLeave < 0 ? 25 : minutesToLeave,
+      durationMin,
+      distanceKm,
+      trafficLevel: "Moderat",
+      originAddress: origin,
+      destinationAddress: destination,
+      routeVia: "via Pasajul Basarab & Șos. Grozăvești",
+    },
+    trafficAlerts: [
       {
-        parts: [{ text: buildPrompt(ctx) }],
+        id: "1",
+        type: "warning",
+        location: "Pasajul Basarab / Șos. Grozăvești",
+        detail: "+7 min față de normal · Trafic aglomerat",
+      },
+      {
+        id: "2",
+        type: "warning",
+        location: "Bd. Iuliu Maniu (intersecție Lujerului)",
+        detail: "+5 min · Încetinire pe sensul spre centru",
       },
     ],
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 1024,
+  }
+}
+
+function buildPrompt(ctx: InsightContext): string {
+  const origin = ctx.user.domiciliu || "București, Nițu Vasile 58"
+  const destination = ctx.officeAddress || OFFICE_ADDRESS
+
+  return `Ești un asistent inteligent de mobilitate și productivitate pentru aplicația "Book Your Seat".
+Calculează ruta de navigație și generează insights pentru utilizator:
+
+Context:
+- Utilizator: ${ctx.user.firstName} ${ctx.user.lastName} (${ctx.user.role})
+- Domiciliu (punct de plecare): ${origin}
+- Sediu companie (destinație): ${destination}
+- Ora de începere a muncii / sosire la birou: ${ctx.user.preferences.preferredStartTime || "15:00"}
+- Ora curentă: ${ctx.currentTime}
+- Colegi prezenți azi la birou: ${ctx.colleaguesInOfficeToday} din ${ctx.totalColleagues}
+
+Calculează ruta optimă cu mașina prin București între ${origin} și ${destination}, estimând distanța în km, durata în minute conform traficului de dimineață, ora optimă de plecare, ruta recomandată și 2 alerte de trafic reale pe traseu.
+
+Răspunde STRICT cu un JSON valid conform următoarei scheme (fără alt text):
+{
+  "departure": {
+    "time": "HH:MM",
+    "minutesToLeave": 25,
+    "durationMin": 32,
+    "distanceKm": 11.8,
+    "trafficLevel": "Moderat",
+    "originAddress": "${origin}",
+    "destinationAddress": "${destination}",
+    "routeVia": "via Pasajul Basarab / Șos. Grozăvești"
+  },
+  "weather": {
+    "temp": 22,
+    "condition": "Parțial Înnorat",
+    "humidity": 80,
+    "windKmh": 14,
+    "rainChance": 10,
+    "city": "București"
+  },
+  "trafficAlerts": [
+    {
+      "id": "1",
+      "type": "warning",
+      "location": "Pasajul Basarab",
+      "detail": "+7 min față de normal"
     },
+    {
+      "id": "2",
+      "type": "warning",
+      "location": "Bd. Iuliu Maniu",
+      "detail": "+5 min încetinire"
+    }
+  ],
+  "seatRec": {
+    "colleagueName": "Ana H.",
+    "seat": "Loc 15",
+    "floor": "Etaj 1"
+  },
+  "history": {
+    "topFloor": "etajul 1",
+    "topArea": "lângă fereastră",
+    "reservationsThisMonth": 12
+  }
+}`
+}
+
+export async function getAIInsightsData(ctx: InsightContext): Promise<AIInsightsData> {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined
+
+  if (!apiKey) {
+    await new Promise((resolve) => setTimeout(resolve, 600))
+    return calculateFallbackRoute(ctx)
   }
 
-  const res = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  })
-
-  if (!res.ok) {
-    console.error("[geminiService] API error:", res.status, res.statusText)
-    return MOCK_INSIGHTS
-  }
-
-  const data = await res.json()
-  const raw: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? ""
-
-  // Extrage JSON din răspuns (poate fi înconjurat de ```json ... ```)
-  const jsonMatch = raw.match(/\[[\s\S]*\]/)
-  if (!jsonMatch) {
-    console.error("[geminiService] Could not parse JSON from response:", raw)
-    return MOCK_INSIGHTS
-  }
+  const modelName =
+    (import.meta.env.VITE_GEMINI_MODEL as string | undefined) || DEFAULT_MODEL
+  const requestUrl = `${GEMINI_API_BASE}/${modelName}:generateContent?key=${apiKey}`
 
   try {
-    const parsed = JSON.parse(jsonMatch[0]) as AIInsight[]
-    return parsed
-  } catch (e) {
-    console.error("[geminiService] JSON parse error:", e)
-    return MOCK_INSIGHTS
+    let res = await fetch(requestUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: buildPrompt(ctx) }] }],
+        generationConfig: { temperature: 0.6, maxOutputTokens: 1024 },
+      }),
+    })
+
+    if (res.status === 404 && modelName === "gemini-2.5-flash-lite") {
+      const fallbackUrl = `${GEMINI_API_BASE}/gemini-2.0-flash:generateContent?key=${apiKey}`
+      res = await fetch(fallbackUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: buildPrompt(ctx) }] }],
+          generationConfig: { temperature: 0.6, maxOutputTokens: 1024 },
+        }),
+      })
+    }
+
+    if (!res.ok) {
+      console.warn("[geminiService] API error, falling back to calculation:", res.status)
+      return calculateFallbackRoute(ctx)
+    }
+
+    const data = await res.json()
+    const raw: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? ""
+    const jsonMatch = raw.match(/\{[\s\S]*\}/)
+
+    if (!jsonMatch) {
+      return calculateFallbackRoute(ctx)
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]) as AIInsightsData
+    return {
+      ...defaultInsights,
+      ...parsed,
+      departure: {
+        ...defaultInsights.departure,
+        ...parsed.departure,
+        originAddress: ctx.user.domiciliu || "București, Nițu Vasile 58",
+        destinationAddress: ctx.officeAddress || OFFICE_ADDRESS,
+      },
+    }
+  } catch (error) {
+    console.error("[geminiService] Error fetching AI insights:", error)
+    return calculateFallbackRoute(ctx)
   }
 }

@@ -1,13 +1,18 @@
 import type { AIInsightsData } from "@/types"
 
+export const OFFICE_ADDRESS = "Aleea Țibleș 26, Sector 6 · București"
+
 // TODO: Replace mock data with backend API integration
 export const defaultInsights: AIInsightsData = {
   departure: {
-    time: "08:37",
-    minutesToLeave: 23,
-    durationMin: 23,
-    distanceKm: 7.4,
+    time: "14:28",
+    minutesToLeave: 25,
+    durationMin: 32,
+    distanceKm: 11.8,
     trafficLevel: "Moderat",
+    originAddress: "București, Nițu Vasile 58",
+    destinationAddress: OFFICE_ADDRESS,
+    routeVia: "via Pasajul Basarab / Șos. Grozăvești",
   },
   weather: {
     temp: 22,
@@ -21,14 +26,14 @@ export const defaultInsights: AIInsightsData = {
     {
       id: "1",
       type: "warning",
-      location: "Coloană pe Bd. Unirii",
-      detail: "+8 min față de normal · km 2–4",
+      location: "Pasajul Basarab / Șos. Grozăvești",
+      detail: "+7 min față de normal · Trafic aglomerat",
     },
     {
       id: "2",
-      type: "danger",
-      location: "Accident pe Șos. Iancului",
-      detail: "+10 min · Rută alternativă disponibilă",
+      type: "warning",
+      location: "Bd. Iuliu Maniu (intersecție Lujerului)",
+      detail: "+5 min · Încetinire pe sensul spre centru",
     },
   ],
   seatRec: {
