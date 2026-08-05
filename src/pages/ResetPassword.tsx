@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { AuthShell } from "@/components/AuthShell"
+import { AuthShell } from "@/layouts"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 

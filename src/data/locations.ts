@@ -1,4 +1,7 @@
-export const locations = [
+import type { Location } from "@/types"
+
+// TODO: Replace mock data with backend API integration
+export const locations: Location[] = [
   {
     id: 1,
     name: "Sediul Central",
@@ -85,7 +88,6 @@ export const locations = [
       },
     ],
   },
-
   {
     id: 2,
     name: "Sediul Nord",
@@ -118,4 +120,4 @@ export const locations = [
       },
     ],
   },
-];
+]
