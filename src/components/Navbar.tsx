@@ -93,7 +93,9 @@ export default function Navbar({ onBurgerClick }: NavbarProps) {
   const navigate = useNavigate()
   const [dark, setDark] = useState(false)
 
-  const meta = navMeta[pathname] ?? { title: "Book Your Seat", subtitle: () => null }
+  const meta = pathname.startsWith("/companie/")
+    ? { title: "Profil", subtitle: () => <span className="navbar__subtitle">Info coleg</span> }
+    : navMeta[pathname] ?? { title: "Book Your Seat", subtitle: () => null }
 
   function handleLogout() {
     navigate("/")
