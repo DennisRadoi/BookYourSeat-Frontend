@@ -123,6 +123,45 @@ export default function NotificationsPage() {
           })}
         </CardContent>
       </Card>
+
+      {}
+      {selectedNotif && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          onClick={() => setSelectedNotif(null)} 
+        >
+          <Card 
+            className="w-full max-w-sm bg-white shadow-xl animate-in zoom-in-95 duration-200" 
+            onClick={(e) => e.stopPropagation()} 
+          >
+            <CardHeader className="flex flex-row items-center justify-between border-b border-[#e5e7eb] pb-3">
+              <CardTitle className="text-sm font-semibold text-[#1f2937]">Detaliu Notificare</CardTitle>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-[#6b7280] hover:text-[#1f2937]" onClick={() => setSelectedNotif(null)}>
+                <X size={18} />
+              </Button>
+            </CardHeader>
+            <CardContent className="pt-5 flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-[#d1fae5] text-[#059669] flex items-center justify-center shrink-0">
+                  {(() => {
+                    const SelectedIcon = notificationIconMap[selectedNotif.type] ?? Bell
+                    return <SelectedIcon size={20} strokeWidth={2.5} />
+                  })()}
+                </div>
+                <span className="text-xs font-medium text-[#6b7280]">{selectedNotif.time}</span>
+              </div>
+              
+              <p className="text-sm text-[#1f2937] leading-relaxed break-words">
+                {selectedNotif.text}
+              </p>
+              
+              <Button className="mt-2 w-full bg-[#059669] hover:bg-[#047857] text-white" onClick={() => setSelectedNotif(null)}>
+                Am înțeles
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
