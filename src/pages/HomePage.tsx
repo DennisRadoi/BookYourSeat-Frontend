@@ -19,20 +19,18 @@ import type { User, DetailedReservation, Colleague, AIInsightsData } from "@/typ
 
 export default function HomePage() {
   const navigate = useNavigate()
-  const today = new Date()
-  const todayIso = formatDateIso(today)
-
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [reservations, setReservations] = useState<DetailedReservation[]>([])
   const [colleaguesList, setColleaguesList] = useState<Colleague[]>([])
   const [insightsData, setInsightsData] = useState<AIInsightsData | null>(null)
   const [isAiLoading, setIsAiLoading] = useState(false)
-  const [selectedDate, setSelectedDate] = useState(todayIso)
+  const [selectedDate, setSelectedDate] = useState(() => formatDateIso(new Date()))
 
   const hasApiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY)
 
   const loadData = useCallback(async () => {
     try {
+      const today = new Date()
       const [userData, allColleagues] = await Promise.all([
         getCurrentUser(),
         getColleagues(),
@@ -55,7 +53,7 @@ export default function HomePage() {
             preferredArea: userData.preferences.preferredArea,
             preferredDays: userData.preferences.preferredDays,
             workPreferences: userData.preferences.workPreferences,
-            preferredStartTime: userData.preferences.preferredStartTime || "09:00",
+            preferredStartTime: userData.preferences.preferredStartTime || "15:00",
           },
         },
         officeAddress: OFFICE_ADDRESS,
@@ -79,7 +77,7 @@ export default function HomePage() {
     } catch (error) {
       console.error("Eroare la încărcarea datelor:", error)
     }
-  }, [today])
+  }, [])
 
   useEffect(() => {
     loadData()
@@ -89,6 +87,7 @@ export default function HomePage() {
     if (!currentUser) return
     setIsAiLoading(true)
     try {
+      const today = new Date()
       const context: InsightContext = {
         user: {
           firstName: currentUser.firstName,
@@ -101,7 +100,7 @@ export default function HomePage() {
             preferredArea: currentUser.preferences.preferredArea,
             preferredDays: currentUser.preferences.preferredDays,
             workPreferences: currentUser.preferences.workPreferences,
-            preferredStartTime: currentUser.preferences.preferredStartTime || "09:00",
+            preferredStartTime: currentUser.preferences.preferredStartTime || "15:00",
           },
         },
         officeAddress: OFFICE_ADDRESS,
@@ -125,7 +124,7 @@ export default function HomePage() {
     } finally {
       setIsAiLoading(false)
     }
-  }, [currentUser, reservations, colleaguesList, today])
+  }, [currentUser, reservations, colleaguesList])
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
