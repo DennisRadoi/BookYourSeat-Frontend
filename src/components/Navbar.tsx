@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { Moon, Sun, LogOut, User, Menu } from "lucide-react"
 import { useLiveClock } from "@/hooks"
@@ -13,7 +13,7 @@ function DateTimeSubtitle() {
     minute: "2-digit",
   })
   return (
-    <span className="flex items-center gap-1.5 text-sm text-[#4b5563] font-normal">
+    <span className="flex items-center gap-1.5 text-sm text-[var(--muted-foreground)] font-normal">
       {formattedDateTime}
     </span>
   )
@@ -21,7 +21,7 @@ function DateTimeSubtitle() {
 
 function NavBadge({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center justify-center rounded-[20px] bg-[#10b981] px-1.5 py-px text-[11px] font-bold leading-[1.6] text-white">
+    <span className="inline-flex items-center justify-center rounded-[20px] bg-[var(--primary)] px-1.5 py-px text-[11px] font-bold leading-[1.6] text-[var(--primary-foreground)]">
       {children}
     </span>
   )
@@ -29,7 +29,7 @@ function NavBadge({ children }: { children: React.ReactNode }) {
 
 function ColleaguesSubtitle() {
   return (
-    <span className="flex items-center gap-1.5 text-sm text-[#4b5563]">
+    <span className="flex items-center gap-1.5 text-sm text-[var(--muted-foreground)]">
       <NavBadge>12</NavBadge> colegi în locație din 30
     </span>
   )
@@ -37,7 +37,7 @@ function ColleaguesSubtitle() {
 
 function NotificariSubtitle() {
   return (
-    <span className="flex items-center gap-1.5 text-sm text-[#4b5563]">
+    <span className="flex items-center gap-1.5 text-sm text-[var(--muted-foreground)]">
       <NavBadge>3</NavBadge> notificări necitite
     </span>
   )
@@ -46,20 +46,20 @@ function NotificariSubtitle() {
 function AnalyticsSubtitle() {
   const currentDateTime = useLiveClock()
   const month = currentDateTime.toLocaleString("ro-RO", { month: "long", year: "numeric" })
-  return <span className="text-sm text-[#4b5563]">Raport pentru {month}</span>
+  return <span className="text-sm text-[var(--muted-foreground)]">Raport pentru {month}</span>
 }
 
 function ContSubtitle() {
-  return <span className="text-sm text-[#4b5563]">Administrează-ți profilul</span>
+  return <span className="text-sm text-[var(--muted-foreground)]">Administrează-ți profilul</span>
 }
 
 function SetariSubtitle() {
-  return <span className="text-sm text-[#4b5563]">Preferințe aplicație</span>
+  return <span className="text-sm text-[var(--muted-foreground)]">Preferințe aplicație</span>
 }
 
 function SeatsSubtitle() {
   return (
-    <span className="flex items-center gap-1.5 text-sm text-[#4b5563]">
+    <span className="flex items-center gap-1.5 text-sm text-[var(--muted-foreground)]">
       <NavBadge>8</NavBadge> locuri disponibile astăzi
     </span>
   )
@@ -92,7 +92,7 @@ function IconButton({ id, onClick, title, className = "", children }: IconButton
       onClick={onClick}
       title={title}
       aria-label={title}
-      className={`flex h-[38px] w-[38px] flex-shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-[#4b5563] transition hover:bg-[#d1fae5] hover:text-[#059669] hover:border-[#059669] hover:shadow-[0_2px_8px_rgba(5,150,105,0.15)] ${className}`}
+      className={`flex h-[38px] w-[38px] flex-shrink-0 cursor-pointer items-center justify-center rounded-full border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] transition hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] hover:border-[var(--accent)] hover:shadow-[0_2px_8px_rgba(5,150,105,0.15)] ${className}`}
     >
       {children}
     </button>
@@ -108,26 +108,31 @@ export default function Navbar({ onBurgerClick }: NavbarProps) {
   const navigate = useNavigate()
   const [isDarkMode, setIsDarkMode] = useState(false)
 
+  useEffect(() => {
+    const root = document.documentElement
+    root.classList.toggle("dark", isDarkMode)
+  }, [isDarkMode])
+
   const meta = pathname.startsWith("/companie/")
     ? { title: "Profil", subtitle: () => <span className="navbar__subtitle">Info coleg</span> }
     : navMeta[pathname] ?? { title: "Book Your Seat", subtitle: () => null }
 
   return (
-    <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-[#e5e7eb] bg-[#f3f4f6] px-8 py-[18px] md:pl-14">
+    <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-[var(--border)] bg-[var(--background)] px-8 py-[18px] md:pl-14">
       <button
         id="navbar-burger-btn"
         onClick={onBurgerClick}
         aria-label="Deschide meniu"
-        className="flex md:hidden h-10 w-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-[#e5e7eb] bg-white text-[#1f2937] transition hover:bg-[#d1fae5] hover:text-[#059669] hover:border-[#059669] hover:shadow-[0_2px_8px_rgba(5,150,105,0.20)]"
+        className="flex md:hidden h-10 w-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] transition hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] hover:border-[var(--accent)] hover:shadow-[0_2px_8px_rgba(5,150,105,0.20)]"
       >
         <Menu size={22} />
       </button>
 
       <div className="flex flex-col gap-[3px]">
-        <h1 className="m-0 text-xl font-extrabold uppercase tracking-[0.5px] text-[#1f2937] leading-[1.2]">
+        <h1 className="m-0 text-xl font-extrabold uppercase tracking-[0.5px] text-[var(--foreground)] leading-[1.2]">
           {meta.title}
         </h1>
-        <div className="flex min-h-5 items-center gap-1.5">{meta.subtitle()}</div>
+        <div className="flex min-h-5 items-center gap-1.5 text-[var(--muted-foreground)]">{meta.subtitle()}</div>
       </div>
 
       <div className="ml-auto flex items-center gap-2.5">
@@ -148,7 +153,7 @@ export default function Navbar({ onBurgerClick }: NavbarProps) {
           onClick={() => navigate("/cont")}
           title="Contul meu"
           aria-label="Contul meu"
-          className="flex h-11 w-11 flex-shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-[#1f2937] transition hover:bg-[#d1fae5] hover:text-[#059669] hover:border-[#059669]"
+          className="flex h-11 w-11 flex-shrink-0 cursor-pointer items-center justify-center rounded-full border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] transition hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] hover:border-[var(--accent)]"
         >
           <User size={19} />
         </button>

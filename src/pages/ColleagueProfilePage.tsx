@@ -19,36 +19,36 @@ export default function ColleagueProfilePage() {
   const initials = colleague.name.split(" ").map((part) => part[0]).join("").slice(0, 2)
 
   return (
-    <section className="w-full max-w-[920px] text-[#1f2937]">
+    <section className="w-full max-w-[920px] text-[var(--foreground)]">
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(260px,0.85fr)]">
         <div className="min-w-0 space-y-5">
-          <article className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-[0_1px_6px_rgba(0,0,0,0.04)]">
-            <div className="h-11 bg-gradient-to-r from-[#d1fae5] to-[#f3f4f6]" />
+          <article className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-[0_1px_6px_rgba(0,0,0,0.04)]">
+            <div className="h-11 bg-gradient-to-r from-[var(--secondary)] to-[var(--muted)]" />
             <div className="px-4 pb-4 sm:px-5 sm:pb-5">
               <div className="-mt-5 flex flex-wrap items-start justify-between gap-3">
-                <div className="grid size-12 place-items-center rounded-lg border-2 border-[#059669] bg-[#d1fae5] text-sm font-bold text-[#059669] shadow-sm">{initials}</div>
-                <button type="button" className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#059669] px-3 text-[10px] font-bold text-white transition hover:bg-[#047857]"><Users size={13} />Invită la muncă</button>
+                <div className="grid size-12 place-items-center rounded-lg border-2 border-[var(--primary)] bg-[var(--secondary)] text-sm font-bold text-[var(--secondary-foreground)] shadow-sm">{initials}</div>
+                <button type="button" className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[var(--primary)] px-3 text-[10px] font-bold text-[var(--primary-foreground)] transition hover:bg-[var(--sidebar-accent-hover)]"><Users size={13} />Invită la muncă</button>
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <h2 className="break-words text-base font-bold text-[#1f2937]">{colleague.name}</h2>
-                <Star size={15} fill="#f59e0b" className="shrink-0 text-[#f59e0b]" />
+                <h2 className="break-words text-base font-bold text-[var(--foreground)]">{colleague.name}</h2>
+                <Star size={15} fill="currentColor" className="shrink-0 text-[var(--warning)]" />
               </div>
-              <p className="mt-0.5 text-[11px] text-[#6b7280]">{colleague.role}</p>
-              <p className="mt-0.5 text-[11px] text-[#6b7280]">{colleague.email}</p>
-              <p className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-[#059669]"><MapPin size={13} />{colleague.location}</p>
-              <p className="mt-0.5 text-[10px] text-[#6b7280]">Preferă Etaj 1, lângă fereastră</p>
+              <p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">{colleague.role}</p>
+              <p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">{colleague.email}</p>
+              <p className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--primary)]"><MapPin size={13} />{colleague.location}</p>
+              <p className="mt-0.5 text-[10px] text-[var(--muted-foreground)]">Preferă Etaj 1, lângă fereastră</p>
             </div>
           </article>
 
           <div className="grid grid-cols-1 gap-3 min-[430px]:grid-cols-2 sm:grid-cols-4">
-            <Metric icon={<CalendarDays size={14} />} value={colleague.reservations} label="Rezervări / săpt." color="bg-[#d1fae5] text-[#059669]" />
-            <Metric icon={<MapPin size={14} />} value={colleague.floor} label="Floor preferat" color="bg-[#d1fae5] text-[#059669]" />
-            <Metric icon={<Clock3 size={14} />} value={colleague.start} label="Începe de obicei" color="bg-[#fef3c7] text-[#f59e0b]" />
-            <Metric icon={<Users size={14} />} value={colleague.department} label="Departament" color="bg-[#d1fae5] text-[#059669]" />
+            <Metric icon={<CalendarDays size={14} />} value={colleague.reservations} label="Rezervări / săpt." color="bg-[var(--secondary)] text-[var(--secondary-foreground)]" />
+            <Metric icon={<MapPin size={14} />} value={colleague.floor} label="Floor preferat" color="bg-[var(--secondary)] text-[var(--secondary-foreground)]" />
+            <Metric icon={<Clock3 size={14} />} value={colleague.start} label="Începe de obicei" color="bg-[var(--warning)] text-[var(--warning)]" />
+            <Metric icon={<Users size={14} />} value={colleague.department} label="Departament" color="bg-[var(--secondary)] text-[var(--secondary-foreground)]" />
           </div>
 
-          <article className="rounded-xl border border-[#e5e7eb] bg-white p-4 shadow-[0_1px_6px_rgba(0,0,0,0.04)] sm:p-5">
-            <h3 className="text-xs font-bold text-[#1f2937]">Rezervări recente</h3>
+          <article className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[0_1px_6px_rgba(0,0,0,0.04)] sm:p-5">
+            <h3 className="text-xs font-bold text-[var(--foreground)]">Rezervări recente</h3>
             <div className="mt-3 space-y-2">
               <Reservation date="Luni, 28 Iulie" place="Loc 7 · Corp A · Etaj 1" time="09:00 – 18:00" />
               <Reservation date="Joi, 25 Iulie" place="Loc 7 · Corp A · Etaj 1" time="09:00 – 17:30" />
@@ -58,26 +58,27 @@ export default function ColleagueProfilePage() {
         </div>
 
         <div className="space-y-5">
-          <article className="rounded-xl border border-[#e5e7eb] bg-white p-4 shadow-[0_1px_6px_rgba(0,0,0,0.04)] sm:p-5">
-            <h3 className="text-xs font-bold text-[#1f2937]">Preferințe muncă</h3>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {["Lângă fereastră", "Zone liniștite", "Aproape de colegi"].map((item) => (
-                <span key={item} className="rounded-full border border-[#e5e7eb] bg-[#f3f4f6] px-2.5 py-1 text-[10px] text-[#1f2937]">
-                  {item}
-                </span>
-              ))}
-            </div>
-          </article>
-          <article className="rounded-xl border border-[#e5e7eb] bg-white p-4 shadow-[0_1px_6px_rgba(0,0,0,0.04)] sm:p-5">
-            <h3 className="text-xs font-bold text-[#1f2937]">Program obișnuit</h3>
+
+            <article className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[0_1px_6px_rgba(0,0,0,0.04)] sm:p-5">
+              <h3 className="text-xs font-bold text-[var(--foreground)]">Preferințe muncă</h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {['Lângă fereastră', 'Zone liniștite', 'Aproape de colegi'].map((item) => (
+                  <span key={item} className="rounded-full border border-[var(--border)] bg-[var(--muted)] px-2.5 py-1 text-[10px] text-[var(--foreground)]">
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </article>
+          <article className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[0_1px_6px_rgba(0,0,0,0.04)] sm:p-5">
+            <h3 className="text-xs font-bold text-[var(--foreground)]">Program obișnuit</h3>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {days.map((day, index) => (
-                <span key={day} className={`grid size-6 place-items-center rounded-full text-[10px] font-bold ${index < 5 ? "bg-[#059669] text-white" : "bg-[#f3f4f6] text-[#6b7280]"}`}>
+                <span key={day} className={`grid size-6 place-items-center rounded-full text-[10px] font-bold ${index < 5 ? "bg-[var(--primary)] text-[var(--primary-foreground)]" : "bg-[var(--muted)] text-[var(--muted-foreground)]"}`}>
                   {day}
                 </span>
               ))}
             </div>
-            <p className="mt-2 text-[10px] text-[#6b7280]">Vine la birou în fiecare zi lucrătoare</p>
+            <p className="mt-2 text-[10px] text-[var(--muted-foreground)]">Vine la birou în fiecare zi lucrătoare</p>
           </article>
         </div>
       </div>
@@ -87,25 +88,25 @@ export default function ColleagueProfilePage() {
 
 function Metric({ icon, value, label, color }: { icon: React.ReactNode; value: string; label: string; color: string }) {
   return (
-    <article className="min-w-0 rounded-xl border border-[#e5e7eb] bg-white p-3 shadow-[0_1px_6px_rgba(0,0,0,0.04)]">
+    <article className="min-w-0 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 shadow-[0_1px_6px_rgba(0,0,0,0.04)]">
       <span className={`grid size-6 place-items-center rounded-md ${color}`}>{icon}</span>
-      <p className="mt-2 truncate text-xs font-bold text-[#1f2937]">{value}</p>
-      <p className="mt-0.5 truncate text-[9px] text-[#6b7280]">{label}</p>
+      <p className="mt-2 truncate text-xs font-bold text-[var(--foreground)]">{value}</p>
+      <p className="mt-0.5 truncate text-[9px] text-[var(--muted-foreground)]">{label}</p>
     </article>
   )
 }
 
 function Reservation({ date, place, time }: { date: string; place: string; time: string }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-[#e5e7eb] px-2.5 py-2 sm:flex-nowrap">
-      <span className="grid size-6 shrink-0 place-items-center rounded-md bg-[#d1fae5] text-[#059669]">
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2.5 py-2 sm:flex-nowrap">
+      <span className="grid size-6 shrink-0 place-items-center rounded-md bg-[var(--secondary)] text-[var(--secondary-foreground)]">
         <CalendarDays size={13} />
       </span>
       <div className="min-w-[120px] flex-1">
-        <p className="text-[10px] font-bold text-[#1f2937]">{date}</p>
-        <p className="truncate text-[9px] text-[#6b7280]">{place}</p>
+        <p className="text-[10px] font-bold text-[var(--foreground)]">{date}</p>
+        <p className="truncate text-[9px] text-[var(--muted-foreground)]">{place}</p>
       </div>
-      <span className="ml-8 text-[9px] text-[#6b7280] sm:ml-0 sm:shrink-0">{time}</span>
+      <span className="ml-8 text-[9px] text-[var(--muted-foreground)] sm:ml-0 sm:shrink-0">{time}</span>
     </div>
   )
 }

@@ -26,29 +26,29 @@ export function WeatherWidgetCard({ weather }: WeatherWidgetCardProps) {
   const emoji = getWeatherEmoji(weather.condition)
 
   return (
-    <div className="flex flex-col gap-2.5 rounded-xl border border-[#e5e7eb] bg-white p-3.5">
+    <div className="flex flex-col gap-2.5 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3.5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <span className="text-base leading-none">{emoji}</span>
-          <span className="text-[13px] font-bold text-[#1f2937]">Vreme live</span>
+          <span className="text-[13px] font-bold text-[var(--foreground)]">Vreme live</span>
         </div>
-        <span className="rounded-full bg-[#d1fae5] px-2 py-0.5 text-[10px] font-bold text-[#059669]">
+        <span className="rounded-full bg-[var(--secondary)] px-2 py-0.5 text-[10px] font-bold text-[var(--secondary-foreground)]">
           {weather.city} · Live
         </span>
       </div>
       <div className="flex items-center gap-2.5">
-        <span className="text-[32px] font-extrabold leading-none text-[#1f2937]">{weather.temp}°C</span>
+        <span className="text-[32px] font-extrabold leading-none text-[var(--foreground)]">{weather.temp}°C</span>
         <div className="flex flex-col gap-px">
-          <span className="text-[13px] font-semibold text-[#1f2937]">{weather.condition}</span>
-          <span className="text-[11px] text-[#6b7280]">Date meteorologice în timp real</span>
+          <span className="text-[13px] font-semibold text-[var(--foreground)]">{weather.condition}</span>
+          <span className="text-[11px] text-[var(--muted-foreground)]">Date meteorologice în timp real</span>
         </div>
       </div>
-      <div className="flex rounded-xl bg-[#f3f4f6] px-2.5 py-2">
+      <div className="flex rounded-xl bg-[var(--muted)] px-2.5 py-2">
         {metrics.map(({ Icon, value, label }) => (
-          <div key={label} className="flex flex-1 flex-col items-center gap-0.5 text-[12px] font-semibold text-[#1f2937]">
-            <Icon size={12} className="text-[#059669]" />
+          <div key={label} className="flex flex-1 flex-col items-center gap-0.5 text-[12px] font-semibold text-[var(--foreground)]">
+            <Icon size={12} className="text-[var(--primary)]" />
             <span>{value}</span>
-            <span className="text-[10px] font-normal text-[#6b7280]">{label}</span>
+            <span className="text-[10px] font-normal text-[var(--muted-foreground)]">{label}</span>
           </div>
         ))}
       </div>
