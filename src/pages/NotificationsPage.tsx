@@ -1,171 +1,127 @@
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
-import { Star, Monitor, Bell, CheckCircle2, Users, CloudRain, Repeat, Moon, User } from "lucide-react"
+import { cn } from "@/utils"
+import {
+  Star,
+  Monitor,
+  Bell,
+  CheckCircle2,
+  Users,
+  CloudRain,
+  Repeat,
+  X,
+  type LucideIcon,
+} from "lucide-react"
+import { getNotifications, markAllNotificationsAsRead, markNotificationAsRead } from "@/services"
+import type { Notification, NotificationType } from "@/types"
 
-const notificationsData = [
-  {
-    id: 1,
-    type: "favorite",
-    icon: Star,
-    text: "Ruxandra B. (favorit) a rezervat Loc 15, Etaj 1",
-    time: "acum 12 min",
-    isUnread: true,
-  },
-  {
-    id: 2,
-    type: "freed",
-    icon: Monitor,
-    text: "Locul 9, Parter s-a eliberat - era pe lista ta de asteptare",
-    time: "acum 40 min",
-    isUnread: true,
-  },
-  {
-    id: 3,
-    type: "invite",
-    icon: Bell,
-    text: "Ai fost invitat de George B. la birou, joi 30 iulie.",
-    time: "acum 2 ore",
-    isUnread: true,
-  },
-  {
-    id: 4,
-    type: "confirmed",
-    icon: CheckCircle2,
-    text: "Rezervarea ta pentru Loc 14, Etaj 1 a fost confirmata",
-    time: "ieri, 18:02",
-    isUnread: false,
-  },
-  {
-    id: 5,
-    type: "team",
-    icon: Users,
-    text: "Denis R. s-a alaturat echipei tale de favoriti.",
-    time: "ieri, 11:20",
-    isUnread: false,
-  },
-  {
-    id: 6,
-    type: "weather",
-    icon: CloudRain,
-    text: "Trafic intens pe ruta ta de dimineata - pleaca cu 15 min mai devreme",
-    time: "ieri, 7:20",
-    isUnread: false,
-  },
-  {
-    id: 7,
-    type: "recurring",
-    icon: Repeat,
-    text: "Rezervarea ta recurenta pentru Etaj 2 a fost creata automat.",
-    time: "2 zile",
-    isUnread: false,
-  },
-  {
-    id: 8,
-    type: "canceled",
-    icon: Bell,
-    text: "Anna H. a anulat rezervarea pentru Loc 3, Parter",
-    time: "2 zile",
-    isUnread: false,
-  },
-  {
-    id: 9,
-    type: "verified",
-    icon: CheckCircle2,
-    text: "Contul tau a fost verificat cu succes",
-    time: "3 zile",
-    isUnread: false,
-  },
-]
+const notificationIconMap: Record<NotificationType, LucideIcon> = {
+  favorite: Star,
+  freed: Monitor,
+  invite: Bell,
+  confirmed: CheckCircle2,
+  team: Users,
+  weather: CloudRain,
+  recurring: Repeat,
+  canceled: Bell,
+  verified: CheckCircle2,
+}
 
 export default function NotificationsPage() {
-  const totalNotifications = notificationsData.length
-  const unreadCount = notificationsData.filter((n) => n.isUnread).length
+  const [notificationsList, setNotificationsList] = useState<Notification[]>([])
+  const [selectedNotif, setSelectedNotif] = useState<Notification | null>(null) 
+
+  useEffect(() => {
+    async function loadNotifications() {
+      try {
+        const data = await getNotifications()
+        setNotificationsList(data)
+      } catch (error) {
+        console.error("Eroare la încărcarea notificărilor:", error)
+      }
+    }
+
+    loadNotifications()
+  }, [])
+
+  async function handleMarkAllAsRead() {
+    try {
+      const updated = await markAllNotificationsAsRead()
+      setNotificationsList(updated)
+    } catch (error) {
+      console.error("Eroare la marcarea notificărilor ca citite:", error)
+    }
+  }
+
+  async function handleNotificationClick(notif: Notification) {
+    setSelectedNotif(notif) 
+
+    if (notif.isUnread) {
+      try {
+        const updated = await markNotificationAsRead(notif.id)
+        setNotificationsList((current) =>
+          current.map((n) => (n.id === updated.id ? updated : n)),
+        )
+      } catch (error) {
+        console.error("Eroare la marcarea notificării:", error)
+      }
+    }
+  }
+
+  const totalNotifications = notificationsList.length
+  const unreadCount = notificationsList.filter((n) => n.isUnread).length
 
   return (
-    <div className="w-full min-h-screen bg-[#F0F2F5] flex flex-col">
-      {}
-      <header className="w-full bg-[#E3E5E8] px-6 sm:px-10 py-5 flex items-center justify-between border-b border-slate-300/60">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-serif font-bold text-slate-900 tracking-wider">
-            NOTIFICARI
-          </h1>
-          <p className="text-xs text-slate-600 font-medium">
-            Echipa/colegi actualizari recente
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-slate-700 shadow-sm">
-            <Moon size={18} />
-          </button>
-          
-          <button className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-slate-700 shadow-sm relative">
-            <Bell size={18} />
-            {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
-                {unreadCount}
-              </span>
-            )}
-          </button>
-
-          <button className="w-9 h-9 rounded-full bg-[#D1F2E8] flex items-center justify-center text-[#0D9488] shadow-sm">
-            <User size={18} />
-          </button>
-        </div>
-      </header>
-
-      {}
-      <main className="flex-1 p-4 sm:p-8 max-w-5xl w-full mx-auto">
-      </main>
-
-      {}
-      <Card className="border-none shadow-md overflow-hidden bg-white rounded-xl">
-        <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 bg-white py-4 px-6 space-y-0">
+    <div className="w-full bg-[#f3f4f6] relative">
+      <Card className="border border-[#e5e7eb] shadow-[0_1px_6px_rgba(0,0,0,0.04)] overflow-hidden bg-white rounded-xl">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-[#e5e7eb] bg-white py-4 px-6 space-y-0">
           <div className="flex items-center gap-2">
-            <CardTitle className="text-xs sm:text-sm font-semibold text-slate-800">
-              {totalNotifications} notificari
+            <CardTitle className="text-xs sm:text-sm font-semibold text-[#1f2937]">
+              {totalNotifications} notificări
             </CardTitle>
-            <span className="text-xs sm:text-sm font-medium text-slate-500">
+            <span className="text-xs sm:text-sm font-medium text-[#6b7280]">
               {unreadCount} necitite
             </span>
           </div>
-          
-          <Button variant="link" className="text-[#008767] hover:text-[#006b52] p-0 h-auto font-medium text-xs sm:text-sm">
-            Marcheaza toate ca citite
+
+          <Button
+            variant="link"
+            onClick={handleMarkAllAsRead}
+            className="text-[#059669] hover:text-[#047857] p-0 h-auto font-medium text-xs sm:text-sm"
+          >
+            Marchează toate ca citite
           </Button>
         </CardHeader>
-        
+
         <CardContent className="p-0 flex flex-col">
-          {notificationsData.map((notif) => {
-            const Icon = notif.icon
+          {notificationsList.map((notif) => {
+            const Icon = notificationIconMap[notif.type] ?? Bell
             return (
               <div
                 key={notif.id}
+                onClick={() => handleNotificationClick(notif)} 
                 className={cn(
-                  "flex items-center justify-between px-3 sm:px-6 py-3.5 sm:py-4 border-b border-slate-50 last:border-0 transition-colors gap-2 sm:gap-4",
-                  notif.isUnread ? "bg-[#E8F7F3]" : "bg-white"
+                  "flex items-center justify-between px-3 sm:px-6 py-3.5 sm:py-4 border-b border-[#e5e7eb] last:border-0 transition-colors gap-2 sm:gap-4 cursor-pointer",
+                  notif.isUnread ? "bg-[#d1fae5]/30 hover:bg-[#d1fae5]/50" : "bg-white hover:bg-[#f3f4f6]",
                 )}
               >
                 <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
-                  <div className="w-9 h-9 rounded-lg bg-[#CEF3E6] text-[#008767] flex items-center justify-center shrink-0">
-                     <Icon size={16} className="sm:hidden" strokeWidth={2.5} />
+                  <div className="w-9 h-9 rounded-lg bg-[#d1fae5] text-[#059669] flex items-center justify-center shrink-0">
+                    <Icon size={16} className="sm:hidden" strokeWidth={2.5} />
                     <Icon size={18} className="hidden sm:block" strokeWidth={2.5} />
                   </div>
-                  
+
                   <div className="w-2.5 sm:w-4 flex justify-center shrink-0">
-                    {notif.isUnread && (
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#00A884]" />
-                    )}
+                    {notif.isUnread && <div className="w-2.5 h-2.5 rounded-full bg-[#10b981]" />}
                   </div>
-                  
-                  <p className="text-xs sm:text-sm text-slate-700 font-medium leading-snug truncate sm:whitespace-normal">
+
+                  <p className="text-xs sm:text-sm text-[#1f2937] font-medium leading-snug truncate sm:whitespace-normal">
                     {notif.text}
                   </p>
                 </div>
-                
-                <span className="text-[11px] sm:text-xs text-slate-400 sm:text-slate-500 font-medium whitespace-nowrap shrink-0 pl-1">
+
+                <span className="text-[11px] sm:text-xs text-[#6b7280] font-medium whitespace-nowrap shrink-0 pl-1">
                   {notif.time}
                 </span>
               </div>
@@ -173,6 +129,45 @@ export default function NotificationsPage() {
           })}
         </CardContent>
       </Card>
+
+      {}
+      {selectedNotif && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          onClick={() => setSelectedNotif(null)} 
+        >
+          <Card 
+            className="w-full max-w-sm bg-white shadow-xl animate-in zoom-in-95 duration-200" 
+            onClick={(e) => e.stopPropagation()} 
+          >
+            <CardHeader className="flex flex-row items-center justify-between border-b border-[#e5e7eb] pb-3">
+              <CardTitle className="text-sm font-semibold text-[#1f2937]">Detaliu Notificare</CardTitle>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-[#6b7280] hover:text-[#1f2937]" onClick={() => setSelectedNotif(null)}>
+                <X size={18} />
+              </Button>
+            </CardHeader>
+            <CardContent className="pt-5 flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-[#d1fae5] text-[#059669] flex items-center justify-center shrink-0">
+                  {(() => {
+                    const SelectedIcon = notificationIconMap[selectedNotif.type] ?? Bell
+                    return <SelectedIcon size={20} strokeWidth={2.5} />
+                  })()}
+                </div>
+                <span className="text-xs font-medium text-[#6b7280]">{selectedNotif.time}</span>
+              </div>
+              
+              <p className="text-sm text-[#1f2937] leading-relaxed break-words">
+                {selectedNotif.text}
+              </p>
+              
+              <Button className="mt-2 w-full bg-[#059669] hover:bg-[#047857] text-white" onClick={() => setSelectedNotif(null)}>
+                Am înțeles
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
