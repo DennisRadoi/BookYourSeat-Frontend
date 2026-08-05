@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
-import { PanelLeft, CalendarCheck } from "lucide-react"
+import { PanelLeft, CalendarCheck, X } from "lucide-react"
 
 // Small helper that renders an SVG from public/icons/
 const SvgIcon = ({ src, alt, size = 20, className }: { src: string; alt: string; size?: number; className?: string }) => (
@@ -25,12 +25,22 @@ const bottomLinks = [
   { to: "/setari", label: "Setari", iconSrc: "/icons/settings.svg" },
 ]
 
-export default function Sidebar() {
+interface SidebarProps {
+  mobileOpen?: boolean
+  onMobileClose?: () => void
+}
+
+export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
   const { pathname } = useLocation()
   const [collapsed, setCollapsed] = useState(false)
 
+  // Close mobile drawer when navigating
+  function handleLinkClick() {
+    onMobileClose?.()
+  }
+
   return (
-    <div className={cn("sidebar-wrapper", collapsed && "sidebar-wrapper--collapsed")}>
+    <div className={cn("sidebar-wrapper", collapsed && "sidebar-wrapper--collapsed", mobileOpen && "sidebar-wrapper--mobile-open")}>
       {/* ── Sidebar panel ───────────────────────────────── */}
       <aside className="sidebar">
         {/* Logo */}
@@ -39,11 +49,20 @@ export default function Sidebar() {
             <img src="/Logo.svg" alt="BYS logo" width={36} height={36} />
           </div>
           <span className="sidebar__logo-text">BOOK YOUR SEAT</span>
+
+          {/* Mobile close button — only visible on mobile */}
+          <button
+            className="sidebar__mobile-close"
+            onClick={onMobileClose}
+            aria-label="Închide meniu"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         {/* CTA */}
         <div className="sidebar__cta-wrapper">
-          <Link to="/seats" className="sidebar__cta">
+          <Link to="/seats" className="sidebar__cta" onClick={handleLinkClick}>
             <CalendarCheck size={18} />
             {!collapsed && <span>Book a seat</span>}
           </Link>
@@ -59,6 +78,7 @@ export default function Sidebar() {
                 to={to}
                 className={cn("sidebar__link", active && "sidebar__link--active")}
                 title={collapsed ? label : undefined}
+                onClick={handleLinkClick}
               >
                 <SvgIcon src={iconSrc} alt={label} size={20} className="sidebar__link-icon" />
                 {!collapsed && <span className="sidebar__link-label">{label}</span>}
@@ -80,6 +100,7 @@ export default function Sidebar() {
                 to={to}
                 className={cn("sidebar__link", active && "sidebar__link--active")}
                 title={collapsed ? label : undefined}
+                onClick={handleLinkClick}
               >
                 <SvgIcon src={iconSrc} alt={label} size={20} className="sidebar__link-icon" />
                 {!collapsed && <span className="sidebar__link-label">{label}</span>}
@@ -90,6 +111,7 @@ export default function Sidebar() {
       </aside>
 
       {/* ── Toggle — lives OUTSIDE the aside, never clipped ── */}
+      {/* Hidden on mobile (burger in navbar handles it) */}
       <button
         className="sidebar__toggle"
         onClick={() => setCollapsed(!collapsed)}

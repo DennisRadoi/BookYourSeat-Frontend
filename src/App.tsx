@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Routes, Route, Outlet } from "react-router-dom"
 import Sidebar from "@/components/Sidebar"
 import Navbar from "@/components/Navbar"
@@ -16,11 +17,21 @@ import "./App.css"
 
 /** Shell for authenticated app routes: Sidebar + Navbar + page content via <Outlet /> */
 function AppLayout() {
+  const [mobileOpen, setMobileOpen] = useState(false)
+
   return (
     <div className="app-layout">
-      <Sidebar />
+      <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
+      {/* Mobile overlay backdrop */}
+      {mobileOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
       <div className="app-content">
-        <Navbar />
+        <Navbar onBurgerClick={() => setMobileOpen(true)} />
         <main className="app-main">
           <Outlet />
         </main>

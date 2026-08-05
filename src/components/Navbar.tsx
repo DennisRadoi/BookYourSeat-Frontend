@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
-import { Moon, Sun, LogOut, User } from "lucide-react"
+import { Moon, Sun, LogOut, User, Menu } from "lucide-react"
 
 /* ─── Live clock ─────────────────────────────────────────────── */
 function useLiveDateTime() {
@@ -84,7 +84,11 @@ const navMeta: Record<string, NavMeta> = {
 }
 
 /* ─── Navbar ─────────────────────────────────────────────────── */
-export default function Navbar() {
+interface NavbarProps {
+  onBurgerClick?: () => void
+}
+
+export default function Navbar({ onBurgerClick }: NavbarProps) {
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const [dark, setDark] = useState(false)
@@ -97,7 +101,18 @@ export default function Navbar() {
 
   return (
     <header className="navbar">
-      {/* Left — title + subtitle, offset so sidebar toggle doesn't overlap */}
+      {/* Burger button — only visible on mobile */}
+      <button
+        id="navbar-burger-btn"
+        className="navbar__burger"
+        onClick={onBurgerClick}
+        aria-label="Deschide meniu"
+        title="Meniu"
+      >
+        <Menu size={22} />
+      </button>
+
+      {/* Left — title + subtitle */}
       <div className="navbar__left">
         <h1 className="navbar__title">{meta.title}</h1>
         <div className="navbar__subtitle-row">{meta.subtitle()}</div>
