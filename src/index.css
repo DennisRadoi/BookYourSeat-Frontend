@@ -94,7 +94,7 @@
   --color-sb-border: var(--sidebar-border);
 }
 
-:root.dark {
+.dark, :root.dark {
   /* Background */
   --background: #0f172a;
   --foreground: #f8fafc;
@@ -166,6 +166,12 @@
   --shimmer-2: #111827;
   /* day border in dark mode */
   --day-border: var(--border);
+}
+
+/* Ensure dark mode backgrounds/colors apply globally when .dark is present on any ancestor */
+body.dark, html.dark, .dark, .dark #root, .dark body, .dark #root > * {
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
 }
 
 *, *::before, *::after {

@@ -245,7 +245,7 @@ export default function Register() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="mt-1 h-14 w-full rounded-full bg-primary text-white font-semibold shadow-sm"
+            className="mt-1 h-14 w-full rounded-full bg-primary text-[var(--primary-foreground)] font-semibold shadow-sm"
           >
             {isSubmitting ? "Se creează contul..." : "Creează cont"}
           </Button>

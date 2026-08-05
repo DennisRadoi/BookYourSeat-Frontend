@@ -106,12 +106,42 @@ interface NavbarProps {
 export default function Navbar({ onBurgerClick }: NavbarProps) {
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    const stored = localStorage.getItem('theme')
+    if (stored === 'dark') return true
+    if (stored === 'light') return false
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  })
 
   useEffect(() => {
     const root = document.documentElement
-    root.classList.toggle("dark", isDarkMode)
+    if (isDarkMode) {
+      root.classList.add("dark")
+      localStorage.setItem('theme', 'dark')
+    } else {
+      root.classList.remove("dark")
+      localStorage.setItem('theme', 'light')
+    }
   }, [isDarkMode])
+
+  useEffect(() => {
+    // respond to system changes only when user has not set an explicit preference
+    if (typeof window === 'undefined') return
+    const stored = localStorage.getItem('theme')
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const listener = (e: MediaQueryListEvent) => {
+      if (!localStorage.getItem('theme')) {
+        setIsDarkMode(e.matches)
+      }
+    }
+    if (mq.addEventListener) mq.addEventListener('change', listener)
+    else mq.addListener(listener)
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener('change', listener)
+      else mq.removeListener(listener)
+    }
+  }, [])
 
   const meta = pathname.startsWith("/companie/")
     ? { title: "Profil", subtitle: () => <span className="navbar__subtitle">Info coleg</span> }
