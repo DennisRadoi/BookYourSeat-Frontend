@@ -1,5 +1,6 @@
 import { Search, Star } from "lucide-react"
 import { useMemo, useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 type Colleague = {
   name: string
@@ -22,6 +23,7 @@ function initials(name: string) {
 }
 
 export default function CompanyPage() {
+  const navigate = useNavigate()
   const [query, setQuery] = useState("")
   const [officeOnly, setOfficeOnly] = useState(false)
   const [favorites, setFavorites] = useState(() => new Set(colleagues.filter(({ favorite }) => favorite).map(({ name }) => name)))
@@ -115,7 +117,7 @@ export default function CompanyPage() {
                         <Star size={19} fill={isFavorite ? "currentColor" : "none"} aria-hidden="true" />
                       </button>
                     </td>
-                    <td className="py-3 pr-[22px] pl-3 align-middle text-[13px]"><button type="button" className="whitespace-nowrap bg-transparent p-0 text-xs font-bold text-[#11a878] hover:text-[#087a59] hover:underline">Vezi profil</button></td>
+                    <td className="py-3 pr-[22px] pl-3 align-middle text-[13px]"><button type="button" onClick={() => navigate(`/companie/${colleague.name.toLocaleLowerCase("ro-RO").replaceAll(" ", "-")}`)} className="whitespace-nowrap bg-transparent p-0 text-xs font-bold text-[#11a878] hover:text-[#087a59] hover:underline">Vezi profil</button></td>
                   </tr>
                 )
               })}
