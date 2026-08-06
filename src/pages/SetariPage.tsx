@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Check } from "lucide-react"
-import { getUserSettings, updateUserSettings } from "@/services"
+import { changeCurrentUserPassword, getUserSettings, updateUserSettings } from "@/services"
 import { availableFloors, availableWorkspaceTypes, availableWeekdays } from "@/data"
 import { ToggleSwitch } from "@/components/common/ToggleSwitch"
 import { PasswordField } from "@/components/common/PasswordField"
@@ -33,7 +33,12 @@ export default function SetariPage() {
   const [emailConfirmation, setEmailConfirmation] = useState(true)
   const [dailyReminder, setDailyReminder] = useState(true)
   const [nearbyColleague, setNearbyColleague] = useState(false)
+  const [startTime, setStartTime] = useState("09:00")
+  const [endTime, setEndTime] = useState("18:00")
   const [showPassword, setShowPassword] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [passwordMessage, setPasswordMessage] = useState("")
   const [isSaved, setIsSaved] = useState(false)
 
   useEffect(() => {
@@ -42,6 +47,8 @@ export default function SetariPage() {
         const settings = await getUserSettings()
         setEmailConfirmation(settings.notificationsEnabled)
         setDailyReminder(settings.autoReserve)
+        setStartTime(settings.defaultStartTime)
+        setEndTime(settings.defaultEndTime)
       } catch (error) {
         console.error("Eroare la încărcarea setărilor:", error)
       }
@@ -66,11 +73,24 @@ export default function SetariPage() {
       await updateUserSettings({
         notificationsEnabled: emailConfirmation,
         autoReserve: dailyReminder,
+        defaultStartTime: startTime,
+        defaultEndTime: endTime,
       })
       setIsSaved(true)
       setTimeout(() => setIsSaved(false), 2500)
     } catch (error) {
       console.error("Eroare la salvarea setărilor:", error)
+    }
+  }
+
+  async function handleChangePassword() {
+    try {
+      await changeCurrentUserPassword(currentPassword, newPassword)
+      setCurrentPassword("")
+      setNewPassword("")
+      setPasswordMessage("Parola a fost schimbată cu succes.")
+    } catch (error) {
+      setPasswordMessage(error instanceof Error ? error.message : "Parola nu a putut fi schimbată.")
     }
   }
 
@@ -150,7 +170,8 @@ export default function SetariPage() {
                   <input
                     type="time"
                     aria-label="Ora început"
-                    defaultValue="09:00"
+                    value={startTime}
+                    onChange={(event) => setStartTime(event.target.value)}
                     className="mt-1 block h-8 w-full rounded-lg border border-[var(--border)] bg-[var(--muted)] px-2 text-xs text-[var(--foreground)] outline-none focus:border-[var(--primary)]"
                   />
                 </label>
@@ -159,7 +180,8 @@ export default function SetariPage() {
                   <input
                     type="time"
                     aria-label="Ora sfârșit"
-                    defaultValue="18:00"
+                    value={endTime}
+                    onChange={(event) => setEndTime(event.target.value)}
                     className="mt-1 block h-8 w-full rounded-lg border border-[var(--border)] bg-[var(--muted)] px-2 text-xs text-[var(--foreground)] outline-none focus:border-[var(--primary)]"
                   />
                 </label>
@@ -177,6 +199,8 @@ export default function SetariPage() {
                 placeholder="••••••••"
                 showPassword={showPassword}
                 onToggle={() => setShowPassword((show) => !show)}
+                value={currentPassword}
+                onChange={setCurrentPassword}
               />
               <div className="mt-3">
                 <PasswordField
@@ -184,14 +208,18 @@ export default function SetariPage() {
                   placeholder="Minim 8 caractere"
                   showPassword={showPassword}
                   onToggle={() => setShowPassword((show) => !show)}
+                  value={newPassword}
+                  onChange={setNewPassword}
                 />
               </div>
               <button
                 type="button"
+                onClick={handleChangePassword}
                 className="mt-4 h-9 w-full rounded-lg bg-[var(--primary)] text-xs font-bold text-[var(--primary-foreground)] transition hover:bg-[var(--sidebar-accent-hover)]"
               >
                 Schimbă parola
               </button>
+              {passwordMessage && <p role="status" className="mt-2 text-[10px] text-[var(--muted-foreground)]">{passwordMessage}</p>}
             </div>
           </fieldset>
         </div>

@@ -31,5 +31,5 @@ export default function CompanyPage() {
     catch (error) { console.error("Eroare la actualizarea favoritului:", error) }
   }
 
-  return <section className="min-h-screen bg-[var(--background)] text-[var(--foreground)]"><div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8"><CompanyToolbar query={query} filters={filters} floors={floors} filtersOpen={filtersOpen} onQueryChange={setQuery} onFiltersChange={setFilters} onFiltersOpenChange={setFiltersOpen} /><ColleaguesTable colleagues={visibleColleagues} onToggleFavorite={handleToggleFavorite} onViewProfile={(colleague) => navigate(`/companie/${colleague.name.toLocaleLowerCase("ro-RO").replaceAll(" ", "-")}`)} /></div></section>
+  return <section className="min-h-screen bg-[var(--background)] text-[var(--foreground)]"><div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8"><CompanyToolbar query={query} filters={filters} floors={floors} filtersOpen={filtersOpen} onQueryChange={setQuery} onFiltersChange={setFilters} onFiltersOpenChange={setFiltersOpen} /><ColleaguesTable colleagues={visibleColleagues} onToggleFavorite={handleToggleFavorite} onViewProfile={(colleague) => navigate(`/companie/${colleague.id}`)} /></div></section>
 }

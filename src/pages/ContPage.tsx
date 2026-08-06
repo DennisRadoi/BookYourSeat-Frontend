@@ -11,6 +11,7 @@ export default function ContPage() {
   const [newPreference, setNewPreference] = useState("")
   const [addingPreference, setAddingPreference] = useState(false)
   const [savedSuccess, setSavedSuccess] = useState(false)
+  const [saveError, setSaveError] = useState(false)
   const [form, setForm] = useState({
     name: "Claudiu Ciupitu",
     email: "claudiu.ciupitu@bys.ro",
@@ -39,24 +40,21 @@ export default function ContPage() {
 
   async function handleToggleEdit() {
     if (editing && user) {
-      const nameParts = form.name.split(" ")
-      const firstName = nameParts[0] || user.firstName
-      const lastName = nameParts.slice(1).join(" ") || user.lastName
+      try {
+        setSaveError(false)
+        const nameParts = form.name.split(" ")
+        const firstName = nameParts[0] || user.firstName
+        const lastName = nameParts.slice(1).join(" ") || user.lastName
 
-      await updateUserProfile(user.id, {
-        firstName,
-        lastName,
-        email: form.email,
-        department: form.department,
-        domiciliu: form.domiciliu,
-      })
-
-      await updateUserPreferences(user.id, {
-        workPreferences: preferences,
-      })
-
-      setSavedSuccess(true)
-      setTimeout(() => setSavedSuccess(false), 2500)
+        await updateUserProfile(user.id, { firstName, lastName, email: form.email, department: form.department, domiciliu: form.domiciliu })
+        await updateUserPreferences(user.id, { workPreferences: preferences })
+        setSavedSuccess(true)
+        setTimeout(() => setSavedSuccess(false), 2500)
+      } catch (error) {
+        console.error("Nu s-a putut salva profilul:", error)
+        setSaveError(true)
+        return
+      }
     }
     setEditing((val) => !val)
   }
@@ -101,6 +99,7 @@ export default function ContPage() {
           <Check size={14} /> Profilul și adresa de domiciliu au fost salvate cu succes! AI-ul va recalcula traseul.
         </div>
       )}
+      {saveError && <div role="alert" className="flex items-center gap-2 rounded-lg border border-[var(--destructive)]/30 bg-[var(--destructive)]/10 p-3 text-xs font-semibold text-[var(--destructive)]">Profilul nu a putut fi salvat. Verifică datele și încearcă din nou.</div>}
 
       <section className="rounded-xl bg-[var(--card)] p-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)] sm:p-5">
         <h3 className="text-xs font-bold text-[var(--foreground)]">Informații personale & Domiciliu (Ruta AI)</h3>

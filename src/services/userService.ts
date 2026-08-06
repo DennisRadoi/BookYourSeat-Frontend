@@ -2,6 +2,7 @@ import { users, currentUserId } from "@/data"
 import type { User, UserPreferences } from "@/types"
 
 const delay = (ms = 150) => new Promise((resolve) => setTimeout(resolve, ms))
+let currentPassword = "password123"
 
 // TODO: Replace mock data with backend API integration
 export async function getCurrentUser(): Promise<User> {
@@ -43,4 +44,12 @@ export async function updateUserPreferences(
     ...preferenceUpdates,
   }
   return structuredClone(users[userIndex])
+}
+
+// Mock implementation; replace with an authenticated backend endpoint in production.
+export async function changeCurrentUserPassword(current: string, next: string): Promise<void> {
+  await delay()
+  if (current !== currentPassword) throw new Error("Parola curentă nu este corectă.")
+  if (next.length < 8) throw new Error("Parola nouă trebuie să conțină minimum 8 caractere.")
+  currentPassword = next
 }
