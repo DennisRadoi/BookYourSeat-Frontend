@@ -1,4 +1,4 @@
-import { useState, type ComponentType, type SVGProps } from "react"
+import { useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/utils"
 import {
@@ -11,18 +11,17 @@ import {
   BarChart3,
   User,
   Settings,
+  type LucideIcon,
 } from "lucide-react"
 
-type IconComponent = ComponentType<SVGProps<SVGSVGElement>>
-
-const navLinks: Array<{ to: string; label: string; Icon: IconComponent }> = [
+const navLinks: Array<{ to: string; label: string; Icon: LucideIcon }> = [
   { to: "/", label: "Dashboard", Icon: Home },
   { to: "/companie", label: "Companie", Icon: Building2 },
   { to: "/notificari", label: "Notificari", Icon: Bell },
   { to: "/analytics", label: "Analytics", Icon: BarChart3 },
 ]
 
-const bottomLinks: Array<{ to: string; label: string; Icon: IconComponent }> = [
+const bottomLinks: Array<{ to: string; label: string; Icon: LucideIcon }> = [
   { to: "/cont", label: "Cont", Icon: User },
   { to: "/setari", label: "Setari", Icon: Settings },
 ]

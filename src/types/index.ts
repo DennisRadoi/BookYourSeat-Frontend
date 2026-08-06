@@ -1,7 +1,7 @@
 
 export type ReservationStatus = "confirmed" | "pending" | "completed" | "cancelled"
-export type SeatArea = "window" | "quiet" | "team" | "open"
-export type SeatType = "standard" | "standing" | "phone-booth"
+export type SeatArea = "window" | "quiet" | "team" | "open" | "focus" | "lounge"
+export type SeatType = "standard" | "standing" | "phone-booth" | "armchair" | "sofa"
 export type Weekday = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday"
 
 export interface UserPreferences {
@@ -26,6 +26,13 @@ export interface User {
   preferences: UserPreferences
 }
 
+export type SeatRow = "A" | "B" | "C" | string
+export type SeatPosition = "top" | "bottom" | "left" | "right"
+export type RoomZoneType = "birouri" | "conferinte"
+export type RecurrenceType = "niciuna" | "zilnic" | "saptamanal" | "lunar"
+
+export type SeatGroup = "meeting" | "workstation" | "workspace" | "side" | "lounge" | "small-table" | "sofa-top" | "sofa-right" | "table-left" | "table-right"
+
 export interface Seat {
   id: number
   code: string
@@ -33,12 +40,31 @@ export interface Seat {
   type: SeatType
   hasMonitor: boolean
   isAvailable: boolean
+  row?: SeatRow
+  position?: SeatPosition
+  group?: SeatGroup
+  occupiedBy?: string
+}
+
+export type RoomLayoutType = "office" | "conference" | "events" | "small-meeting" | "standup" | "openspace" | "relaxare"
+
+export interface Room {
+  id: number
+  name: string
+  type: RoomZoneType
+  layout?: RoomLayoutType
+  floorId: number
+  building: string
+  hasTv?: boolean
+  hasWhiteboard?: boolean
+  seats: Seat[]
 }
 
 export interface Floor {
   id: number
   number: number
   name: string
+  rooms?: Room[]
   seats: Seat[]
 }
 
@@ -58,6 +84,22 @@ export interface Location {
   city: string
   building: string
   floors: Floor[]
+}
+
+export interface BookingState {
+  date: Date | null
+  startTime: string
+  endTime: string
+  recurrence: RecurrenceType
+  repeatEvery: number
+  endsMode: "niciodata" | "la_data" | "dupa"
+  endsOnDate: string
+  endsAfterCount: number
+  selectedBuilding: string
+  selectedFloorId: number
+  selectedZoneType: RoomZoneType
+  selectedRoomId?: number
+  selectedSeat: Seat | null
 }
 
 export interface Reservation {
