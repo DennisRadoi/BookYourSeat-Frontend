@@ -229,3 +229,5 @@ export interface AIInsightsData {
   seatRec: SeatRecommendation
   history: HistoryInsight
 }
+
+export * from "./analytics"
