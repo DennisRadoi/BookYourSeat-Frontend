@@ -1,6 +1,8 @@
 import { CalendarDays, Clock3, MapPin, Star, Users } from "lucide-react"
 import { useParams } from "react-router-dom"
+import { useState } from "react"
 import { ProfileMetricCard } from "@/components/profile/ProfileMetricCard"
+import { InviteColleagueDialog } from "@/components/profile/InviteColleagueDialog"
 
 const profiles = {
   "ciupitu-claudiu": {
@@ -16,6 +18,7 @@ const days = ["Lu", "Ma", "Mi", "Jo", "Vi", "Sâ", "Du"]
 
 export default function ColleagueProfilePage() {
   const { colleagueId } = useParams()
+  const [inviteOpen, setInviteOpen] = useState(false)
   const colleague = profiles[colleagueId as keyof typeof profiles] ?? profiles["ciupitu-claudiu"]
   const initials = colleague.name.split(" ").map((part) => part[0]).join("").slice(0, 2)
 
@@ -28,7 +31,7 @@ export default function ColleagueProfilePage() {
             <div className="px-4 pb-4 sm:px-5 sm:pb-5">
               <div className="-mt-5 flex flex-wrap items-start justify-between gap-3">
                 <div className="grid size-12 place-items-center rounded-lg border-2 border-[var(--primary)] bg-[var(--secondary)] text-sm font-bold text-[var(--secondary-foreground)] shadow-sm">{initials}</div>
-                <button type="button" className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[var(--primary)] px-3 text-[10px] font-bold text-[var(--primary-foreground)] transition hover:bg-[var(--sidebar-accent-hover)]"><Users size={13} />Invită la muncă</button>
+                <button type="button" onClick={() => setInviteOpen(true)} className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[var(--primary)] px-3 text-[10px] font-bold text-[var(--primary-foreground)] transition hover:bg-[var(--sidebar-accent-hover)]"><Users size={13} />Invită la muncă</button>
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <h2 className="break-words text-base font-bold text-[var(--foreground)]">{colleague.name}</h2>
@@ -83,6 +86,7 @@ export default function ColleagueProfilePage() {
           </article>
         </div>
       </div>
+      <InviteColleagueDialog colleagueName={colleague.name} open={inviteOpen} onClose={() => setInviteOpen(false)} />
     </section>
   )
 }
