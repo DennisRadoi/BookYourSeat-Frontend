@@ -1,32 +1,52 @@
 import { useEffect, useState, type ReactElement } from "react"
+import { useLocation } from "react-router-dom"
 import { DateTimeSelectionStep, RoomSeatSelectionStep } from "@/components/seats"
 import { getLocations } from "@/services/locationService"
 import { createReservation } from "@/services/reservationService"
 import { formatDateIso } from "@/utils"
 import type { Location, Seat, RoomZoneType, RecurrenceType } from "@/types"
 
-export default function SeatsPage(): ReactElement {
-  // Booking step: "datetime" (Step 1) or "seat" (Step 2)
-  const [currentStep, setCurrentStep] = useState<"datetime" | "seat">("datetime")
+// Shape that the dashboard (or any caller) can pass via router state
+// to jump straight to the map step with pre-filled context.
+export interface SeatsPageRouterState {
+  jumpToSeat?: boolean
+  date?: string          // "YYYY-MM-DD"
+  startTime?: string
+  endTime?: string
+  building?: string
+  floorId?: number
+}
 
-  // Schedule state
+export default function SeatsPage(): ReactElement {
+  const routerLocation = useLocation()
+  const routerState = (routerLocation.state ?? {}) as SeatsPageRouterState
+
+  // Booking step: "datetime" (Step 1) or "seat" (Step 2)
+  const [currentStep, setCurrentStep] = useState<"datetime" | "seat">(
+    routerState.jumpToSeat ? "seat" : "datetime",
+  )
+
+  // Schedule state – pre-fill from router state if provided
   const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
+    if (routerState.date) return new Date(`${routerState.date}T12:00:00`)
     const tomorrow = new Date()
     tomorrow.setDate(tomorrow.getDate() + 1)
     return tomorrow
   })
-  const [startTime, setStartTime] = useState<string>("09:00")
-  const [endTime, setEndTime] = useState<string>("10:00")
+  const [startTime, setStartTime] = useState<string>(routerState.startTime ?? "09:00")
+  const [endTime, setEndTime] = useState<string>(routerState.endTime ?? "10:00")
   const [recurrence, setRecurrence] = useState<RecurrenceType>("lunar")
   const [repeatEvery, setRepeatEvery] = useState<number>(1)
   const [endsMode, setEndsMode] = useState<"niciodata" | "la_data" | "dupa">("niciodata")
   const [endsOnDate, setEndsOnDate] = useState<string>("")
   const [endsAfterCount, setEndsAfterCount] = useState<number>(1)
 
-  // Room & Building state
+  // Room & Building state – pre-fill from router state if provided
   const [locations, setLocations] = useState<Location[]>([])
-  const [selectedBuilding, setSelectedBuilding] = useState<string>("Corp T1")
-  const [selectedFloorId, setSelectedFloorId] = useState<number>(1)
+  const [selectedBuilding, setSelectedBuilding] = useState<string>(
+    routerState.building ?? "Corp T1",
+  )
+  const [selectedFloorId, setSelectedFloorId] = useState<number>(routerState.floorId ?? 1)
   const [selectedZoneType, setSelectedZoneType] = useState<RoomZoneType>("birouri")
   const [selectedRoomId, setSelectedRoomId] = useState<number | undefined>(undefined)
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null)
@@ -104,7 +124,7 @@ export default function SeatsPage(): ReactElement {
                   : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
               }`}
             >
-              1. Dată & Oră
+              1. Dată &amp; Oră
             </button>
             <button
               type="button"

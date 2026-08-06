@@ -69,3 +69,16 @@ export async function cancelReservation(reservationId: number): Promise<boolean>
   }
   return false
 }
+
+export async function updateReservation(
+  reservationId: number,
+  updates: Partial<Pick<Reservation, "date" | "startTime" | "endTime" | "status">>,
+): Promise<Reservation | null> {
+  await delay()
+  const reservation = reservations.find((r) => r.id === reservationId)
+  if (reservation) {
+    Object.assign(reservation, updates)
+    return structuredClone(reservation)
+  }
+  return null
+}
