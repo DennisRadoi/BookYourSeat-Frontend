@@ -3,11 +3,11 @@ import { useParams } from "react-router-dom"
 
 const profiles = {
   "ciupitu-claudiu": {
-    name: "Claudiu Ciupițu", role: "Frontend Developer · Engineering", email: "claudiu.ciupitu@company.com", location: "Azi la: Loc 7 · Corp A · Etaj 1", floor: "Etaj 1", reservations: "4", start: "09:00", department: "Engineering",
+    name: "Claudiu Ciupițu", role: "Frontend Developer · Engineering", email: "claudiu.ciupitu@company.com", location: "Azi la: Loc W1 · Corp T1 · Etaj 1", floor: "Etaj 1", reservations: "4", start: "09:00", department: "Engineering",
   },
-  "ruxandra-bituleanu": { name: "Ruxandra Bituleanu", role: "Product Designer · Product", email: "ruxandra.bituleanu@company.com", location: "Azi la: Stand-up Chat room · T1", floor: "Etaj 1", reservations: "6", start: "09:30", department: "Product" },
+  "ruxandra-bituleanu": { name: "Ruxandra Bituleanu", role: "Product Designer · Product", email: "ruxandra.bituleanu@company.com", location: "Azi la: Stand-up Chat room · Corp T1", floor: "Etaj 1", reservations: "6", start: "09:30", department: "Product" },
   "denis-radoi": { name: "Denis Radoi", role: "Backend Engineer · Engineering", email: "denis.radoi@company.com", location: "Lucrează remote azi", floor: "Remote", reservations: "3", start: "09:00", department: "Engineering" },
-  "ana-hirceanu": { name: "Ana Hirceanu", role: "Frontend Engineer · Engineering", email: "ana.hirceanu@company.com", location: "Azi la: Loc 404 · T2", floor: "Etaj 2", reservations: "5", start: "09:00", department: "Engineering" },
+  "ana-hirceanu": { name: "Ana Hirceanu", role: "Frontend Engineer · Engineering", email: "ana.hirceanu@company.com", location: "Azi la: 404 · Corp T2", floor: "Etaj 1", reservations: "5", start: "09:00", department: "Engineering" },
   "bunea-george": { name: "Bunea George", role: "QA · Engineering", email: "bunea.george@company.com", location: "Lucrează remote azi", floor: "Remote", reservations: "2", start: "09:00", department: "Engineering" },
 }
 
@@ -50,9 +50,9 @@ export default function ColleagueProfilePage() {
           <article className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[0_1px_6px_rgba(0,0,0,0.04)] sm:p-5">
             <h3 className="text-xs font-bold text-[var(--foreground)]">Rezervări recente</h3>
             <div className="mt-3 space-y-2">
-              <Reservation date="Luni, 28 Iulie" place="Loc 7 · Corp A · Etaj 1" time="09:00 – 18:00" />
-              <Reservation date="Joi, 25 Iulie" place="Loc 7 · Corp A · Etaj 1" time="09:00 – 17:30" />
-              <Reservation date="Luni, 21 Iulie" place="Loc 12 · Corp B · Parter" time="10:00 – 18:00" />
+              <Reservation date="Luni, 28 Iulie" place="Loc W1 · Corp T1 · Etaj 1" time="09:00 – 18:00" />
+              <Reservation date="Joi, 25 Iulie" place="Loc W1 · Corp T1 · Etaj 1" time="09:00 – 17:30" />
+              <Reservation date="Luni, 21 Iulie" place="Loc W3 · Corp T2 · Parter" time="10:00 – 18:00" />
             </div>
           </article>
         </div>
