@@ -173,7 +173,6 @@ Răspunde STRICT cu un JSON valid (fără comentarii, markdown suplimentar sau a
 export async function getAIInsightsData(ctx: InsightContext): Promise<AIInsightsData> {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined
 
-  // Preluăm vremea reală live pentru București în paralel
   const liveWeatherPromise = fetchLiveWeather().catch(() => defaultInsights.weather)
 
   if (!apiKey) {

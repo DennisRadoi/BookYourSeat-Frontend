@@ -63,7 +63,11 @@ export default function SetariPage() {
   ) {
     setter((current) => {
       const next = new Set(current)
-      next.has(item) ? next.delete(item) : next.add(item)
+      if (next.has(item)) {
+        next.delete(item)
+      } else {
+        next.add(item)
+      }
       return next
     })
   }

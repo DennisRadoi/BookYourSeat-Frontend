@@ -1,10 +1,16 @@
 import { CalendarDays, Clock3, MapPin, Star, Users } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { InviteColleagueDialog } from "@/components/profile/InviteColleagueDialog"
-import { ProfileMetricCard } from "@/components/profile/ProfileMetricCard"
-import { getColleagues } from "@/services"
-import type { Colleague } from "@/types"
+
+const profiles = {
+  "ciupitu-claudiu": {
+    name: "Claudiu Ciupițu", role: "Frontend Developer · Engineering", email: "claudiu.ciupitu@company.com", location: "Azi la: Loc W1 · Corp T1 · Etaj 1", floor: "Etaj 1", reservations: "4", start: "09:00", department: "Engineering",
+  },
+  "ruxandra-bituleanu": { name: "Ruxandra Bituleanu", role: "Product Designer · Product", email: "ruxandra.bituleanu@company.com", location: "Azi la: Stand-up Chat room · Corp T1", floor: "Etaj 1", reservations: "6", start: "09:30", department: "Product" },
+  "denis-radoi": { name: "Denis Radoi", role: "Backend Engineer · Engineering", email: "denis.radoi@company.com", location: "Lucrează remote azi", floor: "Remote", reservations: "3", start: "09:00", department: "Engineering" },
+  "ana-hirceanu": { name: "Ana Hirceanu", role: "Frontend Engineer · Engineering", email: "ana.hirceanu@company.com", location: "Azi la: 404 · Corp T2", floor: "Etaj 1", reservations: "5", start: "09:00", department: "Engineering" },
+  "bunea-george": { name: "Bunea George", role: "QA · Engineering", email: "bunea.george@company.com", location: "Lucrează remote azi", floor: "Remote", reservations: "2", start: "09:00", department: "Engineering" },
+}
 
 const days = ["Lu", "Ma", "Mi", "Jo", "Vi", "Sâ", "Du"]
 
@@ -20,8 +26,15 @@ export default function ColleagueProfilePage() {
     getColleagues().then((colleagues) => setColleague(colleagues.find((item) => item.id === id) ?? null)).catch((error) => console.error("Nu s-a putut încărca profilul colegului:", error)).finally(() => setLoading(false))
   }, [colleagueId])
 
-  if (loading) return <div className="grid min-h-[280px] place-items-center text-sm text-[var(--muted-foreground)]">Se încarcă profilul colegului…</div>
-  if (!colleague) return <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)]">Colegul căutat nu a fost găsit.</div>
+          <article className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[0_1px_6px_rgba(0,0,0,0.04)] sm:p-5">
+            <h3 className="text-xs font-bold text-[var(--foreground)]">Rezervări recente</h3>
+            <div className="mt-3 space-y-2">
+              <Reservation date="Luni, 28 Iulie" place="Loc W1 · Corp T1 · Etaj 1" time="09:00 – 18:00" />
+              <Reservation date="Joi, 25 Iulie" place="Loc W1 · Corp T1 · Etaj 1" time="09:00 – 17:30" />
+              <Reservation date="Luni, 21 Iulie" place="Loc W3 · Corp T2 · Parter" time="10:00 – 18:00" />
+            </div>
+          </article>
+        </div>
 
   const initials = colleague.initials || colleague.name.split(" ").map((part) => part[0]).join("").slice(0, 2)
   const location = colleague.status === "Remote" ? "Lucrează remote azi" : `Azi la: ${colleague.floor}`

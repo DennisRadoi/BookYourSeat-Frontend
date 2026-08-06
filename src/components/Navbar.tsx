@@ -129,6 +129,7 @@ export default function Navbar({ onBurgerClick }: NavbarProps) {
     // respond to system changes only when user has not set an explicit preference
     if (typeof window === 'undefined') return
     const stored = localStorage.getItem('theme')
+    if (stored) return
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     const listener = (e: MediaQueryListEvent) => {
       if (!localStorage.getItem('theme')) {
