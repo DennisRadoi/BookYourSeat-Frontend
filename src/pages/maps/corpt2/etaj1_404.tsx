@@ -4,7 +4,8 @@ import {
   SeatNode,
   TvDisplay,
   WhiteboardMarker,
-} from "@/components/seats"
+  useSeatCounts,
+} from "@/pages/maps/components"
 import type { Seat } from "@/types"
 
 export interface Etaj1_404Props {
@@ -19,11 +20,10 @@ export interface Etaj1_404Props {
 }
 
 /**
- * Harta Sala 404 (Corp T2, Etaj 1):
- * Folosește RoomContainer, TvDisplay, WhiteboardMarker și SeatNode
+ * Harta SALA 404 (Corp T2 - Etaj 1)
  */
 export function Etaj1_404({
-  roomName = "404",
+  roomName = "SALA 404",
   seats,
   selectedSeat,
   onSeatSelect,
@@ -38,27 +38,7 @@ export function Etaj1_404({
     return map
   }, [seats])
 
-  const { availableCount, occupiedCount, selectedCount } = useMemo(() => {
-    let available = 0
-    let occupied = 0
-    let selected = 0
-
-    seats.forEach((s) => {
-      if (selectedSeat && selectedSeat.id === s.id) {
-        selected++
-      } else if (s.isAvailable) {
-        available++
-      } else {
-        occupied++
-      }
-    })
-
-    return {
-      availableCount: available,
-      occupiedCount: occupied,
-      selectedCount: selected,
-    }
-  }, [seats, selectedSeat])
+  const { availableCount, occupiedCount, selectedCount } = useSeatCounts(seats, selectedSeat)
 
   const isHighlighted = (seat: Seat) => {
     if (!searchQuery.trim()) return true

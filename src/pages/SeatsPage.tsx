@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactElement } from "react"
 import { useLocation } from "react-router-dom"
-import { DateTimeSelectionStep, RoomSeatSelectionStep } from "@/components/seats"
+import { DateTimeSelectionStep, RoomSeatSelectionStep } from "@/pages/maps/components"
 import { getLocations } from "@/services/locationService"
 import { createReservation } from "@/services/reservationService"
 import { formatDateIso } from "@/utils"

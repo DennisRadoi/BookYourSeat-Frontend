@@ -4,7 +4,8 @@ import {
   SeatNode,
   SofaUnit,
   CoffeeTableUnit,
-} from "@/components/seats"
+  useSeatCounts,
+} from "@/pages/maps/components"
 import type { Seat } from "@/types"
 
 export interface ParterRelaxareProps {
@@ -33,6 +34,8 @@ export function ParterRelaxare({
     return map
   }, [seats])
 
+  const { availableCount, occupiedCount, selectedCount } = useSeatCounts(seats, selectedSeat)
+
   const topSofaSeats = useMemo(() => {
     return ["C1", "C2", "C3", "C4"]
       .map((c) => seatMap.get(c))
@@ -44,28 +47,6 @@ export function ParterRelaxare({
       .map((c) => seatMap.get(c))
       .filter((s): s is Seat => Boolean(s))
   }, [seatMap])
-
-  const { availableCount, occupiedCount, selectedCount } = useMemo(() => {
-    let available = 0
-    let occupied = 0
-    let selected = 0
-
-    seats.forEach((s) => {
-      if (selectedSeat && selectedSeat.id === s.id) {
-        selected++
-      } else if (s.isAvailable) {
-        available++
-      } else {
-        occupied++
-      }
-    })
-
-    return {
-      availableCount: available,
-      occupiedCount: occupied,
-      selectedCount: selected,
-    }
-  }, [seats, selectedSeat])
 
   const isHighlighted = (seat: Seat) => {
     if (!searchQuery.trim()) return true

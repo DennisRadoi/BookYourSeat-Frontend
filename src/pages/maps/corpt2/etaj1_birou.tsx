@@ -1,5 +1,5 @@
 import { useMemo, type ReactElement } from "react"
-import { RoomContainer, DeskPod } from "@/components/seats"
+import { RoomContainer, DeskPod, useSeatCounts } from "@/pages/maps/components"
 import type { Seat } from "@/types"
 
 export interface Etaj1_BirouProps {
@@ -12,8 +12,7 @@ export interface Etaj1_BirouProps {
 }
 
 /**
- * Harta Birou Open Space (Corp T2, Etaj 1):
- * Folosește RoomContainer și DeskPod reutilizabile din @/components/seats
+ * Harta BIROU OPEN SPACE (Corp T2 - Etaj 1)
  */
 export function Etaj1_Birou({
   roomName = "BIROU OPEN SPACE",
@@ -29,27 +28,7 @@ export function Etaj1_Birou({
     return map
   }, [seats])
 
-  const { availableCount, occupiedCount, selectedCount } = useMemo(() => {
-    let available = 0
-    let occupied = 0
-    let selected = 0
-
-    seats.forEach((s) => {
-      if (selectedSeat && selectedSeat.id === s.id) {
-        selected++
-      } else if (s.isAvailable) {
-        available++
-      } else {
-        occupied++
-      }
-    })
-
-    return {
-      availableCount: available,
-      occupiedCount: occupied,
-      selectedCount: selected,
-    }
-  }, [seats, selectedSeat])
+  const { availableCount, occupiedCount, selectedCount } = useSeatCounts(seats, selectedSeat)
 
   const isHighlighted = (seat: Seat) => {
     if (!searchQuery.trim()) return true

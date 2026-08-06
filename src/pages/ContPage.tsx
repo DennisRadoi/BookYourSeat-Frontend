@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { getCurrentUser, updateUserProfile, updateUserPreferences } from "@/services"
 import type { User } from "@/types"
 import { ProfileField } from "@/components/profile/ProfileField"
+import { AlertBanner } from "@/components/common"
 
 export default function ContPage() {
   const [user, setUser] = useState<User | null>(null)
@@ -95,11 +96,15 @@ export default function ContPage() {
       </div>
 
       {savedSuccess && (
-        <div className="rounded-lg bg-[var(--secondary)] border border-[var(--success)] p-3 text-xs text-[var(--primary)] font-semibold flex items-center gap-2">
-          <Check size={14} /> Profilul și adresa de domiciliu au fost salvate cu succes! AI-ul va recalcula traseul.
-        </div>
+        <AlertBanner variant="success">
+          Profilul și adresa de domiciliu au fost salvate cu succes! AI-ul va recalcula traseul.
+        </AlertBanner>
       )}
-      {saveError && <div role="alert" className="flex items-center gap-2 rounded-lg border border-[var(--destructive)]/30 bg-[var(--destructive)]/10 p-3 text-xs font-semibold text-[var(--destructive)]">Profilul nu a putut fi salvat. Verifică datele și încearcă din nou.</div>}
+      {saveError && (
+        <AlertBanner variant="error">
+          Profilul nu a putut fi salvat. Verifică datele și încearcă din nou.
+        </AlertBanner>
+      )}
 
       <section className="rounded-xl bg-[var(--card)] p-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)] sm:p-5">
         <h3 className="text-xs font-bold text-[var(--foreground)]">Informații personale & Domiciliu (Ruta AI)</h3>
@@ -132,4 +137,3 @@ export default function ContPage() {
     </section>
   )
 }
-

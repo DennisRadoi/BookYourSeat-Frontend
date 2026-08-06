@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Modal, ModalHeader, ModalBody, ModalFooter } from "@/components/common"
 import { cn } from "@/utils"
 import {
   Star,
@@ -10,7 +11,6 @@ import {
   Users,
   CloudRain,
   Repeat,
-  X,
   type LucideIcon,
 } from "lucide-react"
 import { getNotifications, markAllNotificationsAsRead, markNotificationAsRead } from "@/services"
@@ -131,49 +131,35 @@ export default function NotificationsPage() {
 
       {/* Modal Detaliu Notificare */}
       {selectedNotif && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200"
-          onClick={() => setSelectedNotif(null)}
-        >
-          <Card
-            className="w-full max-w-sm bg-[var(--card)] shadow-xl animate-in zoom-in-95 duration-200 border border-[var(--border)] rounded-xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <CardHeader className="flex flex-row items-center justify-between border-b border-[var(--border)] pb-3 pt-4 px-5">
-              <CardTitle className="text-sm font-semibold text-[var(--foreground)]">Detaliu Notificare</CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-                onClick={() => setSelectedNotif(null)}
-              >
-                <X size={18} />
-              </Button>
-            </CardHeader>
-            <CardContent className="pt-5 px-5 pb-5 flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] flex items-center justify-center shrink-0">
-                  {(() => {
-                    const SelectedIcon = notificationIconMap[selectedNotif.type] ?? Bell
-                    return <SelectedIcon size={20} strokeWidth={2.5} />
-                  })()}
-                </div>
-                <span className="text-xs font-medium text-[var(--muted-foreground)]">{selectedNotif.time}</span>
+        <Modal onClose={() => setSelectedNotif(null)} maxWidth="sm">
+          <ModalHeader
+            title="Detaliu Notificare"
+            onClose={() => setSelectedNotif(null)}
+          />
+          <ModalBody>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] flex items-center justify-center shrink-0">
+                {(() => {
+                  const SelectedIcon = notificationIconMap[selectedNotif.type] ?? Bell
+                  return <SelectedIcon size={20} strokeWidth={2.5} />
+                })()}
               </div>
+              <span className="text-xs font-medium text-[var(--muted-foreground)]">{selectedNotif.time}</span>
+            </div>
 
-              <p className="text-sm text-[var(--foreground)] leading-relaxed break-words">
-                {selectedNotif.text}
-              </p>
-
-              <Button
-                className="mt-2 w-full bg-[var(--primary)] hover:bg-[var(--sidebar-accent-hover)] text-[var(--primary-foreground)]"
-                onClick={() => setSelectedNotif(null)}
-              >
-                Am înțeles
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+            <p className="text-sm text-[var(--foreground)] leading-relaxed break-words">
+              {selectedNotif.text}
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              className="w-full bg-[var(--primary)] hover:bg-[var(--sidebar-accent-hover)] text-[var(--primary-foreground)]"
+              onClick={() => setSelectedNotif(null)}
+            >
+              Am înțeles
+            </Button>
+          </ModalFooter>
+        </Modal>
       )}
     </div>
   )

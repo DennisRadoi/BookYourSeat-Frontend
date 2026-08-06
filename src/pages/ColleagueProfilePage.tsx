@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import { InviteColleagueDialog } from "@/components/profile/InviteColleagueDialog"
 import { ProfileMetricCard } from "@/components/profile/ProfileMetricCard"
+import { InfoCard } from "@/components/common"
 import { getColleagues } from "@/services"
 import type { Colleague } from "@/types"
 
@@ -56,14 +57,25 @@ export default function ColleagueProfilePage() {
         </div>
         <div className="space-y-5">
           <InfoCard title="Preferințe muncă" text="Preferințele colegului nu sunt disponibile momentan." />
-          <article className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[0_1px_6px_rgba(0,0,0,0.04)] sm:p-5"><h3 className="text-xs font-bold">Program obișnuit</h3><div className="mt-3 flex flex-wrap gap-1.5">{days.map((day, index) => <span key={day} className={`grid size-6 place-items-center rounded-full text-[10px] font-bold ${index < 5 ? "bg-[var(--primary)] text-[var(--primary-foreground)]" : "bg-[var(--muted)] text-[var(--muted-foreground)]"}`}>{day}</span>)}</div></article>
+          <InfoCard title="Program obișnuit">
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {days.map((day, index) => (
+                <span
+                  key={day}
+                  className={`grid size-6 place-items-center rounded-full text-[10px] font-bold ${
+                    index < 5
+                      ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
+                      : "bg-[var(--muted)] text-[var(--muted-foreground)]"
+                  }`}
+                >
+                  {day}
+                </span>
+              ))}
+            </div>
+          </InfoCard>
         </div>
       </div>
       <InviteColleagueDialog colleagueName={colleague.name} open={inviteOpen} onClose={() => setInviteOpen(false)} />
     </section>
   )
-}
-
-function InfoCard({ title, text }: { title: string; text: string }) {
-  return <article className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[0_1px_6px_rgba(0,0,0,0.04)] sm:p-5"><h3 className="text-xs font-bold">{title}</h3><p className="mt-3 text-xs text-[var(--muted-foreground)]">{text}</p></article>
 }

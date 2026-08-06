@@ -4,7 +4,8 @@ import {
   SeatNode,
   TvDisplay,
   WindowMarker,
-} from "@/components/seats"
+  useSeatCounts,
+} from "@/pages/maps/components"
 import type { Seat } from "@/types"
 
 export interface Etaj2_BirouProps {
@@ -18,11 +19,10 @@ export interface Etaj2_BirouProps {
 }
 
 /**
- * Harta Sala Birou (Corp T2, Etaj 2):
- * Folosește RoomContainer, SeatNode, TvDisplay, WindowMarker din @/components/seats
+ * Harta SALA BIROU - ETAJ 2 (Corp T2)
  */
 export function Etaj2_Birou({
-  roomName = "SALA BIROU",
+  roomName = "SALA BIROU - ETAJ 2",
   seats,
   selectedSeat,
   onSeatSelect,
@@ -36,27 +36,7 @@ export function Etaj2_Birou({
     return map
   }, [seats])
 
-  const { availableCount, occupiedCount, selectedCount } = useMemo(() => {
-    let available = 0
-    let occupied = 0
-    let selected = 0
-
-    seats.forEach((s) => {
-      if (selectedSeat && selectedSeat.id === s.id) {
-        selected++
-      } else if (s.isAvailable) {
-        available++
-      } else {
-        occupied++
-      }
-    })
-
-    return {
-      availableCount: available,
-      occupiedCount: occupied,
-      selectedCount: selected,
-    }
-  }, [seats, selectedSeat])
+  const { availableCount, occupiedCount, selectedCount } = useSeatCounts(seats, selectedSeat)
 
   const isHighlighted = (seat: Seat) => {
     if (!searchQuery.trim()) return true
