@@ -358,6 +358,28 @@ export function createConference12Seats(
   return seats
 }
 
+// Locuri pentru hărțile personalizate din Corpul T1. Componentele de hartă
+// identifică fiecare loc după cod, de aceea aceste coduri trebuie păstrate.
+function createNamedSeats(
+  baseId: number,
+  codes: string[],
+  occupiedCodes: string[] = []
+): Seat[] {
+  return codes.map((code, index) => {
+    const isOccupied = occupiedCodes.includes(code)
+
+    return {
+      id: baseId + index,
+      code,
+      area: "team",
+      type: "standard",
+      hasMonitor: false,
+      isAvailable: !isOccupied,
+      occupiedBy: isOccupied ? colleagueNames[code] || "Coleg" : undefined,
+    }
+  })
+}
+
 export const locations: Location[] = [
   // ==========================================
   // CORP T2 (Sediul Principal cu toate hărțile implementate)
@@ -496,6 +518,84 @@ export const locations: Location[] = [
           },
         ],
         seats: createStandup8Seats(1000, ["L3"]),
+      },
+      {
+        id: 2,
+        number: 1,
+        name: "Etaj 1",
+        rooms: [
+          {
+            id: 103,
+            name: "Sală Evenimente",
+            type: "conferinte",
+            layout: "events",
+            floorId: 2,
+            building: "Corp T1",
+            hasTv: true,
+            hasWhiteboard: true,
+            seats: createNamedSeats(1100, [
+              "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10",
+              "B1", "B2", "B3", "B4", "B5", "B6",
+            ], ["T5", "B3"]),
+          },
+          {
+            id: 104,
+            name: "Side Evenimente",
+            type: "conferinte",
+            layout: "small-meeting",
+            floorId: 2,
+            building: "Corp T1",
+            hasTv: true,
+            hasWhiteboard: true,
+            seats: createNamedSeats(1120, ["1", "2", "3", "4"], ["2"]),
+          },
+          {
+            id: 105,
+            name: "La Terasă",
+            type: "conferinte",
+            layout: "conference",
+            floorId: 2,
+            building: "Corp T1",
+            hasTv: true,
+            hasWhiteboard: true,
+            seats: createNamedSeats(1140, [
+              "T1", "T2", "T3", "T4", "L1", "R1", "B1", "B2", "B3", "B4",
+            ], ["B2"]),
+          },
+        ],
+        seats: createNamedSeats(1100, ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10"]),
+      },
+      {
+        id: 3,
+        number: 2,
+        name: "Etaj 2",
+        rooms: [
+          {
+            id: 106,
+            name: "Sala Gaming",
+            type: "conferinte",
+            layout: "events",
+            floorId: 3,
+            building: "Corp T1",
+            hasTv: true,
+            hasWhiteboard: false,
+            seats: createNamedSeats(1200, [
+              "A1", "A2", "A3", "A4", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4",
+            ], ["C2"]),
+          },
+          {
+            id: 107,
+            name: "Sala Tenis",
+            type: "conferinte",
+            layout: "small-meeting",
+            floorId: 3,
+            building: "Corp T1",
+            hasTv: false,
+            hasWhiteboard: false,
+            seats: createNamedSeats(1220, ["S1", "D1", "D2", "D3", "D4"], ["D3"]),
+          },
+        ],
+        seats: createNamedSeats(1200, ["A1", "A2", "A3", "A4", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4"]),
       },
     ],
   },
