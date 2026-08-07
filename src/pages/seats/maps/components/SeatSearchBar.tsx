@@ -14,7 +14,7 @@ export function SeatSearchBar({
   query,
   onQueryChange,
   onFilterClick,
-  placeholder = "Cauta un loc dupa nume sau zona",
+  placeholder = "Caută o sală (ex: Sala Tenis, Gaming, 404) sau loc...",
   className = "",
 }: SeatSearchBarProps): ReactElement {
   return (
@@ -46,17 +46,19 @@ export function SeatSearchBar({
         )}
       </div>
 
-      {/* Filter Button */}
-      <Button
-        type="button"
-        id="seat-filter-toggle-btn"
-        variant="outline"
-        onClick={onFilterClick}
-        leftIcon={<SlidersHorizontal size={15} className="text-[var(--muted-foreground)]" />}
-        className="h-11 px-5 rounded-full text-sm font-medium"
-      >
-        Filtru
-      </Button>
+      {/* Filter Button (render optional) */}
+      {onFilterClick && (
+        <Button
+          type="button"
+          id="seat-filter-toggle-btn"
+          variant="outline"
+          onClick={onFilterClick}
+          leftIcon={<SlidersHorizontal size={15} className="text-[var(--muted-foreground)]" />}
+          className="h-11 px-5 rounded-full text-sm font-medium"
+        >
+          Filtru
+        </Button>
+      )}
     </div>
   )
 }
