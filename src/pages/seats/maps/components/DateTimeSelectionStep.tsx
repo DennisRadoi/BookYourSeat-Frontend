@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactElement } from "react"
+import { useMemo, useState, useRef, type ReactElement } from "react"
 import { Calendar, Clock, Repeat, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react"
 import type { RecurrenceType } from "@/types"
 import { Button, IconButton, PillButton } from "@/components/ui"
@@ -43,13 +43,15 @@ export function DateTimeSelectionStep({
   onConfirmSchedule,
 }: DateTimeSelectionStepProps): ReactElement {
   const [monthOffset, setMonthOffset] = useState(0)
+  const endListRef = useRef<HTMLDivElement | null>(null)
 
-  // Build time slots from 08:00 to 18:00
+  // Build time slots from 08:00 to 20:00
   const timeSlots = useMemo(() => {
     const list: string[] = []
-    for (let h = 8; h <= 18; h++) {
+    for (let h = 8; h <= 20; h++) {
       list.push(pad(h) + ":00")
-      if (h < 18) list.push(pad(h) + ":30")
+      // Add half hour slots for every hour except the last (20:00)
+      if (h < 20) list.push(pad(h) + ":30")
     }
     return list
   }, [])
@@ -258,18 +260,43 @@ export function DateTimeSelectionStep({
                 Ora început
               </div>
               <div className="space-y-1 max-h-44 overflow-y-auto pr-1">
-                {timeSlots.map((t) => (
-                  <Button
-                    key={t}
-                    type="button"
-                    variant={startTime === t ? "default" : "ghost"}
-                    size="xs"
-                    onClick={() => onStartTimeChange(t)}
-                    className="w-full text-left justify-start px-2.5 py-1.5 text-xs font-medium"
-                  >
-                    {t}
-                  </Button>
-                ))}
+                {timeSlots.map((t) => {
+                  const tMin = timeToMinutes(t)
+                  const maxMin = 20 * 60
+                  const disableStart = tMin > maxMin - 60 // ensure at least 1 hour room for end
+
+                  return (
+                    <Button
+                      key={t}
+                      type="button"
+                      variant={startTime === t ? "default" : "ghost"}
+                      size="xs"
+                      onClick={() => {
+                        if (disableStart) return
+                        onStartTimeChange(t)
+                        const startMin = timeToMinutes(t)
+                        const requiredEndMin = startMin + 60
+                        const validEnd = timeSlots.find((s) => timeToMinutes(s) >= requiredEndMin)
+                        if (validEnd && timeToMinutes(endTime) < requiredEndMin) {
+                          onEndTimeChange(validEnd)
+                          // After updating end time, scroll the end list to show the selected value
+                          setTimeout(() => {
+                            try {
+                              const el = endListRef.current?.querySelector(`[data-timeslot="${validEnd}"]`) as HTMLElement | null
+                              if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" })
+                            } catch (e) {
+                              // ignore DOM errors
+                            }
+                          }, 0)
+                        }
+                      }}
+                      disabled={disableStart}
+                      className="w-full text-left justify-start px-2.5 py-1.5 text-xs font-medium"
+                    >
+                      {t}
+                    </Button>
+                  )
+                })}
               </div>
             </div>
 
@@ -277,19 +304,27 @@ export function DateTimeSelectionStep({
               <div className="text-xs font-semibold text-[var(--muted-foreground)] mb-2 uppercase tracking-wide">
                 Ora sfârșit
               </div>
-              <div className="space-y-1 max-h-44 overflow-y-auto pr-1">
-                {timeSlots.map((t) => (
-                  <Button
-                    key={t}
-                    type="button"
-                    variant={endTime === t ? "default" : "ghost"}
-                    size="xs"
-                    onClick={() => onEndTimeChange(t)}
-                    className="w-full text-left justify-start px-2.5 py-1.5 text-xs font-medium"
-                  >
-                    {t}
-                  </Button>
-                ))}
+              <div ref={endListRef} className="space-y-1 max-h-44 overflow-y-auto pr-1">
+                {timeSlots.map((t) => {
+                  const tMin = timeToMinutes(t)
+                  const startMin = timeToMinutes(startTime)
+                  const disabled = tMin < startMin + 60
+ 
+                  return (
+                    <Button
+                      key={t}
+                      data-timeslot={t}
+                      type="button"
+                      variant={endTime === t ? "default" : "ghost"}
+                      size="xs"
+                      onClick={() => !disabled && onEndTimeChange(t)}
+                      disabled={disabled}
+                      className="w-full text-left justify-start px-2.5 py-1.5 text-xs font-medium"
+                    >
+                      {t}
+                    </Button>
+                  )
+                })}
               </div>
             </div>
           </div>
@@ -357,6 +392,17 @@ export function DateTimeSelectionStep({
 
 function pad(n: number) {
   return n.toString().padStart(2, "0")
+}
+
+function timeToMinutes(t: string) {
+  const [hh, mm] = t.split(":").map(Number)
+  return hh * 60 + (mm || 0)
+}
+
+function minutesToTimeString(mins: number) {
+  const hh = Math.floor(mins / 60)
+  const mm = mins % 60
+  return pad(hh) + ":" + pad(mm)
 }
 
 function isSameDay(a: Date, b: Date) {
