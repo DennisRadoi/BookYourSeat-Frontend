@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { Moon, Sun, LogOut, User, Menu } from "lucide-react"
 import { useLiveClock } from "@/hooks"
 import { IconButton } from "@/components/ui"
+import { useTheme } from "@/hooks/useTheme"
 
 function DateTimeSubtitle() {
   const currentDateTime = useLiveClock()
@@ -85,44 +86,9 @@ interface NavbarProps {
 export default function Navbar({ onBurgerClick }: NavbarProps) {
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    const stored = localStorage.getItem('theme')
-    if (stored === 'dark') return true
-    if (stored === 'light') return false
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-  })
+  const { isDark, toggle, setLight } = useTheme()
 
-  useEffect(() => {
-    const root = document.documentElement
-    if (isDarkMode) {
-      root.classList.add("dark")
-      localStorage.setItem('theme', 'dark')
-    } else {
-      root.classList.remove("dark")
-      localStorage.setItem('theme', 'light')
-    }
-  }, [isDarkMode])
-
-  useEffect(() => {
-    // respond to system changes only when user has not set an explicit preference
-    if (typeof window === 'undefined') return
-    const stored = localStorage.getItem('theme')
-    if (stored) return
-    const mq = window.matchMedia('(prefers-color-scheme: dark)')
-    const listener = (e: MediaQueryListEvent) => {
-      if (!localStorage.getItem('theme')) {
-        setIsDarkMode(e.matches)
-      }
-    }
-    if (mq.addEventListener) mq.addEventListener('change', listener)
-    else mq.addListener(listener)
-    return () => {
-      if (mq.removeEventListener) mq.removeEventListener('change', listener)
-      else mq.removeListener(listener)
-    }
-  }, [])
-
+  // keep backwards-compatible meta detection
   const meta = pathname.startsWith("/companie/")
     ? { title: "Profil", subtitle: () => <span className="navbar__subtitle">Info coleg</span> }
     : navMeta[pathname] ?? { title: "Book Your Seat", subtitle: () => null }
@@ -148,26 +114,28 @@ export default function Navbar({ onBurgerClick }: NavbarProps) {
       <div className="ml-auto flex items-center gap-2.5">
         <IconButton
           id="navbar-theme-btn"
-          onClick={() => setIsDarkMode((prev) => !prev)}
-          title={isDarkMode ? "Mod luminos" : "Mod întunecat"}
+          onClick={() => toggle()}
+          title={isDark ? "Mod luminos" : "Mod întunecat"}
           className="border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)]"
         >
-          {isDarkMode ? <Sun size={17} /> : <Moon size={17} />}
+          {isDark ? <Sun size={17} /> : <Moon size={17} />}
         </IconButton>
 
         <IconButton
           id="navbar-logout-btn"
           onClick={() => {
-            // Ensure login page is shown in light mode after logout
-            if (typeof window !== 'undefined') {
-              document.documentElement.classList.remove('dark')
-              try {
-                localStorage.setItem('theme', 'light')
-              } catch (e) {
-                /* ignore storage errors */
-              }
+            // clear auth keys and reset theme via provider
+            if (typeof window !== "undefined") {
+              try { localStorage.removeItem("authToken") } catch (e) {}
+              try { localStorage.removeItem("refreshToken") } catch (e) {}
+              try { localStorage.removeItem("user") } catch (e) {}
+              try { localStorage.removeItem("auth") } catch (e) {}
+              try { sessionStorage.clear() } catch (e) {}
             }
-            navigate('/login')
+
+            // reset theme so login starts in light mode
+            setLight()
+            navigate("/login")
           }}
           title="Deconectare"
           className="border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)]"

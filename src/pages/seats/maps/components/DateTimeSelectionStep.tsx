@@ -1,7 +1,8 @@
-import { useMemo, useState, useRef, type ReactElement } from "react"
+import { useMemo, useState, useRef, useEffect, type ReactElement } from "react"
 import { Calendar, Clock, Repeat, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react"
 import type { RecurrenceType } from "@/types"
 import { Button, IconButton, PillButton } from "@/components/ui"
+import TimeSlotList from "./TimeSlotList"
 
 interface DateTimeSelectionStepProps {
   selectedDate: Date | null
@@ -44,6 +45,17 @@ export function DateTimeSelectionStep({
 }: DateTimeSelectionStepProps): ReactElement {
   const [monthOffset, setMonthOffset] = useState(0)
   const endListRef = useRef<HTMLDivElement | null>(null)
+
+  // scroll end list when endTime changes
+  useEffect(() => {
+    if (!endListRef.current) return
+    try {
+      const el = endListRef.current.querySelector(`[data-timeslot="${endTime}"]`) as HTMLElement | null
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" })
+    } catch (e) {
+      // ignore
+    }
+  }, [endTime])
 
   // Build time slots from 08:00 to 20:00
   const timeSlots = useMemo(() => {
@@ -263,73 +275,37 @@ export function DateTimeSelectionStep({
               <div className="text-xs font-semibold text-[var(--muted-foreground)] mb-2 uppercase tracking-wide">
                 Ora început
               </div>
-              <div className="space-y-1 max-h-44 overflow-y-auto pr-1">
-                {timeSlots.map((t) => {
+              <TimeSlotList
+                slots={timeSlots}
+                selected={startTime}
+                onSelect={(t) => {
                   const tMin = timeToMinutes(t)
                   const maxMin = 20 * 60
                   const disableStart = tMin > maxMin - 60 // ensure at least 1 hour room for end
-
-                  return (
-                    <Button
-                      key={t}
-                      type="button"
-                      variant={startTime === t ? "default" : "ghost"}
-                      size="xs"
-                      onClick={() => {
-                        if (disableStart) return
-                        onStartTimeChange(t)
-                        const startMin = timeToMinutes(t)
-                        const requiredEndMin = startMin + 60
-                        const validEnd = timeSlots.find((s) => timeToMinutes(s) >= requiredEndMin)
-                        if (validEnd && timeToMinutes(endTime) < requiredEndMin) {
-                          onEndTimeChange(validEnd)
-                          // After updating end time, scroll the end list to show the selected value
-                          setTimeout(() => {
-                            try {
-                              const el = endListRef.current?.querySelector(`[data-timeslot="${validEnd}"]`) as HTMLElement | null
-                              if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" })
-                            } catch (e) {
-                              // ignore DOM errors
-                            }
-                          }, 0)
-                        }
-                      }}
-                      disabled={disableStart}
-                      className="w-full text-left justify-start px-2.5 py-1.5 text-xs font-medium"
-                    >
-                      {t}
-                    </Button>
-                  )
-                })}
-              </div>
+                  if (disableStart) return
+                  onStartTimeChange(t)
+                  const startMin = timeToMinutes(t)
+                  const requiredEndMin = startMin + 60
+                  const validEnd = timeSlots.find((s) => timeToMinutes(s) >= requiredEndMin)
+                  if (validEnd && timeToMinutes(endTime) < requiredEndMin) {
+                    onEndTimeChange(validEnd)
+                    // scrolling handled in effect that watches endTime
+                  }
+                }}
+              />
             </div>
 
             <div className="p-3.5 rounded-xl bg-[var(--muted)] border border-[var(--border)]">
               <div className="text-xs font-semibold text-[var(--muted-foreground)] mb-2 uppercase tracking-wide">
                 Ora sfârșit
               </div>
-              <div ref={endListRef} className="space-y-1 max-h-44 overflow-y-auto pr-1">
-                {timeSlots.map((t) => {
-                  const tMin = timeToMinutes(t)
-                  const startMin = timeToMinutes(startTime)
-                  const disabled = tMin < startMin + 60
- 
-                  return (
-                    <Button
-                      key={t}
-                      data-timeslot={t}
-                      type="button"
-                      variant={endTime === t ? "default" : "ghost"}
-                      size="xs"
-                      onClick={() => !disabled && onEndTimeChange(t)}
-                      disabled={disabled}
-                      className="w-full text-left justify-start px-2.5 py-1.5 text-xs font-medium"
-                    >
-                      {t}
-                    </Button>
-                  )
-                })}
-              </div>
+              <TimeSlotList
+                containerRef={endListRef}
+                slots={timeSlots}
+                selected={endTime}
+                onSelect={(t) => onEndTimeChange(t)}
+                isDisabled={(t) => timeToMinutes(t) < timeToMinutes(startTime) + 60}
+              />
             </div>
           </div>
         </div>
