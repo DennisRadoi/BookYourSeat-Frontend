@@ -1,6 +1,6 @@
 import { MapPin, Clock, CalendarCheck } from "lucide-react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Button, PillButton } from "@/components/ui"
 import { StatusBadge } from "./StatusBadge"
 import { cn, formatDateIso, getWeekDays, DAY_LABELS_SHORT, DAY_LABELS_FULL, MONTH_LABELS } from "@/utils"
 import type { DetailedReservation } from "@/types"
@@ -43,11 +43,13 @@ export function WeeklyCalendarCard({
             const hasReservationDot = reservations.some((r) => r.date === dayIso && r.status !== "cancelled")
 
             return (
-              <button
+              <PillButton
                 key={dayIso}
+                type="button"
+                isActive={isToday || isSelected}
                 onClick={() => onSelectDate(dayIso)}
                 className={cn(
-                  "relative flex flex-col items-center gap-1 rounded-xl border-[1.5px] px-2 py-3 pb-2.5 cursor-pointer transition",
+                  "relative flex flex-col items-center gap-1 rounded-xl border-[1.5px] px-2 py-3 pb-2.5 h-auto transition",
                   isToday
                     ? "border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--sidebar-accent-hover)]"
                     : isSelected
@@ -62,7 +64,7 @@ export function WeeklyCalendarCard({
                 {hasReservationDot && (
                   <span className={cn("absolute bottom-1.5 h-1.5 w-1.5 rounded-full", isToday ? "bg-[var(--primary-foreground)]" : "bg-[var(--success)]")} />
                 )}
-              </button>
+              </PillButton>
             )
           })}
         </div>
@@ -73,9 +75,10 @@ export function WeeklyCalendarCard({
             <span>Nicio rezervare pentru {selectedDayName}</span>
             <Button
               onClick={onNavigateToSeats}
-              className="rounded-full bg-[var(--primary)] hover:bg-[var(--sidebar-accent-hover)] text-[var(--primary-foreground)] gap-1.5 shadow-sm"
+              leftIcon={<CalendarCheck size={15} />}
+              className="rounded-full bg-[var(--primary)] hover:bg-[var(--sidebar-accent-hover)] text-[var(--primary-foreground)]"
             >
-              <CalendarCheck size={15} /> Rezervă un loc
+              Rezervă un loc
             </Button>
           </div>
         ) : (

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { CalendarDays, Clock, Loader2, MapPin, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { CalendarDays, Clock, MapPin, Trash2 } from "lucide-react"
+import { Button } from "@/components/ui"
 import { StatusBadge } from "./StatusBadge"
 import { Modal, ModalHeader, ModalBody, ModalFooter } from "@/components/common/Modal"
 import { FormField, FormInput } from "@/components/common/FormField"
@@ -138,14 +138,16 @@ export function EditReservationModal({
           </div>
           <div className="flex flex-col items-end gap-2 flex-shrink-0">
             <StatusBadge status={reservation.status} />
-            <button
+            <Button
+              size="xs"
+              variant="outline"
               onClick={handleChangeSeat}
-              className="flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2.5 py-1 text-[11px] font-semibold text-[var(--primary)] hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)] hover:border-[var(--primary)] transition whitespace-nowrap"
+              leftIcon={<MapPin size={11} />}
+              className="text-[11px] font-semibold text-[var(--primary)] whitespace-nowrap"
               title="Schimbă locul – deschide harta"
             >
-              <MapPin size={11} />
               Schimbă locul
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -190,34 +192,36 @@ export function EditReservationModal({
 
       <ModalFooter align="between">
         {/* Left: anulează rezervarea */}
-        <button
+        <Button
+          variant={confirmCancel ? "destructive" : "outline"}
+          size="sm"
           onClick={handleCancel}
-          disabled={isCancelling || isSaving || success}
-          className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-[12px] font-semibold transition disabled:opacity-50 ${
-            confirmCancel
-              ? "bg-[var(--destructive)] text-white hover:opacity-90"
-              : "text-[var(--destructive)] hover:bg-[var(--destructive)]/10 border border-[var(--destructive)]/30"
-          }`}
+          isLoading={isCancelling}
+          disabled={isSaving || success}
+          leftIcon={!isCancelling && <Trash2 size={13} />}
+          className={confirmCancel ? "" : "text-[var(--destructive)] border-[var(--destructive)]/30 hover:bg-[var(--destructive)]/10"}
         >
-          {isCancelling ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
           {confirmCancel ? "Confirmă anularea" : "Anulează rezervarea"}
-        </button>
+        </Button>
 
         {/* Right: close + save */}
         <div className="flex items-center gap-2.5">
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onClose}
             disabled={isSaving}
-            className="rounded-xl px-4 py-2 text-[13px] font-semibold text-[var(--muted-foreground)] hover:bg-[var(--muted)] transition disabled:opacity-50"
+            className="text-[13px] font-semibold text-[var(--muted-foreground)]"
           >
             Închide
-          </button>
+          </Button>
           <Button
             onClick={handleSave}
-            disabled={isSaving || success}
-            className="rounded-xl bg-[var(--primary)] hover:bg-[var(--sidebar-accent-hover)] text-[var(--primary-foreground)] gap-1.5 shadow-sm disabled:opacity-60"
+            isLoading={isSaving}
+            disabled={success}
+            className="rounded-xl font-semibold"
           >
-            {isSaving ? <><Loader2 size={14} className="animate-spin" /> Salvez...</> : "Salvează"}
+            Salvează
           </Button>
         </div>
       </ModalFooter>

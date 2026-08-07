@@ -4,6 +4,7 @@ import { getCurrentUser, updateUserProfile, updateUserPreferences } from "@/serv
 import type { User } from "@/types"
 import { ProfileField } from "./components/ProfileField"
 import { AlertBanner } from "@/components/common"
+import { Button, IconButton } from "@/components/ui"
 
 export default function ContPage() {
   const [user, setUser] = useState<User | null>(null)
@@ -84,15 +85,17 @@ export default function ContPage() {
             Domiciliu: <strong className="text-[var(--foreground)] font-medium">{form.domiciliu}</strong>
           </p>
         </div>
-        <button
+        <Button
           id="cont-edit-profile-btn"
           type="button"
+          variant="secondary"
+          size="sm"
           onClick={handleToggleEdit}
-          className="inline-flex h-9 w-full shrink-0 items-center justify-center gap-1.5 rounded-lg bg-[var(--secondary)] px-3 text-xs font-bold text-[var(--secondary-foreground)] transition hover:bg-[var(--sidebar-accent-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 sm:w-auto cursor-pointer"
+          leftIcon={editing ? <Check size={14} /> : <Pencil size={14} />}
+          className="w-full sm:w-auto font-bold"
         >
-          {editing ? <Check size={14} /> : <Pencil size={14} />}
           {editing ? "Salvează" : "Editează profilul"}
-        </button>
+        </Button>
       </div>
 
       {savedSuccess && (
@@ -123,15 +126,33 @@ export default function ContPage() {
             {preferences.map((preference) => (
               <span key={preference} className="inline-flex max-w-full items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--muted)] px-2.5 py-1 text-[10px] font-medium text-[var(--foreground)]">
                 <span className="truncate">{preference}</span>
-                {editing && <button type="button" onClick={() => removePreference(preference)} aria-label={`Șterge ${preference}`} className="shrink-0 rounded-full text-[var(--muted-foreground)] hover:text-[var(--destructive)]"><X size={12} /></button>}
+                {editing && (
+                  <IconButton
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    onClick={() => removePreference(preference)}
+                    aria-label={`Șterge ${preference}`}
+                    className="h-4 w-4 rounded-full p-0 text-[var(--muted-foreground)] hover:text-[var(--destructive)]"
+                  >
+                    <X size={12} />
+                  </IconButton>
+                )}
               </span>
             ))}
             {addingPreference && <input autoFocus value={newPreference} onChange={(event) => setNewPreference(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") addPreference(); if (event.key === "Escape") { setAddingPreference(false); setNewPreference("") } }} placeholder="Adaugă..." className="h-7 min-w-24 rounded-full border border-[var(--primary)] bg-[var(--card)] px-2 text-[10px] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] outline-none" />}
           </div>
-          <button id="cont-add-pref-btn" type="button" onClick={() => addingPreference ? addPreference() : setAddingPreference(true)} className="inline-flex h-9 w-full shrink-0 items-center justify-center gap-1.5 rounded-lg bg-[var(--secondary)] px-3 text-xs font-bold text-[var(--secondary-foreground)] transition hover:bg-[var(--sidebar-accent-hover)] sm:w-auto cursor-pointer">
-            <Plus size={14} />
+          <Button
+            id="cont-add-pref-btn"
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => addingPreference ? addPreference() : setAddingPreference(true)}
+            leftIcon={<Plus size={14} />}
+            className="w-full sm:w-auto font-bold"
+          >
             {addingPreference ? "Adaugă" : "Adaugă preferințe"}
-          </button>
+          </Button>
         </div>
       </section>
     </section>

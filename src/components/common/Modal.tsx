@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 import { X } from "lucide-react"
 import { cn } from "@/utils"
+import { IconButton } from "@/components/ui"
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
 
@@ -62,13 +63,14 @@ export function ModalHeader({ title, subtitle, onClose, icon }: ModalHeaderProps
           )}
         </div>
       </div>
-      <button
+      <IconButton
         onClick={onClose}
-        className="ml-3 flex-shrink-0 rounded-full p-1.5 text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)] transition"
         aria-label="Închide"
+        size="xs"
+        className="ml-3 shrink-0 rounded-full text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
       >
         <X size={16} />
-      </button>
+      </IconButton>
     </div>
   )
 }

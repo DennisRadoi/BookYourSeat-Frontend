@@ -1,4 +1,5 @@
 import { Navigation, MapPin, Home, Building2, ArrowRight } from "lucide-react"
+import { Button } from "@/components/ui"
 import type { DepartureInsight } from "@/types"
 
 interface DepartureCardProps {
@@ -90,12 +91,13 @@ export function DepartureCard({ departure }: DepartureCardProps) {
         ))}
       </div>
 
-      <button
+      <Button
         onClick={handleStartNavigation}
-        className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[var(--primary)] py-2.5 text-[13px] font-semibold text-[var(--primary-foreground)] border-0 cursor-pointer transition hover:bg-[var(--sidebar-accent-hover)] shadow-sm"
+        leftIcon={<MapPin size={14} />}
+        className="w-full text-[13px] font-semibold"
       >
-        <MapPin size={14} /> Deschide traseul în Google Maps →
-      </button>
+        Deschide traseul în Google Maps →
+      </Button>
     </div>
   )
 }

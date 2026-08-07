@@ -2,6 +2,7 @@ import type { ReactElement } from "react"
 import { Calendar, Clock, Repeat, ArrowLeft } from "lucide-react"
 import { MetricIconTile } from "@/components/common"
 import type { Seat, RecurrenceType } from "@/types"
+import { Button } from "@/components/ui"
 
 interface SeatSummaryCardProps {
   selectedSeat: Seat | null
@@ -99,29 +100,28 @@ export function SeatSummaryCard({
 
       {/* Action CTA & Edit link */}
       <div className="mt-8 space-y-3">
-        <button
+        <Button
           type="button"
           id="confirm-reservation-btn"
           onClick={onConfirm}
-          disabled={!selectedSeat || isSubmitting}
-          className="w-full py-3.5 px-4 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] text-sm font-bold shadow-sm hover:bg-[var(--sidebar-accent-hover)] active:scale-[0.99] transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
+          disabled={!selectedSeat}
+          isLoading={isSubmitting}
+          className="w-full py-3.5 h-auto text-sm font-bold rounded-xl active:scale-[0.99] transition-all"
         >
-          {isSubmitting ? (
-            <span>Se confirmă...</span>
-          ) : (
-            <span>Confirma rezervarea</span>
-          )}
-        </button>
+          Confirma rezervarea
+        </Button>
 
         {onEditSchedule && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="xs"
             onClick={onEditSchedule}
-            className="w-full text-xs text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors flex items-center justify-center gap-1.5 py-1 cursor-pointer"
+            leftIcon={<ArrowLeft size={13} />}
+            className="w-full text-xs text-[var(--muted-foreground)] hover:text-[var(--primary)]"
           >
-            <ArrowLeft size={13} />
-            <span>Modifică data sau intervalul</span>
-          </button>
+            Modifică data sau intervalul
+          </Button>
         )}
       </div>
     </div>

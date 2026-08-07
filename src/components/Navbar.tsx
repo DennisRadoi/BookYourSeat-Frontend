@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { Moon, Sun, LogOut, User, Menu } from "lucide-react"
 import { useLiveClock } from "@/hooks"
+import { IconButton } from "@/components/ui"
 
 function DateTimeSubtitle() {
   const currentDateTime = useLiveClock()
@@ -77,28 +78,6 @@ const navMeta: Record<string, NavMeta> = {
   "/seats": { title: "Rezervare loc", subtitle: () => <SeatsSubtitle /> },
 }
 
-interface IconButtonProps {
-  id?: string
-  onClick?: () => void
-  title?: string
-  className?: string
-  children: React.ReactNode
-}
-
-function IconButton({ id, onClick, title, className = "", children }: IconButtonProps) {
-  return (
-    <button
-      id={id}
-      onClick={onClick}
-      title={title}
-      aria-label={title}
-      className={`flex h-[38px] w-[38px] flex-shrink-0 cursor-pointer items-center justify-center rounded-full border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] transition hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] hover:border-[var(--accent)] hover:shadow-[0_2px_8px_rgba(5,150,105,0.15)] ${className}`}
-    >
-      {children}
-    </button>
-  )
-}
-
 interface NavbarProps {
   onBurgerClick?: () => void
 }
@@ -150,14 +129,14 @@ export default function Navbar({ onBurgerClick }: NavbarProps) {
 
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-[var(--border)] bg-[var(--background)] px-8 py-[18px] md:pl-14">
-      <button
+      <IconButton
         id="navbar-burger-btn"
         onClick={onBurgerClick}
         aria-label="Deschide meniu"
-        className="flex md:hidden h-10 w-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] transition hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] hover:border-[var(--accent)] hover:shadow-[0_2px_8px_rgba(5,150,105,0.20)]"
+        className="flex md:hidden h-10 w-10 border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)]"
       >
         <Menu size={22} />
-      </button>
+      </IconButton>
 
       <div className="flex flex-col gap-[3px]">
         <h1 className="m-0 text-xl font-extrabold uppercase tracking-[0.5px] text-[var(--foreground)] leading-[1.2]">
@@ -171,23 +150,29 @@ export default function Navbar({ onBurgerClick }: NavbarProps) {
           id="navbar-theme-btn"
           onClick={() => setIsDarkMode((prev) => !prev)}
           title={isDarkMode ? "Mod luminos" : "Mod întunecat"}
+          className="border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)]"
         >
           {isDarkMode ? <Sun size={17} /> : <Moon size={17} />}
         </IconButton>
 
-        <IconButton id="navbar-logout-btn" onClick={() => navigate("/")} title="Deconectare">
+        <IconButton
+          id="navbar-logout-btn"
+          onClick={() => navigate("/")}
+          title="Deconectare"
+          className="border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)]"
+        >
           <LogOut size={17} />
         </IconButton>
 
-        <button
+        <IconButton
           id="navbar-account-btn"
           onClick={() => navigate("/cont")}
           title="Contul meu"
           aria-label="Contul meu"
-          className="flex h-11 w-11 flex-shrink-0 cursor-pointer items-center justify-center rounded-full border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] transition hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] hover:border-[var(--accent)]"
+          className="h-11 w-11 border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)]"
         >
           <User size={19} />
-        </button>
+        </IconButton>
       </div>
     </header>
   )

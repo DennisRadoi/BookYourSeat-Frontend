@@ -1,5 +1,6 @@
 import { Sparkles, RefreshCw } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import { IconButton } from "@/components/ui"
 import { DepartureCard } from "./insights/DepartureCard"
 import { WeatherWidgetCard } from "./insights/WeatherWidgetCard"
 import { TrafficAlertsCard } from "./insights/TrafficAlertsCard"
@@ -44,14 +45,15 @@ export function AIInsightsPanel({
               DEMO
             </span>
           )}
-          <button
+          <IconButton
             onClick={onRefresh}
             disabled={isLoading}
-            aria-label="Regenerează insights"
-            className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--card)] text-[var(--card-foreground)] cursor-pointer border-0 transition hover:bg-[var(--sidebar-accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+            label="Regenerează insights"
+            size="xs"
+            className="h-7 w-7 rounded-lg bg-[var(--card)] text-[var(--card-foreground)] border-0 hover:bg-[var(--sidebar-accent-hover)]"
           >
             <RefreshCw size={13} className={isLoading ? "animate-spin" : ""} />
-          </button>
+          </IconButton>
         </div>
       </div>
 

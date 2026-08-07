@@ -1,4 +1,5 @@
 import { MapPin, MapPinned } from "lucide-react"
+import { Button } from "@/components/ui"
 import type { SeatRecommendation } from "@/types"
 
 interface SeatRecommendationCardProps {
@@ -22,12 +23,15 @@ export function SeatRecommendationCard({
         <strong>{seatRec.colleagueName}</strong> a rezervat {seatRec.seat}, {seatRec.floor}.
         Vrei un loc alături?
       </p>
-      <button
+      <Button
+        variant="secondary"
+        size="sm"
         onClick={onReserveAdjacent}
-        className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[var(--secondary)] py-2.5 text-[12px] font-semibold text-[var(--secondary-foreground)] border-0 cursor-pointer transition hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)]"
+        leftIcon={<MapPin size={13} />}
+        className="w-full font-semibold"
       >
-        <MapPin size={13} /> Rezervă loc alături
-      </button>
+        Rezervă loc alături
+      </Button>
     </div>
   )
 }

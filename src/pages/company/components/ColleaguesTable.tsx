@@ -1,6 +1,7 @@
 import { MapPin, Star } from "lucide-react"
 import type { Colleague } from "@/types"
 import { getInitials } from "@/utils"
+import { Button, IconButton } from "@/components/ui"
 
 interface ColleaguesTableProps { colleagues: Colleague[]; onToggleFavorite: (id: number) => void; onViewProfile: (colleague: Colleague) => void }
 
@@ -22,7 +23,7 @@ function ColleagueCard({ colleague, onToggleFavorite, onViewProfile }: { colleag
 
 function Person({ colleague }: { colleague: Colleague }) { return <div className="flex min-w-0 flex-1 items-center gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-full border-2 border-[var(--primary)] bg-[var(--secondary)] text-xs font-bold text-[var(--secondary-foreground)]">{getInitials(colleague.name)}</span><div className="min-w-0"><p className="truncate text-sm font-bold text-[var(--foreground)]">{colleague.name}</p><p className="mt-0.5 truncate text-xs text-[var(--muted-foreground)]">{colleague.role}</p></div></div> }
 
-function FavoriteButton({ colleague, onToggleFavorite }: { colleague: Colleague; onToggleFavorite: (id: number) => void }) { return <button type="button" className={`shrink-0 rounded-md p-1.5 leading-none transition ${colleague.isFavorite ? "text-[var(--warning)]" : "text-[var(--border)] hover:text-[var(--warning)]"}`} onClick={() => onToggleFavorite(colleague.id)} aria-label={`${colleague.isFavorite ? "Elimină" : "Adaugă"} ${colleague.name} la favorite`}><Star size={20} fill={colleague.isFavorite ? "currentColor" : "none"} /></button> }
+function FavoriteButton({ colleague, onToggleFavorite }: { colleague: Colleague; onToggleFavorite: (id: number) => void }) { return <IconButton type="button" size="xs" variant="ghost" className={`shrink-0 rounded-md p-1.5 leading-none transition ${colleague.isFavorite ? "text-[var(--warning)]" : "text-[var(--border)] hover:text-[var(--warning)]"}`} onClick={() => onToggleFavorite(colleague.id)} aria-label={`${colleague.isFavorite ? "Elimină" : "Adaugă"} ${colleague.name} la favorite`}><Star size={20} fill={colleague.isFavorite ? "currentColor" : "none"} /></IconButton> }
 
-function ProfileButton({ onClick, className = "" }: { onClick: () => void; className?: string }) { return <button type="button" onClick={onClick} className={`whitespace-nowrap bg-transparent p-0 text-xs font-bold text-[var(--primary)] hover:text-[var(--sidebar-accent-hover)] hover:underline ${className}`}>Vezi profil</button> }
+function ProfileButton({ onClick, className = "" }: { onClick: () => void; className?: string }) { return <Button type="button" variant="link" size="xs" onClick={onClick} className={`whitespace-nowrap font-bold text-[var(--primary)] hover:text-[var(--sidebar-accent-hover)] hover:underline ${className}`}>Vezi profil</Button> }
 function EmptyState() { return <div className="max-w-[920px] rounded-2xl border border-[var(--border)] bg-[var(--card)] px-6 py-12 text-center text-sm text-[var(--muted-foreground)]">Nu am găsit colegi care să corespundă căutării.</div> }

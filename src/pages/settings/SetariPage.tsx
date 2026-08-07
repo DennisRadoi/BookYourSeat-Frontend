@@ -4,6 +4,7 @@ import { changeCurrentUserPassword, getUserSettings, updateUserSettings } from "
 import { availableFloors, availableWorkspaceTypes, availableWeekdays } from "@/data"
 import { PasswordField } from "@/components/common/PasswordField"
 import { ToggleRow } from "./components/ToggleRow"
+import { Button, PillButton } from "@/components/ui"
 
 export default function SetariPage() {
   const [selectedFloor, setSelectedFloor] = useState("Parter")
@@ -86,14 +87,15 @@ export default function SetariPage() {
           <h2 className="text-base font-bold text-[var(--foreground)]">Setări</h2>
           <p className="mt-0.5 text-xs text-[var(--muted-foreground)]">Preferințele tale pentru aplicație</p>
         </div>
-        <button
+        <Button
           type="button"
           onClick={handleSavePreferences}
-          className="inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-[var(--primary)] px-4 text-xs font-bold text-[var(--primary-foreground)] shadow-sm transition hover:bg-[var(--sidebar-accent-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 sm:h-9 sm:w-auto"
+          leftIcon={isSaved ? <Check size={15} /> : undefined}
+          size="sm"
+          className="w-full sm:w-auto font-bold"
         >
-          {isSaved && <Check size={15} />}
           {isSaved ? "Salvat" : "Salvează"}
-        </button>
+        </Button>
       </div>
 
       <div className="grid max-w-[760px] gap-5 sm:gap-6 lg:grid-cols-2">
@@ -106,14 +108,15 @@ export default function SetariPage() {
               <p className="text-xs font-medium text-[var(--muted-foreground)]">Floor preferat</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {availableFloors.map((item) => (
-                  <button
+                  <PillButton
                     key={item}
                     type="button"
+                    size="sm"
+                    isActive={selectedFloor === item}
                     onClick={() => setSelectedFloor(item)}
-                    className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${selectedFloor === item ? "bg-[var(--primary)] text-[var(--primary-foreground)]" : "bg-[var(--muted)] text-[var(--foreground)] hover:bg-[var(--secondary)]"}`}
                   >
                     {item}
-                  </button>
+                  </PillButton>
                 ))}
               </div>
 
@@ -122,15 +125,16 @@ export default function SetariPage() {
                 {availableWorkspaceTypes.map((item) => {
                   const selected = selectedWorkspaces.has(item)
                   return (
-                    <button
+                    <PillButton
                       key={item}
                       type="button"
+                      size="xs"
+                      isActive={selected}
                       onClick={() => toggleSetItem(item, setSelectedWorkspaces)}
-                      className={`rounded-full border px-2.5 py-1 text-[10px] font-medium transition ${selected ? "border-[var(--primary)] bg-[var(--secondary)] text-[var(--secondary-foreground)]" : "border-[var(--border)] bg-[var(--card)] text-[var(--muted-foreground)] hover:border-[var(--primary)]"}`}
                     >
                       {selected && "✓ "}
                       {item}
-                    </button>
+                    </PillButton>
                   )
                 })}
               </div>
@@ -138,14 +142,16 @@ export default function SetariPage() {
               <p className="mt-4 text-xs font-medium text-[var(--muted-foreground)]">Zile obișnuite</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {availableWeekdays.map((day) => (
-                  <button
+                  <PillButton
                     key={day}
                     type="button"
+                    size="xs"
+                    isActive={selectedDays.has(day)}
                     onClick={() => toggleSetItem(day, setSelectedDays)}
-                    className={`grid size-6 place-items-center rounded-full text-[10px] font-bold ${selectedDays.has(day) ? "bg-[var(--primary)] text-[var(--primary-foreground)]" : "bg-[var(--muted)] text-[var(--muted-foreground)]"}`}
+                    className="h-7 w-7 min-w-0 p-0 text-[10px] font-bold"
                   >
                     {day}
-                  </button>
+                  </PillButton>
                 ))}
               </div>
 
@@ -197,13 +203,14 @@ export default function SetariPage() {
                   onChange={setNewPassword}
                 />
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={handleChangePassword}
-                className="mt-4 h-9 w-full rounded-lg bg-[var(--primary)] text-xs font-bold text-[var(--primary-foreground)] transition hover:bg-[var(--sidebar-accent-hover)]"
+                className="mt-4 w-full text-xs font-bold"
+                size="sm"
               >
                 Schimbă parola
-              </button>
+              </Button>
               {passwordMessage && <p role="status" className="mt-2 text-[10px] text-[var(--muted-foreground)]">{passwordMessage}</p>}
             </div>
           </fieldset>

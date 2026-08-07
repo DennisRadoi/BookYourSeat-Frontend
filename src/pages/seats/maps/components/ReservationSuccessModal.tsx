@@ -2,6 +2,7 @@ import type { ReactElement } from "react"
 import { CheckCircle2, Calendar, Clock, MapPin, X } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import type { Seat, RecurrenceType } from "@/types"
+import { Button, IconButton } from "@/components/ui"
 
 interface ReservationSuccessModalProps {
   isOpen: boolean
@@ -52,14 +53,15 @@ export function ReservationSuccessModal({
 
       {/* Modal Card */}
       <div className="relative z-10 w-full max-w-md bg-[var(--card)] rounded-2xl p-6 sm:p-7 border border-[var(--border)] shadow-2xl animate-in zoom-in-95 duration-200">
-        <button
+        <IconButton
           type="button"
           onClick={onClose}
           aria-label="Închide"
-          className="absolute right-4 top-4 p-1.5 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors"
+          size="xs"
+          className="absolute right-4 top-4 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]"
         >
           <X size={18} />
-        </button>
+        </IconButton>
 
         {/* Success Icon Header */}
         <div className="flex flex-col items-center text-center mb-6">
@@ -113,20 +115,21 @@ export function ReservationSuccessModal({
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <button
+          <Button
             type="button"
             onClick={() => navigate("/")}
-            className="flex-1 py-2.5 px-4 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] text-sm font-semibold hover:bg-[var(--sidebar-accent-hover)] transition-colors shadow-sm cursor-pointer text-center"
+            className="flex-1 py-2.5 rounded-xl font-semibold"
           >
             Vezi în Dashboard
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="outline"
             onClick={onBookAnother}
-            className="flex-1 py-2.5 px-4 rounded-xl border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] text-sm font-semibold hover:bg-[var(--muted)] transition-colors cursor-pointer text-center"
+            className="flex-1 py-2.5 rounded-xl font-semibold"
           >
             Altă rezervare
-          </button>
+          </Button>
         </div>
       </div>
     </div>

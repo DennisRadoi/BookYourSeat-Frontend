@@ -1,5 +1,6 @@
 import type { ReactElement } from "react"
 import { Search, SlidersHorizontal } from "lucide-react"
+import { Button, IconButton } from "@/components/ui"
 
 interface SeatSearchBarProps {
   query: string
@@ -30,29 +31,32 @@ export function SeatSearchBar({
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full h-11 pl-11 pr-4 rounded-full bg-[var(--card)] border border-[var(--border)] text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] shadow-xs transition-colors focus:outline-hidden focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
+          className="w-full h-11 pl-11 pr-10 rounded-full bg-[var(--card)] border border-[var(--border)] text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] shadow-xs transition-colors focus:outline-hidden focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
         />
         {query && (
-          <button
+          <IconButton
             type="button"
+            size="xs"
+            variant="ghost"
             onClick={() => onQueryChange("")}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+            className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full text-xs text-[var(--muted-foreground)]"
           >
             ✕
-          </button>
+          </IconButton>
         )}
       </div>
 
       {/* Filter Button */}
-      <button
+      <Button
         type="button"
         id="seat-filter-toggle-btn"
+        variant="outline"
         onClick={onFilterClick}
-        className="h-11 px-5 rounded-full bg-[var(--card)] border border-[var(--border)] text-sm font-medium text-[var(--foreground)] shadow-xs hover:bg-[var(--muted)] transition-colors flex items-center gap-2 cursor-pointer"
+        leftIcon={<SlidersHorizontal size={15} className="text-[var(--muted-foreground)]" />}
+        className="h-11 px-5 rounded-full text-sm font-medium"
       >
-        <SlidersHorizontal size={15} className="text-[var(--muted-foreground)]" />
-        <span>Filtru</span>
-      </button>
+        Filtru
+      </Button>
     </div>
   )
 }

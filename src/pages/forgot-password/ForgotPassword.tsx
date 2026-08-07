@@ -56,13 +56,14 @@ export default function ForgotPassword() {
 
           <p className="text-sm text-muted-foreground">
             Nu a ajuns emailul?{" "}
-            <button
+            <Button
               type="button"
+              variant="link"
               onClick={() => setIsSent(false)}
-              className="font-semibold text-primary hover:underline"
+              className="h-auto p-0 font-semibold text-primary hover:underline"
             >
               Retrimite
-            </button>
+            </Button>
           </p>
         </div>
       </AuthShell>
@@ -103,10 +104,10 @@ export default function ForgotPassword() {
 
           <Button
             type="submit"
-            disabled={isSubmitting}
+            isLoading={isSubmitting}
             className="h-12 w-full rounded-full font-semibold"
           >
-            {isSubmitting ? "Se trimite..." : "Trimite link de resetare"}
+            Trimite link de resetare
           </Button>
         </form>
 

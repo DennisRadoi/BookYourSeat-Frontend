@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactElement } from "react"
 import { Calendar, Clock, Repeat, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react"
 import type { RecurrenceType } from "@/types"
+import { Button, IconButton, PillButton } from "@/components/ui"
 
 interface DateTimeSelectionStepProps {
   selectedDate: Date | null
@@ -88,25 +89,29 @@ export function DateTimeSelectionStep({
 
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <button
+              <IconButton
                 type="button"
+                size="xs"
+                variant="outline"
                 onClick={() => setMonthOffset((m) => m - 1)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center border border-[var(--border)] hover:bg-[var(--muted)] text-[var(--foreground)] transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-lg border border-[var(--border)] hover:bg-[var(--muted)] text-[var(--foreground)]"
                 aria-label="Luna precedentă"
               >
                 <ChevronLeft size={16} />
-              </button>
+              </IconButton>
               <div className="font-semibold text-[var(--card-foreground)] capitalize min-w-32 text-center text-sm">
                 {monthLabel}
               </div>
-              <button
+              <IconButton
                 type="button"
+                size="xs"
+                variant="outline"
                 onClick={() => setMonthOffset((m) => m + 1)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center border border-[var(--border)] hover:bg-[var(--muted)] text-[var(--foreground)] transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-lg border border-[var(--border)] hover:bg-[var(--muted)] text-[var(--foreground)]"
                 aria-label="Luna următoare"
               >
                 <ChevronRight size={16} />
-              </button>
+              </IconButton>
             </div>
           </div>
 
@@ -122,23 +127,24 @@ export function DateTimeSelectionStep({
               const isToday = cell && isSameDay(cell, new Date())
 
               return (
-                <button
+                <Button
                   key={idx}
                   type="button"
                   onClick={() => cell && onSelectDate(cell)}
                   disabled={!cell}
-                  className={`h-10 rounded-lg flex items-center justify-center text-sm transition-all duration-150 select-none ${
+                  variant={isSelected ? "default" : isToday ? "outline" : "ghost"}
+                  className={`h-10 p-0 rounded-lg flex items-center justify-center text-sm transition-all duration-150 select-none ${
                     !cell
                       ? "opacity-0 cursor-default"
                       : isSelected
-                      ? "bg-[var(--primary)] text-[var(--primary-foreground)] font-bold shadow-xs scale-105"
+                      ? "font-bold shadow-xs scale-105"
                       : isToday
-                      ? "border border-[var(--primary)] text-[var(--primary)] font-semibold hover:bg-[var(--muted)]"
-                      : "text-[var(--card-foreground)] hover:bg-[var(--muted)]"
+                      ? "border-[var(--primary)] text-[var(--primary)] font-semibold"
+                      : ""
                   }`}
                 >
                   {cell ? cell.getDate() : ""}
-                </button>
+                </Button>
               )
             })}
           </div>
@@ -150,18 +156,16 @@ export function DateTimeSelectionStep({
 
           <div className="flex flex-wrap items-center gap-2.5 mb-4">
             {(["niciuna", "zilnic", "saptamanal", "lunar"] as RecurrenceType[]).map((r) => (
-              <button
+              <PillButton
                 key={r}
                 type="button"
+                size="xs"
+                isActive={recurrence === r}
                 onClick={() => onRecurrenceChange(r)}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-                  recurrence === r
-                    ? "bg-[var(--primary)] text-[var(--primary-foreground)] border-[var(--primary)] shadow-xs"
-                    : "bg-[var(--card)] text-[var(--muted-foreground)] border-[var(--border)] hover:bg-[var(--muted)]"
-                }`}
+                className="px-4 py-1.5 text-xs font-semibold"
               >
                 {r === "niciuna" ? "Niciuna" : r === "zilnic" ? "Zilnic" : r === "saptamanal" ? "Săptămânal" : "Lunar"}
-              </button>
+              </PillButton>
             ))}
           </div>
 
@@ -255,18 +259,16 @@ export function DateTimeSelectionStep({
               </div>
               <div className="space-y-1 max-h-44 overflow-y-auto pr-1">
                 {timeSlots.map((t) => (
-                  <button
+                  <Button
                     key={t}
                     type="button"
+                    variant={startTime === t ? "default" : "ghost"}
+                    size="xs"
                     onClick={() => onStartTimeChange(t)}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs font-medium transition ${
-                      startTime === t
-                        ? "bg-[var(--primary)] text-[var(--primary-foreground)] font-bold"
-                        : "hover:bg-[var(--card)] text-[var(--card-foreground)]"
-                    }`}
+                    className="w-full text-left justify-start px-2.5 py-1.5 text-xs font-medium"
                   >
                     {t}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -277,18 +279,16 @@ export function DateTimeSelectionStep({
               </div>
               <div className="space-y-1 max-h-44 overflow-y-auto pr-1">
                 {timeSlots.map((t) => (
-                  <button
+                  <Button
                     key={t}
                     type="button"
+                    variant={endTime === t ? "default" : "ghost"}
+                    size="xs"
                     onClick={() => onEndTimeChange(t)}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs font-medium transition ${
-                      endTime === t
-                        ? "bg-[var(--primary)] text-[var(--primary-foreground)] font-bold"
-                        : "hover:bg-[var(--card)] text-[var(--card-foreground)]"
-                    }`}
+                    className="w-full text-left justify-start px-2.5 py-1.5 text-xs font-medium"
                   >
                     {t}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -338,16 +338,16 @@ export function DateTimeSelectionStep({
               </div>
             </div>
 
-            <button
+            <Button
               type="button"
               id="confirm-date-btn"
               onClick={onConfirmSchedule}
               disabled={!selectedDate}
-              className="w-full mt-4 py-3 px-4 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] text-sm font-bold shadow-sm hover:bg-[var(--sidebar-accent-hover)] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              rightIcon={<ArrowRight size={16} />}
+              className="w-full mt-4 py-3 rounded-xl font-bold"
             >
-              <span>Confirmă data</span>
-              <ArrowRight size={16} />
-            </button>
+              Confirmă data
+            </Button>
           </div>
         </div>
       </div>

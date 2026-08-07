@@ -1,5 +1,6 @@
 import { cn } from "@/utils"
 import type { ButtonHTMLAttributes, ReactNode } from "react"
+import { PillButton as UIPillButton } from "@/components/ui"
 
 // ─── PillButton ───────────────────────────────────────────────────────────────
 
@@ -19,20 +20,17 @@ interface PillButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  */
 export function PillButton({ isActive, children, className, ...props }: PillButtonProps) {
   return (
-    <button
+    <UIPillButton
       type="button"
+      isActive={isActive}
       className={cn(
-        "rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition",
-        isActive
-          ? "border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm"
-          : "border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)] hover:border-[var(--primary)] hover:text-[var(--primary)]",
-        "disabled:opacity-50 disabled:cursor-not-allowed",
+        "px-3.5 py-1.5 h-auto text-[12px] font-semibold border transition disabled:opacity-50 disabled:cursor-not-allowed",
         className,
       )}
       {...props}
     >
       {children}
-    </button>
+    </UIPillButton>
   )
 }
 

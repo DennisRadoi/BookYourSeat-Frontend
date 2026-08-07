@@ -1,6 +1,7 @@
 import { SearchInput } from "@/components/common"
 import { CompanyFilterPopover, activeFilterCount } from "./CompanyFilterPopover"
 import type { CompanyFilters } from "./CompanyFilterPopover"
+import { Button } from "@/components/ui"
 
 interface CompanyToolbarProps {
   query: string
@@ -34,18 +35,15 @@ export function CompanyToolbar({
         />
       </div>
 
-      <button
+      <Button
         type="button"
-        className={`min-h-[42px] self-end rounded-xl border bg-[var(--card)] px-[18px] text-sm font-semibold transition sm:self-auto ${
-          count
-            ? "border-[var(--primary)] bg-[var(--secondary)] text-[var(--secondary-foreground)]"
-            : "border-[var(--border)] text-[var(--foreground)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
-        }`}
+        variant={count ? "secondary" : "outline"}
         onClick={() => onFiltersOpenChange(!filtersOpen)}
         aria-expanded={filtersOpen}
+        className="min-h-[42px] self-end sm:self-auto rounded-xl font-semibold"
       >
         Filtru{count ? ` (${count})` : ""}
-      </button>
+      </Button>
 
       <CompanyFilterPopover
         open={filtersOpen}

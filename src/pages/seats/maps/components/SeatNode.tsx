@@ -1,6 +1,7 @@
 import { useState, type ReactElement } from "react"
 import { cn } from "@/utils"
 import type { Seat } from "@/types"
+import { Button } from "@/components/ui"
 
 export interface SeatNodeProps {
   seat: Seat
@@ -67,7 +68,7 @@ export function SeatNode({
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
-      <button
+      <Button
         type="button"
         id={`seat-${seat.code}`}
         disabled={isOccupied}
@@ -76,13 +77,13 @@ export function SeatNode({
         className={cn(
           shapeStyle,
           sizeStyle,
-          "flex items-center justify-center tracking-wide transition-all duration-200 select-none",
+          "flex items-center justify-center tracking-wide transition-all duration-200 select-none p-0",
           statusStyles,
           className,
         )}
       >
         {seat.code}
-      </button>
+      </Button>
 
       {/* Tooltip on hover */}
       {showTooltip && (

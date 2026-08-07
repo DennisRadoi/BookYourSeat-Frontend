@@ -1,5 +1,6 @@
 import type { ReactNode, ReactElement } from "react"
 import { cn } from "@/utils"
+import { PillButton } from "@/components/ui"
 
 export type FilterPillVariant = "primary" | "dark" | "outline"
 
@@ -40,20 +41,21 @@ export function FilterPill({
   }
 
   return (
-    <button
+    <PillButton
       id={id}
       type="button"
+      isActive={active}
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
       aria-pressed={active}
       className={cn(
-        "inline-flex items-center justify-center px-4 py-1.5 rounded-full text-sm transition-all duration-200 cursor-pointer border select-none disabled:opacity-50 disabled:cursor-not-allowed",
+        "px-4 py-1.5 h-auto text-sm border select-none disabled:opacity-50 disabled:cursor-not-allowed",
         variantStyles,
         className,
       )}
     >
       {children}
-    </button>
+    </PillButton>
   )
 }

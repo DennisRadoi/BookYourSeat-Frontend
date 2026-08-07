@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom"
 import { InviteColleagueDialog } from "./components/InviteColleagueDialog"
 import { ProfileMetricCard } from "./components/ProfileMetricCard"
 import { InfoCard } from "@/components/common"
+import { Button } from "@/components/ui"
 import { getColleagues } from "@/services"
 import type { Colleague } from "@/types"
 
@@ -40,7 +41,7 @@ export default function ColleagueProfilePage() {
             <div className="px-4 pb-4 sm:px-5 sm:pb-5">
               <div className="-mt-5 flex flex-wrap items-start justify-between gap-3">
                 <div className="grid size-12 place-items-center rounded-lg border-2 border-[var(--primary)] bg-[var(--secondary)] text-sm font-bold text-[var(--secondary-foreground)] shadow-sm">{initials}</div>
-                <button type="button" onClick={() => setInviteOpen(true)} className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[var(--primary)] px-3 text-[10px] font-bold text-[var(--primary-foreground)] transition hover:bg-[var(--sidebar-accent-hover)]"><Users size={13} />Invită la muncă</button>
+                <Button type="button" size="xs" onClick={() => setInviteOpen(true)} leftIcon={<Users size={13} />} className="font-bold">Invită la muncă</Button>
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-2"><h2 className="break-words text-base font-bold">{colleague.name}</h2>{colleague.isFavorite && <Star size={15} fill="currentColor" className="shrink-0 text-[var(--warning)]" />}</div>
               <p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">{colleague.role} · {department}</p>

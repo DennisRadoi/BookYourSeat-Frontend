@@ -5,6 +5,7 @@ import { getLocations } from "@/services/locationService"
 import { createReservation } from "@/services/reservationService"
 import { formatDateIso } from "@/utils"
 import type { Location, Seat, RoomZoneType, RecurrenceType } from "@/types"
+import { PillButton } from "@/components/ui"
 
 // Shape that the dashboard (or any caller) can pass via router state
 // to jump straight to the map step with pre-filled context.
@@ -115,29 +116,25 @@ export default function SeatsPage(): ReactElement {
           </div>
 
           <div className="flex items-center gap-1.5 bg-[var(--card)] p-1 rounded-full border border-[var(--border)] text-xs font-semibold shadow-xs">
-            <button
+            <PillButton
               type="button"
+              size="xs"
+              isActive={currentStep === "datetime"}
               onClick={() => setCurrentStep("datetime")}
-              className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
-                currentStep === "datetime"
-                  ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs"
-                  : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-              }`}
+              className="px-3 py-1"
             >
               1. Dată &amp; Oră
-            </button>
-            <button
+            </PillButton>
+            <PillButton
               type="button"
+              size="xs"
+              isActive={currentStep === "seat"}
               onClick={() => selectedDate && setCurrentStep("seat")}
               disabled={!selectedDate}
-              className={`px-3 py-1 rounded-full transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
-                currentStep === "seat"
-                  ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs"
-                  : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-              }`}
+              className="px-3 py-1"
             >
               2. Hartă Săli
-            </button>
+            </PillButton>
           </div>
         </div>
 

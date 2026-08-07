@@ -1,5 +1,6 @@
 import { Users } from "lucide-react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Button } from "@/components/ui"
 import type { Colleague } from "@/types"
 
 interface FavoriteColleaguesCardProps {
@@ -52,12 +53,15 @@ export function FavoriteColleaguesCard({
           )
         })}
 
-        <button
+        <Button
+          variant="outline"
+          size="sm"
           onClick={onNavigateToCompany}
-          className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border-[1.5px] border-dashed border-[var(--border)] bg-transparent py-2 text-[13px] font-medium text-[var(--muted-foreground)] cursor-pointer transition hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-[var(--secondary)]/30"
+          leftIcon={<Users size={14} />}
+          className="mt-2 w-full border-dashed text-[13px] font-medium text-[var(--muted-foreground)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
         >
-          <Users size={14} /> Invită un coleg
-        </button>
+          Invită un coleg
+        </Button>
       </CardContent>
     </Card>
   )

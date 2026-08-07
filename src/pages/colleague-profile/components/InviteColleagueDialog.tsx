@@ -1,4 +1,5 @@
 import { X, CalendarDays, Users } from "lucide-react"
+import { Button, IconButton } from "@/components/ui"
 
 interface InviteColleagueDialogProps {
   colleagueName: string
@@ -35,13 +36,14 @@ export function InviteColleagueDialog({ colleagueName, open, onClose }: InviteCo
               <span className="text-[11px] text-[var(--muted-foreground)]">{colleagueName}</span>
             </div>
           </div>
-          <button
+          <IconButton
             onClick={onClose}
-            className="rounded-full p-1.5 text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)] transition"
             aria-label="Închide"
+            size="xs"
+            className="rounded-full text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
           >
             <X size={16} />
-          </button>
+          </IconButton>
         </div>
 
         {/* Body */}
@@ -78,18 +80,21 @@ export function InviteColleagueDialog({ colleagueName, open, onClose }: InviteCo
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-2.5 px-6 py-4 border-t border-[var(--border)]">
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onClose}
-            className="rounded-xl px-4 py-2 text-[13px] font-semibold text-[var(--muted-foreground)] hover:bg-[var(--muted)] transition"
+            className="text-[13px] font-semibold text-[var(--muted-foreground)]"
           >
             Anulează
-          </button>
-          <button
+          </Button>
+          <Button
+            size="sm"
             onClick={onClose}
-            className="rounded-xl bg-[var(--primary)] hover:bg-[var(--sidebar-accent-hover)] text-[var(--primary-foreground)] px-4 py-2 text-[13px] font-semibold transition shadow-sm"
+            className="rounded-xl font-semibold"
           >
             Trimite invitația
-          </button>
+          </Button>
         </div>
       </div>
     </div>

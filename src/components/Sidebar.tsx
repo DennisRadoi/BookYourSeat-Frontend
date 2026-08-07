@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/utils"
+import { IconButton } from "@/components/ui"
 import {
   PanelLeft,
   CalendarCheck,
@@ -63,13 +64,14 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
             BOOK YOUR SEAT
           </span>
 
-          <button
-            className="ml-auto hidden max-md:flex items-center justify-center h-8 w-8 rounded-lg border border-[var(--sidebar-border)] bg-transparent text-[var(--sidebar-muted)] cursor-pointer transition hover:bg-[var(--sidebar-active-bg)] hover:text-[var(--sidebar-active-text)]"
+          <IconButton
+            size="xs"
+            className="ml-auto hidden max-md:flex h-8 w-8 rounded-lg border border-[var(--sidebar-border)] bg-transparent text-[var(--sidebar-muted)] hover:bg-[var(--sidebar-active-bg)] hover:text-[var(--sidebar-active-text)]"
             onClick={onMobileClose}
             aria-label="Închide meniu"
           >
             <X size={20} />
-          </button>
+          </IconButton>
         </div>
 
         <div className="mb-3">
@@ -147,18 +149,18 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
         </nav>
       </aside>
 
-      <button
+      <IconButton
         className={cn(
           "absolute top-4 -right-[40px] z-20 hidden md:flex",
-          "h-[30px] w-[30px] items-center justify-center rounded-lg",
+          "h-[30px] w-[30px] rounded-lg",
           "border border-[var(--border)] bg-[var(--card)] shadow-[2px_0_6px_rgba(0,0,0,0.06)]",
-          "cursor-pointer text-[var(--muted-foreground)] transition hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] hover:border-[var(--accent)] hover:shadow-[0_2px_10px_rgba(5,150,105,0.35)]",
+          "text-[var(--muted-foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)]",
         )}
         onClick={() => setIsCollapsed(!isCollapsed)}
         aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         <PanelLeft size={18} />
-      </button>
+      </IconButton>
     </div>
   )
 }

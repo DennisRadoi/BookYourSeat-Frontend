@@ -1,5 +1,6 @@
 import type { ReactElement } from "react"
 import type { Room } from "@/types"
+import { PillButton } from "@/components/ui"
 
 interface RoomSelectorProps {
   rooms: Room[]
@@ -29,15 +30,12 @@ export function RoomSelector({
           const totalSeatsCount = room.seats.length
 
           return (
-            <button
+            <PillButton
               key={room.id}
               type="button"
+              isActive={isSelected}
               onClick={() => onSelectRoom(room)}
-              className={`group relative flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium border transition-all duration-200 cursor-pointer shadow-2xs ${
-                isSelected
-                  ? "bg-[var(--primary)] text-[var(--primary-foreground)] border-[var(--primary)] ring-2 ring-[var(--primary)]/20 shadow-xs scale-[1.02]"
-                  : "bg-[var(--card)] text-[var(--foreground)] border-[var(--border)] hover:border-[var(--primary)]/50 hover:bg-[var(--accent)]/50"
-              }`}
+              className="group relative flex items-center gap-2 px-3.5 py-1.5 h-auto text-xs sm:text-sm font-medium"
             >
               {/* Active Indicator Dot */}
               <span
@@ -63,7 +61,7 @@ export function RoomSelector({
               >
                 {availableSeatsCount}/{totalSeatsCount}
               </span>
-            </button>
+            </PillButton>
           )
         })}
       </div>

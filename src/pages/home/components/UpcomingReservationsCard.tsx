@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react"
 import { CalendarCheck, Clock, Pencil } from "lucide-react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui"
 import { StatusBadge } from "./StatusBadge"
 import { EditReservationModal } from "./EditReservationModal"
 import { formatDateIso, MONTH_LABELS } from "@/utils"
@@ -62,9 +62,10 @@ export function UpcomingReservationsCard({
               <span>Nu ai rezervări viitoare</span>
               <Button
                 onClick={onNavigateToSeats}
-                className="rounded-full bg-[var(--primary)] hover:bg-[var(--sidebar-accent-hover)] text-[var(--primary-foreground)] gap-1.5 shadow-sm"
+                leftIcon={<CalendarCheck size={15} />}
+                className="rounded-full bg-[var(--primary)] hover:bg-[var(--sidebar-accent-hover)] text-[var(--primary-foreground)]"
               >
-                <CalendarCheck size={15} /> Rezervă acum
+                Rezervă acum
               </Button>
             </div>
           ) : (
@@ -107,15 +108,17 @@ export function UpcomingReservationsCard({
                       </span>
                     </div>
                     <StatusBadge status={reservation.status} />
-                    <button
+                    <Button
                       id={`edit-reservation-${reservation.id}`}
+                      variant="outline"
+                      size="xs"
                       onClick={() => setEditingReservation(reservation)}
-                      className="flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2.5 py-1.5 text-[12px] font-semibold text-[var(--primary)] hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)] hover:border-[var(--primary)] transition flex-shrink-0"
+                      leftIcon={<Pencil size={12} />}
+                      className="text-[12px] font-semibold text-[var(--primary)] shrink-0"
                       title="Editează rezervarea"
                     >
-                      <Pencil size={12} />
                       Editează
-                    </button>
+                    </Button>
                   </div>
                 )
               })}

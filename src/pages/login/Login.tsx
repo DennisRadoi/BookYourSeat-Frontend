@@ -98,10 +98,10 @@ export default function Login() {
 
           <Button
             type="submit"
-            disabled={isSubmitting}
+            isLoading={isSubmitting}
             className="mt-2 h-14 w-full rounded-full text-lg font-bold shadow-md transition-transform active:scale-[0.99]"
           >
-            {isSubmitting ? "Se autentifică..." : "Intră în cont"}
+            Intră în cont
           </Button>
         </form>
 

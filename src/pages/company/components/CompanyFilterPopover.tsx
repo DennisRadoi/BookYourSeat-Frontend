@@ -1,3 +1,5 @@
+import { Button, PillButton } from "@/components/ui"
+
 export interface CompanyFilters {
   status: string    // "all" | "La birou" | "Remote"
   floor: string     // "all" | floor name
@@ -67,12 +69,14 @@ export function CompanyFilterPopover({
         <div className="flex items-center justify-between mb-3">
           <span className="text-[13px] font-bold text-[var(--foreground)]">Filtre</span>
           {activeFilterCount(filters) > 0 && (
-            <button
+            <Button
+              variant="link"
+              size="xs"
               onClick={reset}
-              className="text-[11px] font-semibold text-[var(--primary)] hover:underline"
+              className="h-auto p-0 font-semibold text-[var(--primary)] hover:underline"
             >
               Resetează
-            </button>
+            </Button>
           )}
         </div>
 
@@ -83,17 +87,15 @@ export function CompanyFilterPopover({
           </p>
           <div className="flex gap-2 flex-wrap">
             {STATUS_OPTIONS.map((opt) => (
-              <button
+              <PillButton
                 key={opt.value}
+                type="button"
+                size="xs"
+                isActive={filters.status === opt.value}
                 onClick={() => update({ status: opt.value })}
-                className={`rounded-full px-3 py-1 text-[12px] font-semibold border transition ${
-                  filters.status === opt.value
-                    ? "border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)]"
-                    : "border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
-                }`}
               >
                 {opt.label}
-              </button>
+              </PillButton>
             ))}
           </div>
         </div>
@@ -105,28 +107,24 @@ export function CompanyFilterPopover({
               Etaj / Locație
             </p>
             <div className="flex gap-2 flex-wrap">
-              <button
+              <PillButton
+                type="button"
+                size="xs"
+                isActive={filters.floor === "all"}
                 onClick={() => update({ floor: "all" })}
-                className={`rounded-full px-3 py-1 text-[12px] font-semibold border transition ${
-                  filters.floor === "all"
-                    ? "border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)]"
-                    : "border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
-                }`}
               >
                 Toate
-              </button>
+              </PillButton>
               {floors.map((fl) => (
-                <button
+                <PillButton
                   key={fl}
+                  type="button"
+                  size="xs"
+                  isActive={filters.floor === fl}
                   onClick={() => update({ floor: fl })}
-                  className={`rounded-full px-3 py-1 text-[12px] font-semibold border transition ${
-                    filters.floor === fl
-                      ? "border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)]"
-                      : "border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
-                  }`}
                 >
                   {fl}
-                </button>
+                </PillButton>
               ))}
             </div>
           </div>
@@ -139,27 +137,25 @@ export function CompanyFilterPopover({
           </p>
           <div className="flex gap-2 flex-wrap">
             {FAVORITE_OPTIONS.map((opt) => (
-              <button
+              <PillButton
                 key={opt.value}
+                type="button"
+                size="xs"
+                isActive={filters.favorite === opt.value}
                 onClick={() => update({ favorite: opt.value })}
-                className={`rounded-full px-3 py-1 text-[12px] font-semibold border transition ${
-                  filters.favorite === opt.value
-                    ? "border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)]"
-                    : "border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
-                }`}
               >
                 {opt.label}
-              </button>
+              </PillButton>
             ))}
           </div>
         </div>
 
-        <button
+        <Button
           onClick={onClose}
-          className="w-full rounded-xl bg-[var(--primary)] py-2 text-[13px] font-bold text-[var(--primary-foreground)] hover:bg-[var(--sidebar-accent-hover)] transition"
+          className="w-full font-bold"
         >
           Aplică
-        </button>
+        </Button>
       </div>
     </>
   )

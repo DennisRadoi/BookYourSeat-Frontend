@@ -1,3 +1,5 @@
+import { IconButton } from "@/components/ui"
+
 function EyeIcon(props: React.SVGProps<SVGSVGElement>) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6S2.5 12 2.5 12Z" /><circle cx="12" cy="12" r="3" /></svg>
 }
@@ -9,5 +11,16 @@ function EyeOffIcon(props: React.SVGProps<SVGSVGElement>) {
 interface PasswordToggleProps { isVisible: boolean; onToggle: () => void; label: string }
 
 export function PasswordToggle({ isVisible, onToggle, label }: PasswordToggleProps) {
-  return <button type="button" onClick={onToggle} aria-label={label} className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground">{isVisible ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}</button>
+  return (
+    <IconButton
+      type="button"
+      onClick={onToggle}
+      aria-label={label}
+      size="xs"
+      className="absolute right-3 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+    >
+      {isVisible ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+    </IconButton>
+  )
 }
+
