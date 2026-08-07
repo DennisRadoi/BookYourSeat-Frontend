@@ -382,109 +382,12 @@ function createNamedSeats(
 
 export const locations: Location[] = [
   // ==========================================
-  // CORP T2 (Sediul Principal cu toate hărțile implementate)
-  // ==========================================
-  {
-    id: 2,
-    name: "Sediul Tehnologic T2",
-    address: "Șoseaua Pipera 42, București",
-    city: "București",
-    building: "Corp T2",
-    floors: [
-      // ----------------- PARTER (Comun T1 & T2) -----------------
-      {
-        id: 4,
-        number: 0,
-        name: "Parter",
-        rooms: [
-          {
-            id: 201,
-            name: "Stand-Up Desk",
-            type: "birouri",
-            layout: "standup",
-            floorId: 4,
-            building: "Corp T2",
-            hasTv: false,
-            hasWhiteboard: false,
-            seats: createStandup8Seats(2000, ["L3"]),
-          },
-          {
-            id: 202,
-            name: "Sală de Relaxare",
-            type: "conferinte",
-            layout: "relaxare",
-            floorId: 4,
-            building: "Corp T2",
-            hasTv: false,
-            hasWhiteboard: false,
-            seats: createRelaxare10Seats(2020, ["A2"]),
-          },
-        ],
-        seats: createStandup8Seats(2000, ["L3"]),
-      },
-
-      // ----------------- ETAJ 1 (T2) -----------------
-      {
-        id: 5,
-        number: 1,
-        name: "Etaj 1",
-        rooms: [
-          {
-            id: 210,
-            name: "Birou Open Space",
-            type: "birouri",
-            layout: "openspace",
-            floorId: 5,
-            building: "Corp T2",
-            hasTv: false,
-            hasWhiteboard: false,
-            seats: createOpenSpace20Seats(2100, []),
-          },
-          {
-            id: 211,
-            name: "404",
-            type: "conferinte",
-            layout: "conference",
-            floorId: 5,
-            building: "Corp T2",
-            hasTv: true,
-            hasWhiteboard: true,
-            seats: createConference12Seats(2120, ["A2", "A5", "B3"]),
-          },
-        ],
-        seats: createOpenSpace20Seats(2100, []),
-      },
-
-      // ----------------- ETAJ 2 (T2) -----------------
-      {
-        id: 6,
-        number: 2,
-        name: "Etaj 2",
-        rooms: [
-          {
-            id: 220,
-            name: "Sala Birou - Etaj 2",
-            type: "birouri",
-            layout: "office",
-            floorId: 6,
-            building: "Corp T2",
-            hasTv: true,
-            hasWhiteboard: true,
-            seats: createOffice24Seats(2200, ["M9", "M2", "M5", "W3"]),
-          },
-        ],
-        seats: createOffice24Seats(2200, ["M9", "M2", "M5", "W3"]),
-      },
-    ],
-  },
-
-  // ==========================================
-  // CORP T1 (Parter Comun)
+  // CORP T1
   // ==========================================
   {
     id: 1,
     name: "Sediul Tehnologic T1",
-    address: "Bulevardul Dimitrie Pompeiu 10, București",
+    address: "",
     city: "București",
     building: "Corp T1",
     floors: [
@@ -596,6 +499,103 @@ export const locations: Location[] = [
           },
         ],
         seats: createNamedSeats(1200, ["A1", "A2", "A3", "A4", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4"]),
+      },
+    ],
+  },
+
+  // ==========================================
+  // CORP T2
+  // ==========================================
+  {
+    id: 2,
+    name: "Sediul Tehnologic T2",
+    address: "",
+    city: "București",
+    building: "Corp T2",
+    floors: [
+      // ----------------- PARTER (Comun T1 & T2) -----------------
+      {
+        id: 4,
+        number: 0,
+        name: "Parter",
+        rooms: [
+          {
+            id: 201,
+            name: "Stand-Up Desk",
+            type: "birouri",
+            layout: "standup",
+            floorId: 4,
+            building: "Corp T2",
+            hasTv: false,
+            hasWhiteboard: false,
+            seats: createStandup8Seats(2000, ["L3"]),
+          },
+          {
+            id: 202,
+            name: "Sală de Relaxare",
+            type: "conferinte",
+            layout: "relaxare",
+            floorId: 4,
+            building: "Corp T2",
+            hasTv: false,
+            hasWhiteboard: false,
+            seats: createRelaxare10Seats(2020, ["A2"]),
+          },
+        ],
+        seats: createStandup8Seats(2000, ["L3"]),
+      },
+
+      // ----------------- ETAJ 1 (T2) -----------------
+      {
+        id: 5,
+        number: 1,
+        name: "Etaj 1",
+        rooms: [
+          {
+            id: 210,
+            name: "Birou Open Space",
+            type: "birouri",
+            layout: "openspace",
+            floorId: 5,
+            building: "Corp T2",
+            hasTv: false,
+            hasWhiteboard: false,
+            seats: createOpenSpace20Seats(2100, []),
+          },
+          {
+            id: 211,
+            name: "404",
+            type: "conferinte",
+            layout: "conference",
+            floorId: 5,
+            building: "Corp T2",
+            hasTv: true,
+            hasWhiteboard: true,
+            seats: createConference12Seats(2120, ["A2", "A5", "B3"]),
+          },
+        ],
+        seats: createOpenSpace20Seats(2100, []),
+      },
+
+      // ----------------- ETAJ 2 (T2) -----------------
+      {
+        id: 6,
+        number: 2,
+        name: "Etaj 2",
+        rooms: [
+          {
+            id: 220,
+            name: "Sala Birou - Etaj 2",
+            type: "birouri",
+            layout: "office",
+            floorId: 6,
+            building: "Corp T2",
+            hasTv: true,
+            hasWhiteboard: true,
+            seats: createOffice24Seats(2200, ["M9", "M2", "M5", "W3"]),
+          },
+        ],
+        seats: createOffice24Seats(2200, ["M9", "M2", "M5", "W3"]),
       },
     ],
   },

@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, type ReactElement } from "react"
+import { AlertCircle } from "lucide-react"
 import { FilterPill } from "./FilterPill"
 import { RoomSelector } from "./RoomSelector"
 import { SeatSearchBar } from "./SeatSearchBar"
@@ -55,6 +56,8 @@ export function RoomSeatSelectionStep({
   onBookAnother = () => {},
 }: RoomSeatSelectionStepProps): ReactElement {
   const [searchQuery, setSearchQuery] = useState("")
+  const [isWholeRoomSelected, setIsWholeRoomSelected] = useState(false)
+  const [birouriNotice, setBirouriNotice] = useState<string | null>(null)
 
   // Find the current location / building
   const currentLocation = useMemo(() => {
@@ -74,6 +77,24 @@ export function RoomSeatSelectionStep({
   const currentFloor: Floor | undefined = useMemo(() => {
     return floors.find((f) => f.id === selectedFloorId) || floors[0]
   }, [floors, selectedFloorId])
+
+  // Check if current floor has any rooms/seats of type "birouri"
+  const hasBirouriOnFloor = useMemo(() => {
+    if (!currentFloor?.rooms) return false
+    return currentFloor.rooms.some((r) => r.type === "birouri")
+  }, [currentFloor])
+
+  // Auto-switch to conferinte if floor has no birouri
+  useEffect(() => {
+    if (!hasBirouriOnFloor && selectedZoneType === "birouri") {
+      onSelectZoneType("conferinte")
+    }
+  }, [hasBirouriOnFloor, selectedZoneType, onSelectZoneType])
+
+  // Reset notice when floor or building changes
+  useEffect(() => {
+    setBirouriNotice(null)
+  }, [selectedFloorId, selectedBuilding])
 
   // Sync floor id if building changed and current floor is not in the new building
   useEffect(() => {
@@ -107,6 +128,58 @@ export function RoomSeatSelectionStep({
     }
   }, [availableRooms, selectedRoomId, onSelectRoomId])
 
+  // Reset whole room selection when room or zone changes
+  useEffect(() => {
+    setIsWholeRoomSelected(false)
+  }, [selectedZoneType, currentRoom?.id])
+
+  // Auto-navigate to room matching search query (e.g. "sala tenis", "gaming", "404", "la terasa")
+  useEffect(() => {
+    const clean = (str = "") =>
+      str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim()
+
+    const q = clean(searchQuery)
+    if (!q || q.length < 2) return
+
+    for (const loc of locations) {
+      for (const floor of loc.floors || []) {
+        for (const room of floor.rooms || []) {
+          const roomNameClean = clean(room.name)
+          if (roomNameClean.includes(q) || q.includes(roomNameClean)) {
+            if (loc.building !== selectedBuilding) {
+              onSelectBuilding(loc.building)
+            }
+            if (floor.id !== selectedFloorId) {
+              onSelectFloorId(floor.id)
+            }
+            if (room.type !== selectedZoneType) {
+              onSelectZoneType(room.type)
+            }
+            if (room.id !== selectedRoomId) {
+              onSelectRoomId?.(room.id)
+            }
+            return
+          }
+        }
+      }
+    }
+  }, [
+    searchQuery,
+    locations,
+    selectedBuilding,
+    selectedFloorId,
+    selectedZoneType,
+    selectedRoomId,
+    onSelectBuilding,
+    onSelectFloorId,
+    onSelectZoneType,
+    onSelectRoomId,
+  ])
+
   // Seats list for current room or floor fallback
   const seats: Seat[] = useMemo(() => {
     if (currentRoom && currentRoom.seats) return currentRoom.seats
@@ -117,38 +190,71 @@ export function RoomSeatSelectionStep({
   // Auto-select initial available seat when room or seats change
   useEffect(() => {
     const isSelectedInRoom = selectedSeat && seats.some((s) => s.id === selectedSeat.id)
-    if (!isSelectedInRoom && seats.length > 0) {
-      const defaultSeat =
-        seats.find((s) => s.code === "M6" && s.isAvailable) ||
-        seats.find((s) => s.code === "B1" && s.isAvailable) ||
-        seats.find((s) => s.isAvailable)
-      if (defaultSeat) {
-        onSelectSeat(defaultSeat)
+    if (!isSelectedInRoom && seats.length > 0 && !isWholeRoomSelected) {
+      const firstAvailable = seats.find((s) => s.isAvailable)
+      if (firstAvailable) onSelectSeat(firstAvailable)
+    }
+  }, [seats, selectedSeat, onSelectSeat, isWholeRoomSelected])
+
+  const roomDisplayName = currentRoom?.name || currentFloor?.name || "Sală"
+
+  function handleToggleWholeRoom() {
+    if (isWholeRoomSelected) {
+      setIsWholeRoomSelected(false)
+      const firstAvailable = seats.find((s) => s.isAvailable)
+      if (firstAvailable) onSelectSeat(firstAvailable)
+    } else {
+      setIsWholeRoomSelected(true)
+      if (currentRoom) {
+        const wholeRoomSeat: Seat = {
+          id: -currentRoom.id,
+          code: `Toată sala (${currentRoom.name})`,
+          area: "team",
+          type: "standard",
+          hasMonitor: true,
+          isAvailable: true,
+        }
+        onSelectSeat(wholeRoomSeat)
       }
     }
-  }, [seats, selectedSeat, onSelectSeat])
+  }
 
-  const roomDisplayName = currentRoom?.name || `Sala ${selectedZoneType === "birouri" ? "Birouri" : "Conferințe"} - ${currentFloor?.name || "Parter"}`
+  function handleSeatSelect(seat: Seat) {
+    if (seat.id > 0) {
+      setIsWholeRoomSelected(false)
+    }
+    onSelectSeat(seat)
+  }
+
+  function handleBirouriClick() {
+    if (!hasBirouriOnFloor) {
+      setBirouriNotice(
+        `Nu există birouri la ${currentFloor?.name || "acest etaj"} în ${selectedBuilding}. Sunt disponibile doar Săli de Conferințe.`
+      )
+    } else {
+      setBirouriNotice(null)
+      onSelectZoneType("birouri")
+    }
+  }
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-300">
-      {/* Top Controls Toolbar */}
-      <div className="space-y-3.5 bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 sm:p-5 shadow-2xs">
-        {/* Row 1: Building Selector */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <span className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider min-w-16">
+    <div className="space-y-6 animate-in fade-in duration-300">
+      {/* Top Filter Bar */}
+      <div className="bg-[var(--card)] rounded-2xl p-4 sm:p-5 border border-[var(--border)] shadow-xs space-y-4">
+        {/* Row 1: Building Selector Tabs */}
+        <div className="flex flex-wrap items-center gap-2 border-b border-[var(--border)]/60 pb-3.5">
+          <span className="text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-wider mr-1">
             Clădire:
           </span>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto">
             {locations.map((loc) => {
               const isSelected = loc.building === selectedBuilding
               return (
                 <FilterPill
                   key={loc.id}
                   active={isSelected}
-                  variant="primary"
+                  variant="dark"
                   onClick={() => onSelectBuilding(loc.building)}
-                  className="min-w-20 text-xs sm:text-sm font-medium"
                 >
                   {loc.building}
                 </FilterPill>
@@ -157,15 +263,15 @@ export function RoomSeatSelectionStep({
           </div>
         </div>
 
-        {/* Row 2: Floor + Zone Switchers & Search Bar */}
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 pt-1 border-t border-[var(--border)]/60">
-          {/* Left: Floors & Zones */}
+        {/* Row 2: Floor Tabs + Zone Type + Search Bar */}
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+          {/* Left: Floor Selector & Zone Type Pills */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider min-w-16">
+            <span className="text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-wider mr-1">
               Etaj:
             </span>
             {floors.map((floor) => {
-              const isFloorSelected = floor.id === (currentFloor?.id ?? selectedFloorId)
+              const isFloorSelected = floor.id === selectedFloorId
               return (
                 <FilterPill
                   key={floor.id}
@@ -181,23 +287,28 @@ export function RoomSeatSelectionStep({
             <div className="h-5 w-px bg-[var(--border)] mx-1 hidden sm:block" />
 
             <FilterPill
-              active={selectedZoneType === "birouri"}
+              active={selectedZoneType === "birouri" && hasBirouriOnFloor}
               variant="dark"
-              onClick={() => onSelectZoneType("birouri")}
+              onClick={handleBirouriClick}
+              className={!hasBirouriOnFloor ? "opacity-50 cursor-not-allowed bg-[var(--muted)]/40 border-dashed" : ""}
+              ariaLabel={!hasBirouriOnFloor ? "Nu există birouri la acest etaj" : "Birouri"}
             >
-              Birouri
+              Birouri {!hasBirouriOnFloor && <span className="text-[10px] ml-1 opacity-75">(0)</span>}
             </FilterPill>
 
             <FilterPill
               active={selectedZoneType === "conferinte"}
               variant="dark"
-              onClick={() => onSelectZoneType("conferinte")}
+              onClick={() => {
+                setBirouriNotice(null)
+                onSelectZoneType("conferinte")
+              }}
             >
               Sali conferinte
             </FilterPill>
           </div>
 
-          {/* Right: Search & Filter */}
+          {/* Right: Search Bar */}
           <div className="w-full lg:w-80 flex-shrink-0">
             <SeatSearchBar
               query={searchQuery}
@@ -206,7 +317,15 @@ export function RoomSeatSelectionStep({
           </div>
         </div>
 
-        {/* Row 3: Specific Room Selector (if multiple rooms exist on floor) */}
+        {/* Warning Banner if user clicked disabled Birouri pill */}
+        {birouriNotice && (
+          <div className="flex items-center gap-2.5 p-3 rounded-xl bg-[var(--warning)]/10 border border-[var(--warning)]/30 text-xs font-medium text-[var(--warning)] animate-in fade-in-0 slide-in-from-top-1">
+            <AlertCircle size={16} className="shrink-0 text-[var(--warning)]" />
+            <span>{birouriNotice}</span>
+          </div>
+        )}
+
+        {/* Row 3: Specific Room Selector */}
         {availableRooms.length > 0 && (
           <div className="pt-2 border-t border-[var(--border)]/60">
             <RoomSelector
@@ -220,15 +339,14 @@ export function RoomSeatSelectionStep({
         )}
       </div>
 
-      {/* Main Grid: Room Map (Left) & Summary Card (Right) */}
+      {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Room Map Canvas */}
         <div className="lg:col-span-8 col-span-1">
           <RoomMap
             roomName={roomDisplayName}
             seats={seats}
             selectedSeat={selectedSeat}
-            onSeatSelect={onSelectSeat}
+            onSeatSelect={handleSeatSelect}
             searchQuery={searchQuery}
             layout={currentRoom?.layout}
             roomType={selectedZoneType}
@@ -239,7 +357,6 @@ export function RoomSeatSelectionStep({
           />
         </div>
 
-        {/* Right Info & Booking Summary Card */}
         <div className="lg:col-span-4 col-span-1">
           <SeatSummaryCard
             selectedSeat={selectedSeat}
@@ -252,6 +369,11 @@ export function RoomSeatSelectionStep({
             onConfirm={onConfirmReservation}
             onEditSchedule={onEditSchedule}
             isSubmitting={isSubmitting}
+            isConferenceZone={selectedZoneType === "conferinte"}
+            isWholeRoomSelected={isWholeRoomSelected}
+            onToggleWholeRoom={handleToggleWholeRoom}
+            roomName={currentRoom?.name}
+            totalRoomSeats={seats.length}
           />
         </div>
       </div>
@@ -260,6 +382,7 @@ export function RoomSeatSelectionStep({
       <ReservationSuccessModal
         isOpen={isSuccessModalOpen}
         onClose={onCloseSuccessModal}
+        onBookAnother={onBookAnother}
         seat={selectedSeat}
         buildingName={selectedBuilding}
         floorName={currentFloor?.name || "Parter"}
@@ -267,7 +390,6 @@ export function RoomSeatSelectionStep({
         startTime={startTime}
         endTime={endTime}
         recurrence={recurrence}
-        onBookAnother={onBookAnother}
       />
     </div>
   )
