@@ -76,9 +76,15 @@ export function DepartureCard({ departure }: DepartureCardProps) {
         </div>
       </div>
 
-      <p className="text-xs leading-[1.5] text-[var(--accent-card-foreground)]/80">
-        Pleacă în <strong className="text-[var(--accent-card-foreground)]">{departure.minutesToLeave} min</strong> pentru a ajunge la birou la ora <strong className="text-[var(--accent-card-foreground)]">{arrivalTime}</strong>.
-      </p>
+      {departure.aiExplanation ? (
+        <div className="rounded-xl border border-[var(--accent-card-foreground)]/15 bg-[var(--accent-card-foreground)]/5 p-3 text-xs leading-[1.6] text-[var(--accent-card-foreground)]/90 whitespace-pre-line">
+          {departure.aiExplanation}
+        </div>
+      ) : (
+        <p className="text-xs leading-[1.5] text-[var(--accent-card-foreground)]/80">
+          Pleacă în <strong className="text-[var(--accent-card-foreground)]">{departure.minutesToLeave} min</strong> pentru a ajunge la birou la ora <strong className="text-[var(--accent-card-foreground)]">{arrivalTime}</strong>.
+        </p>
+      )}
 
       <div className="flex items-center rounded-xl bg-[var(--accent-card-foreground)]/10 px-3 py-2">
         {stats.map((stat) => (

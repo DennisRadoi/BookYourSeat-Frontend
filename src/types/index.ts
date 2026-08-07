@@ -183,6 +183,11 @@ export interface UserSettings {
 }
 
 
+export interface RouteIncident {
+  location: string
+  delay: number
+}
+
 export interface DepartureInsight {
   time: string
   minutesToLeave: number
@@ -192,6 +197,8 @@ export interface DepartureInsight {
   originAddress?: string
   destinationAddress?: string
   routeVia?: string
+  aiExplanation?: string
+  incidents?: RouteIncident[]
 }
 
 export interface WeatherInsight {

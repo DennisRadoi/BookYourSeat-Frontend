@@ -1,12 +1,13 @@
 /**
  * geminiService.ts
- * Apelează Gemini 2.5 Flash Lite API pentru a calcula ruta optimă (de la domiciliu la sediu)
- * și a genera AI Insights pe baza contextului utilizatorului, corelat cu date meteo reale în timp real.
+ * Integrează Google Routes API și Gemini 2.5 Flash pentru a genera
+ * explicații AI personalizate și alerte de trafic reale bazate pe datele rutiere.
  */
 
 import type { AIInsightsData, WeatherInsight } from "@/types"
 import { OFFICE_ADDRESS, defaultInsights } from "@/data/insights"
 import { fetchLiveWeather } from "./weatherService"
+import { getRouteData, type RouteData } from "./routeService"
 
 export interface AIInsightItem {
   id: string
@@ -48,113 +49,60 @@ export interface InsightContext {
   currentTime: string
 }
 
-const DEFAULT_MODEL = "gemini-2.5-flash-lite"
+const DEFAULT_MODEL = "gemini-2.5-flash" // SAU Gemini 3.1 Flash Lite
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 
-function calculateFallbackRoute(ctx: InsightContext, liveWeather?: WeatherInsight): AIInsightsData {
-  const origin = ctx.user.domiciliu || "București, Nițu Vasile 58"
-  const destination = ctx.officeAddress || OFFICE_ADDRESS
-
-  // Calcul estimare distanță și durată
-  const distanceKm = 11.8
-  const durationMin = 32
-  const targetStartTime = ctx.user.preferences.preferredStartTime || "15:00"
-
-  // Calcul oră de plecare (ex: 15:00 - 32 min = 14:28)
-  const [targetH, targetM] = targetStartTime.split(":").map(Number)
-  const targetDate = new Date()
-  targetDate.setHours(targetH || 15, targetM || 0, 0, 0)
-  const departureDate = new Date(targetDate.getTime() - durationMin * 60000)
-
-  const depHours = String(departureDate.getHours()).padStart(2, "0")
-  const depMinutes = String(departureDate.getMinutes()).padStart(2, "0")
-
-  const now = new Date()
-  const minutesToLeave = Math.max(
-    5,
-    Math.round((departureDate.getTime() - now.getTime()) / 60000),
-  )
-
-  return {
-    ...defaultInsights,
-    weather: liveWeather || defaultInsights.weather,
-    departure: {
-      time: `${depHours}:${depMinutes}`,
-      minutesToLeave: isNaN(minutesToLeave) || minutesToLeave < 0 ? 25 : minutesToLeave,
-      durationMin,
-      distanceKm,
-      trafficLevel: "Moderat",
-      originAddress: origin,
-      destinationAddress: destination,
-      routeVia: "via Pasajul Basarab & Șos. Grozăvești",
-    },
-    trafficAlerts: [
-      {
-        id: "1",
-        type: "warning",
-        location: "Pasajul Basarab / Șos. Grozăvești",
-        detail: "+7 min față de normal · Trafic aglomerat",
-      },
-      {
-        id: "2",
-        type: "warning",
-        location: "Bd. Iuliu Maniu (intersecție Lujerului)",
-        detail: "+5 min · Încetinire pe sensul spre centru",
-      },
-    ],
-  }
-}
-
-function buildPrompt(ctx: InsightContext, liveWeather?: WeatherInsight): string {
-  const origin = ctx.user.domiciliu || "București, Nițu Vasile 58"
-  const destination = ctx.officeAddress || OFFICE_ADDRESS
+function buildPrompt(
+  ctx: InsightContext,
+  routeData: RouteData,
+  liveWeather?: WeatherInsight,
+): string {
   const weatherContext = liveWeather
-    ? `Vreme curentă București: ${liveWeather.temp}°C, ${liveWeather.condition}, umiditate ${liveWeather.humidity}%, vânt ${liveWeather.windKmh} km/h, șanse ploaie ${liveWeather.rainChance}%`
+    ? `Vreme curentă București: ${liveWeather.temp}°C, ${liveWeather.condition}, umiditate ${liveWeather.humidity}%, vânt ${liveWeather.windKmh} km/h`
     : `Vreme curentă București: 24°C, Parțial înnorat`
 
-  return `Ești un asistent inteligent de navigație și mobilitate urbană pentru București în aplicația "Book Your Seat".
+  const routePayload = {
+    distanceKm: routeData.distanceKm,
+    durationMin: routeData.durationMin,
+    departureTime: routeData.departureTime,
+    incidents: routeData.incidents,
+  }
 
-Sarcina ta:
-Calculează ruta de deplasare cu mașina și generează predicții reale de trafic pentru traseul exact al utilizatorului.
+  return `Ești un asistent AI inteligent de navigație și mobilitate urbană pentru aplicația "Book Your Seat".
 
-Context:
+Aplicația a calculat prin Google Routes următoarele date reale despre traseu:
+${JSON.stringify(routePayload, null, 2)}
+
+Context utilizator & mediu:
 - Utilizator: ${ctx.user.firstName} ${ctx.user.lastName} (${ctx.user.role})
-- Domiciliu (Plecare): ${origin}
-- Sediu companie (Destinație): ${destination}
-- Ora de sosire la birou: ${ctx.user.preferences.preferredStartTime || "15:00"}
-- Ora curentă: ${ctx.currentTime}
-- Colegi prezenți azi: ${ctx.colleaguesInOfficeToday} din ${ctx.totalColleagues}
+- Traseu plecare: ${routeData.routeSummary}
 - ${weatherContext}
 
-Instrucțiuni specifice de navigație pentru București:
-1. Analizează traseul rutier real între ${origin} și ${destination}. Identifică bulevardele și nodurile rutiere traversate efectiv pe acest coridor (ex: Bd. Constantin Brâncoveanu / Șos. Olteniței -> Pasajul Mărășești / Splaiul Independenței -> Pasajul Basarab / Șos. Grozăvești / Bd. Iuliu Maniu -> Aleea Țibleș).
-2. Estimează durata reală de deplasare la ora indicată, distanța exactă în kilometri și ora la care trebuie să plece pentru a ajunge la timp.
-3. Generează 2-3 ALERTE DE TRAFIC SPECIFICE punctelor critice de pe acest traseu direct (ex: intersecții aglomerate, lucrări, cozi la semafoare, poduri/pasaje aglomerate pe sensul de mers) cu locația exactă și impactul în minute.
+Sarcina ta:
+1. Pe baza datelor din obiectul JSON de mai sus, generează o explicație clară, scurtă și prietenoasă în limba română pentru utilizator, RESPECTÂND EXACT STRUCTURA ȘI TONUL DIN ACEST EXEMPLU IDEAL:
 
-Răspunde STRICT cu un JSON valid (fără comentarii, markdown suplimentar sau alt text):
+Exemplu ideal de redactare:
+"Traficul este mai intens pe Pasajul Basarab și pe Bd. Iuliu Maniu, unde întârzierile estimate sunt de aproximativ 14 minute în total.
+Pentru a ajunge la birou la ora dorită, recomandăm plecarea la 08:12.
+Condițiile meteo nu indică riscuri suplimentare."
+
+2. Generează lista de ALERTE DE TRAFIC ("trafficAlerts") bazată pe punctele aglomerate (incidente/întârzieri) din datele transmise.
+
+Răspunde STRICT cu un JSON valid (fără alt text sau blocuri markdown suplimentare):
 {
-  "departure": {
-    "time": "HH:MM",
-    "minutesToLeave": 25,
-    "durationMin": 32,
-    "distanceKm": 11.8,
-    "trafficLevel": "Scăzut | Moderat | Ridicat",
-    "originAddress": "${origin}",
-    "destinationAddress": "${destination}",
-    "routeVia": "numele arterelor principale de pe traseu (ex: via Splaiul Independenței & Șos. Grozăvești)"
-  },
+  "explanation": "Textul tău explicativ în limba română conform exemplului ideal de mai sus",
   "trafficAlerts": [
     {
       "id": "1",
       "type": "warning",
-      "location": "Numele exact al străzii / pasajului de pe traseul calculat",
-      "detail": "Descriere scurtă a congestiei (+X min întârziere)"
+      "location": "Pasaj Basarab",
+      "detail": "+6 min față de normal · Trafic aglomerat pe tronson"
     },
     {
       "id": "2",
       "type": "warning",
-      "location": "Alt punct critic de pe acest traseu specific",
-      "detail": "Descriere congestie (+X min)"
+      "location": "Bd. Iuliu Maniu",
+      "detail": "+8 min față de normal · Întârziere estimată la semafoare"
     }
   ],
   "seatRec": {
@@ -170,73 +118,127 @@ Răspunde STRICT cu un JSON valid (fără comentarii, markdown suplimentar sau a
 }`
 }
 
-export async function getAIInsightsData(ctx: InsightContext): Promise<AIInsightsData> {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined
+function calculateFallbackResult(
+  ctx: InsightContext,
+  routeData: RouteData,
+  liveWeather?: WeatherInsight,
+): AIInsightsData {
+  const totalDelay = routeData.trafficDelayMin || 14
+  const incidentLocations = routeData.incidents.map((i) => i.location).join(" și pe ") || "Pasajul Basarab și Bd. Iuliu Maniu"
 
+  const defaultExplanation = `Traficul este mai intens pe ${incidentLocations}, unde întârzierile estimate sunt de aproximativ ${totalDelay} minute în total.\n\nPentru a ajunge la birou la ora dorită, recomandăm plecarea la ${routeData.departureTime}.\nCondițiile meteo nu indică riscuri suplimentare.`
+
+  const trafficAlerts = routeData.incidents.map((inc, index) => ({
+    id: String(index + 1),
+    type: inc.delay >= 7 ? ("danger" as const) : ("warning" as const),
+    location: inc.location,
+    detail: `+${inc.delay} min față de normal · Întârziere estimată pe tronson`,
+  }))
+
+  return {
+    ...defaultInsights,
+    weather: liveWeather || defaultInsights.weather,
+    departure: {
+      time: routeData.departureTime,
+      minutesToLeave: routeData.minutesToLeave,
+      durationMin: routeData.durationMin,
+      distanceKm: routeData.distanceKm,
+      trafficLevel: routeData.trafficLevel,
+      originAddress: ctx.user.domiciliu || "București, Nițu Vasile 58",
+      destinationAddress: ctx.officeAddress || OFFICE_ADDRESS,
+      routeVia: routeData.routeSummary,
+      aiExplanation: defaultExplanation,
+      incidents: routeData.incidents,
+    },
+    trafficAlerts: trafficAlerts.length > 0 ? trafficAlerts : defaultInsights.trafficAlerts,
+  }
+}
+
+export async function getAIInsightsData(ctx: InsightContext): Promise<AIInsightsData> {
+  const origin = ctx.user.domiciliu || "București, Nițu Vasile 58"
+  const destination = ctx.officeAddress || OFFICE_ADDRESS
+  const targetTime = ctx.user.preferences.preferredStartTime || "09:00"
+
+  // 1. Obținere date rutiere din Google Routes (calcul distanță, durată, întârzieri, incidente)
+  const routeDataPromise = getRouteData(origin, destination, targetTime)
   const liveWeatherPromise = fetchLiveWeather().catch(() => defaultInsights.weather)
 
+  const [routeData, liveWeather] = await Promise.all([routeDataPromise, liveWeatherPromise])
+
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined
+
   if (!apiKey) {
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    const liveWeather = await liveWeatherPromise
-    return calculateFallbackRoute(ctx, liveWeather)
+    return calculateFallbackResult(ctx, routeData, liveWeather)
   }
 
-  const modelName =
-    (import.meta.env.VITE_GEMINI_MODEL as string | undefined) || DEFAULT_MODEL
+  const modelName = (import.meta.env.VITE_GEMINI_MODEL as string | undefined) || DEFAULT_MODEL
   const requestUrl = `${GEMINI_API_BASE}/${modelName}:generateContent?key=${apiKey}`
 
   try {
-    const liveWeather = await liveWeatherPromise
+    const promptText = buildPrompt(ctx, routeData, liveWeather)
 
     let res = await fetch(requestUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: buildPrompt(ctx, liveWeather) }] }],
-        generationConfig: { temperature: 0.6, maxOutputTokens: 1024 },
+        contents: [{ parts: [{ text: promptText }] }],
+        generationConfig: { temperature: 0.5, maxOutputTokens: 1024 },
       }),
     })
 
-    if (res.status === 404 && modelName === "gemini-2.5-flash-lite") {
-      const fallbackUrl = `${GEMINI_API_BASE}/gemini-2.0-flash:generateContent?key=${apiKey}`
-      res = await fetch(fallbackUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: buildPrompt(ctx, liveWeather) }] }],
-          generationConfig: { temperature: 0.6, maxOutputTokens: 1024 },
-        }),
-      })
+    if (!res.ok && (res.status === 404 || res.status === 400)) {
+      const fallbackModels = ["gemini-2.0-flash", "gemini-1.5-flash"]
+      for (const fallbackModel of fallbackModels) {
+        if (fallbackModel === modelName) continue
+        const fallbackUrl = `${GEMINI_API_BASE}/${fallbackModel}:generateContent?key=${apiKey}`
+        res = await fetch(fallbackUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }],
+            generationConfig: { temperature: 0.5, maxOutputTokens: 1024 },
+          }),
+        })
+        if (res.ok) break
+      }
     }
 
     if (!res.ok) {
-      console.warn("[geminiService] API error, falling back to calculation:", res.status)
-      return calculateFallbackRoute(ctx, liveWeather)
+      console.warn("[geminiService] Gemini API returned error:", res.status)
+      return calculateFallbackResult(ctx, routeData, liveWeather)
     }
 
     const data = await res.json()
-    const raw: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? ""
-    const jsonMatch = raw.match(/\{[\s\S]*\}/)
+    const rawText: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? ""
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/)
 
     if (!jsonMatch) {
-      return calculateFallbackRoute(ctx, liveWeather)
+      return calculateFallbackResult(ctx, routeData, liveWeather)
     }
 
-    const parsed = JSON.parse(jsonMatch[0]) as Partial<AIInsightsData>
+    const parsed = JSON.parse(jsonMatch[0]) as {
+      explanation?: string
+      trafficAlerts?: AIInsightsData["trafficAlerts"]
+      seatRec?: AIInsightsData["seatRec"]
+      history?: AIInsightsData["history"]
+    }
+
+    const fallbackResult = calculateFallbackResult(ctx, routeData, liveWeather)
+
     return {
-      ...defaultInsights,
-      ...parsed,
-      weather: liveWeather || parsed.weather || defaultInsights.weather,
+      ...fallbackResult,
+      trafficAlerts: parsed.trafficAlerts && parsed.trafficAlerts.length > 0
+        ? parsed.trafficAlerts
+        : fallbackResult.trafficAlerts,
+      seatRec: parsed.seatRec || fallbackResult.seatRec,
+      history: parsed.history || fallbackResult.history,
       departure: {
-        ...defaultInsights.departure,
-        ...parsed.departure,
-        originAddress: ctx.user.domiciliu || "București, Nițu Vasile 58",
-        destinationAddress: ctx.officeAddress || OFFICE_ADDRESS,
+        ...fallbackResult.departure,
+        aiExplanation: parsed.explanation || fallbackResult.departure.aiExplanation,
       },
     }
   } catch (error) {
-    console.error("[geminiService] Error fetching AI insights:", error)
-    const liveWeather = await liveWeatherPromise
-    return calculateFallbackRoute(ctx, liveWeather)
+    console.error("[geminiService] Error fetching Gemini insights:", error)
+    return calculateFallbackResult(ctx, routeData, liveWeather)
   }
 }
