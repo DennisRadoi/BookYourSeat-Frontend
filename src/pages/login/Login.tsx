@@ -1,17 +1,24 @@
 
 // Login.tsx
-import { useState, type FormEvent } from "react"
+import { useState, useEffect, type FormEvent } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { AuthLayout } from "@/layouts"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useTheme } from "@/hooks/useTheme"
 
 export default function Login() {
   const navigate = useNavigate()
+  const { setLight } = useTheme()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Ensure login screen appears in light mode
+  useEffect(() => {
+    try { setLight() } catch (e) {}
+  }, [setLight])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
