@@ -95,8 +95,9 @@ export function DateTimeSelectionStep({
                 type="button"
                 size="xs"
                 variant="outline"
-                onClick={() => setMonthOffset((m) => m - 1)}
-                className="w-8 h-8 rounded-lg border border-[var(--border)] hover:bg-[var(--muted)] text-[var(--foreground)]"
+                disabled={monthOffset <= 0}
+                onClick={() => setMonthOffset((m) => Math.max(0, m - 1))}
+                className="w-8 h-8 rounded-lg border border-[var(--border)] hover:bg-[var(--muted)] text-[var(--foreground)] disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label="Luna precedentă"
               >
                 <ChevronLeft size={16} />
@@ -127,22 +128,26 @@ export function DateTimeSelectionStep({
             {calendar.cells.map((cell, idx) => {
               const isSelected = cell && selectedDate && isSameDay(cell, selectedDate)
               const isToday = cell && isSameDay(cell, new Date())
+              const isPast = cell ? isBeforeToday(cell) : false
 
               return (
                 <Button
                   key={idx}
                   type="button"
-                  onClick={() => cell && onSelectDate(cell)}
-                  disabled={!cell}
+                  onClick={() => cell && !isPast && onSelectDate(cell)}
+                  disabled={!cell || isPast}
                   variant={isSelected ? "default" : isToday ? "outline" : "ghost"}
-                  className={`h-10 p-0 rounded-lg flex items-center justify-center text-sm transition-all duration-150 select-none ${!cell
+                  className={`h-10 p-0 rounded-lg flex items-center justify-center text-sm transition-all duration-150 select-none ${
+                    !cell
                       ? "opacity-0 cursor-default"
-                      : isSelected
-                        ? "font-bold shadow-xs scale-105"
-                        : isToday
-                          ? "border-[var(--primary)] text-[var(--primary)] font-semibold"
-                          : ""
-                    }`}
+                      : isPast
+                        ? "opacity-30 cursor-not-allowed text-[var(--muted-foreground)] line-through bg-[var(--muted)]/20"
+                        : isSelected
+                          ? "font-bold shadow-xs scale-105"
+                          : isToday
+                            ? "border-[var(--primary)] text-[var(--primary)] font-semibold"
+                            : ""
+                  }`}
                 >
                   {cell ? cell.getDate() : ""}
                 </Button>
@@ -398,11 +403,7 @@ function timeToMinutes(t: string) {
   return hh * 60 + (mm || 0)
 }
 
-function minutesToTimeString(mins: number) {
-  const hh = Math.floor(mins / 60)
-  const mm = mins % 60
-  return pad(hh) + ":" + pad(mm)
-}
+
 
 function isSameDay(a: Date, b: Date) {
   return (
@@ -410,4 +411,12 @@ function isSameDay(a: Date, b: Date) {
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate()
   )
+}
+
+function isBeforeToday(d: Date): boolean {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const compare = new Date(d)
+  compare.setHours(0, 0, 0, 0)
+  return compare.getTime() < today.getTime()
 }
