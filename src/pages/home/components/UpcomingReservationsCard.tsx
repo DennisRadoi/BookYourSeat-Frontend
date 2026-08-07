@@ -83,42 +83,47 @@ export function UpcomingReservationsCard({
                 return (
                   <div
                     key={reservation.id}
-                    className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--muted)] px-3.5 py-3 transition hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3.5 sm:px-3.5 sm:py-3 transition hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
                   >
-                    <div
-                      className="w-[3px] h-9 rounded-[2px] flex-shrink-0"
-                      style={{ background: accentColor }}
-                    />
-                    <div className="flex flex-col items-center w-9 flex-shrink-0">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.5px] text-[var(--muted-foreground)]">
-                        {MONTH_LABELS[reservationDate.getMonth()]}
-                      </span>
-                      <span className="text-xl font-extrabold leading-none text-[var(--foreground)]">
-                        {reservationDate.getDate()}
-                      </span>
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div
+                        className="w-[3px] h-9 rounded-[2px] flex-shrink-0"
+                        style={{ background: accentColor }}
+                      />
+                      <div className="flex flex-col items-center w-9 flex-shrink-0">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.5px] text-[var(--muted-foreground)]">
+                          {MONTH_LABELS[reservationDate.getMonth()]}
+                        </span>
+                        <span className="text-xl font-extrabold leading-none text-[var(--foreground)]">
+                          {reservationDate.getDate()}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                        <span className="truncate text-sm font-semibold text-[var(--foreground)]">
+                          {reservation.floor?.name ?? "—"} · Loc {reservation.seat?.code ?? "—"}
+                        </span>
+                        <span className="flex flex-wrap items-center gap-1 text-xs text-[var(--muted-foreground)]">
+                          <Clock size={12} className="shrink-0" />
+                          {reservation.startTime}–{reservation.endTime}
+                          {reservation.location && <span className="truncate"> · {reservation.location.name}</span>}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-1 flex-col gap-0.5 min-w-0">
-                      <span className="truncate text-sm font-semibold text-[var(--foreground)]">
-                        {reservation.floor?.name ?? "—"} · Loc {reservation.seat?.code ?? "—"}
-                      </span>
-                      <span className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
-                        <Clock size={12} />
-                        {reservation.startTime}–{reservation.endTime}
-                        {reservation.location && <> · {reservation.location.name}</>}
-                      </span>
+
+                    <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto pt-2 border-t border-[var(--border)]/60 sm:border-t-0 sm:pt-0 shrink-0">
+                      <StatusBadge status={reservation.status} />
+                      <Button
+                        id={`edit-reservation-${reservation.id}`}
+                        variant="outline"
+                        size="xs"
+                        onClick={() => setEditingReservation(reservation)}
+                        leftIcon={<Pencil size={12} />}
+                        className="text-[12px] font-semibold text-[var(--primary)] shrink-0"
+                        title="Editează rezervarea"
+                      >
+                        Editează
+                      </Button>
                     </div>
-                    <StatusBadge status={reservation.status} />
-                    <Button
-                      id={`edit-reservation-${reservation.id}`}
-                      variant="outline"
-                      size="xs"
-                      onClick={() => setEditingReservation(reservation)}
-                      leftIcon={<Pencil size={12} />}
-                      className="text-[12px] font-semibold text-[var(--primary)] shrink-0"
-                      title="Editează rezervarea"
-                    >
-                      Editează
-                    </Button>
                   </div>
                 )
               })}

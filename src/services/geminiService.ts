@@ -242,3 +242,12 @@ export async function getAIInsightsData(ctx: InsightContext): Promise<AIInsights
     return calculateFallbackResult(ctx, routeData, liveWeather)
   }
 }
+
+export async function calculateRouteInsights(context: InsightContext): Promise<AIInsightsData> {
+  return getAIInsightsData({
+    ...context,
+    officeAddress: context.officeAddress || OFFICE_ADDRESS,
+  })
+}
+
+export { OFFICE_ADDRESS }
