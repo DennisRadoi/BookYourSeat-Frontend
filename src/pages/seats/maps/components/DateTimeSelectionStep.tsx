@@ -135,15 +135,14 @@ export function DateTimeSelectionStep({
                   onClick={() => cell && onSelectDate(cell)}
                   disabled={!cell}
                   variant={isSelected ? "default" : isToday ? "outline" : "ghost"}
-                  className={`h-10 p-0 rounded-lg flex items-center justify-center text-sm transition-all duration-150 select-none ${
-                    !cell
+                  className={`h-10 p-0 rounded-lg flex items-center justify-center text-sm transition-all duration-150 select-none ${!cell
                       ? "opacity-0 cursor-default"
                       : isSelected
-                      ? "font-bold shadow-xs scale-105"
-                      : isToday
-                      ? "border-[var(--primary)] text-[var(--primary)] font-semibold"
-                      : ""
-                  }`}
+                        ? "font-bold shadow-xs scale-105"
+                        : isToday
+                          ? "border-[var(--primary)] text-[var(--primary)] font-semibold"
+                          : ""
+                    }`}
                 >
                   {cell ? cell.getDate() : ""}
                 </Button>
