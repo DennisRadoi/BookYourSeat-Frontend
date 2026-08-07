@@ -38,3 +38,31 @@ export const PillButton = React.forwardRef<HTMLButtonElement, PillButtonProps>(
 )
 
 PillButton.displayName = "PillButton"
+
+export interface PillGroupProps<T extends string> {
+  options: { value: T; label: string }[]
+  value: T
+  onChange: (value: T) => void
+  className?: string
+}
+
+export function PillGroup<T extends string>({
+  options,
+  value,
+  onChange,
+  className,
+}: PillGroupProps<T>) {
+  return (
+    <div className={cn("flex flex-wrap gap-2", className)}>
+      {options.map((opt) => (
+        <PillButton
+          key={opt.value}
+          isActive={value === opt.value}
+          onClick={() => onChange(opt.value)}
+        >
+          {opt.label}
+        </PillButton>
+      ))}
+    </div>
+  )
+}
