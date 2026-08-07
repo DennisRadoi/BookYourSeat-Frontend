@@ -157,7 +157,7 @@ export default function Navbar({ onBurgerClick }: NavbarProps) {
 
         <IconButton
           id="navbar-logout-btn"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/login")}
           title="Deconectare"
           className="border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)]"
         >
