@@ -1,6 +1,5 @@
 export * from "./Modal"
 export * from "./FormField"
-export * from "./PillButton"
 export * from "./AlertBanner"
 export * from "./PasswordField"
 export * from "./ToggleSwitch"
