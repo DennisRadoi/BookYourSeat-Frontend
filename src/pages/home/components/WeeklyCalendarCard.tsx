@@ -86,26 +86,30 @@ export function WeeklyCalendarCard({
             {selectedDayReservations.map((reservation) => (
               <div
                 key={reservation.id}
-                className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--muted)] px-3.5 py-3 transition hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3.5 sm:px-3.5 sm:py-3 transition hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
               >
-                <div className="flex flex-col items-center w-9 flex-shrink-0">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.5px] text-[var(--muted-foreground)]">
-                    {MONTH_LABELS[selectedDateObject.getMonth()]}
-                  </span>
-                  <span className="text-xl font-extrabold leading-none text-[var(--foreground)]">
-                    {selectedDateObject.getDate()}
-                  </span>
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="flex flex-col items-center w-9 flex-shrink-0">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.5px] text-[var(--muted-foreground)]">
+                      {MONTH_LABELS[selectedDateObject.getMonth()]}
+                    </span>
+                    <span className="text-xl font-extrabold leading-none text-[var(--foreground)]">
+                      {selectedDateObject.getDate()}
+                    </span>
+                  </div>
+                  <div className="flex flex-1 flex-col gap-0.5 min-w-0">
+                    <span className="truncate text-sm font-semibold text-[var(--foreground)]">
+                      {reservation.seat?.code ?? "—"} · {reservation.floor?.name ?? "—"}
+                    </span>
+                    <span className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
+                      <Clock size={12} className="shrink-0" />
+                      {reservation.startTime}–{reservation.endTime}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-1 flex-col gap-0.5 min-w-0">
-                  <span className="truncate text-sm font-semibold text-[var(--foreground)]">
-                    {reservation.seat?.code ?? "—"} · {reservation.floor?.name ?? "—"}
-                  </span>
-                  <span className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
-                    <Clock size={12} />
-                    {reservation.startTime}–{reservation.endTime}
-                  </span>
+                <div className="flex items-center justify-end w-full sm:w-auto pt-2 border-t border-[var(--border)]/60 sm:border-t-0 sm:pt-0 shrink-0">
+                  <StatusBadge status={reservation.status} />
                 </div>
-                <StatusBadge status={reservation.status} />
               </div>
             ))}
           </div>
