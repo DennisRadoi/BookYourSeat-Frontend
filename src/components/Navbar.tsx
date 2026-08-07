@@ -157,7 +157,18 @@ export default function Navbar({ onBurgerClick }: NavbarProps) {
 
         <IconButton
           id="navbar-logout-btn"
-          onClick={() => navigate("/login")}
+          onClick={() => {
+            // Ensure login page is shown in light mode after logout
+            if (typeof window !== 'undefined') {
+              document.documentElement.classList.remove('dark')
+              try {
+                localStorage.setItem('theme', 'light')
+              } catch (e) {
+                /* ignore storage errors */
+              }
+            }
+            navigate('/login')
+          }}
           title="Deconectare"
           className="border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)]"
         >
