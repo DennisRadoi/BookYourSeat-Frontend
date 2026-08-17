@@ -16,7 +16,7 @@ export async function getCurrentUser(): Promise<User> {
 
 export async function updateUserProfile(
   userId: number,
-  updates: Partial<Pick<User, "firstName" | "lastName" | "email" | "department" | "domiciliu">>,
+  updates: Partial<Pick<User, "firstName" | "lastName" | "email" | "department" | "domiciliu" | "phone" | "hireDate" | "avatarUrl">>,
 ): Promise<User> {
   await delay()
   const userIndex = users.findIndex((item) => item.id === userId)

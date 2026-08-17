@@ -26,6 +26,8 @@ export interface User {
   avatarUrl: string | null
   domiciliu?: string
   isFirstTimeUser?: boolean
+  phone?: string    
+  hireDate?: string
   preferences: UserPreferences
 }
 
@@ -154,6 +156,7 @@ export interface Colleague {
   status: "La birou" | "Remote"
   isFavorite: boolean
   department?: string
+  avatarUrl?: string | null
 }
 
 export type NotificationType =

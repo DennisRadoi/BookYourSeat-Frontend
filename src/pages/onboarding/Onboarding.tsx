@@ -1,74 +1,96 @@
-import { useState, useEffect, type FormEvent } from "react"
+import { useState, useEffect, type FormEvent, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import { Search, Star, ChevronDown, User as UserIcon } from "lucide-react"
-import { AuthLayout } from "@/layouts"
+import { Search, Star, Camera, Phone, Building2, Calendar, MapPin, User as UserIcon } from "lucide-react"
 import { Button, Input } from "@/components/ui"
 import { getCurrentUser, updateUserProfile, updateUserPreferences } from "@/services"
 import { colleagues } from "@/data/colleagues"
 import type { User } from "@/types"
 
 const LOCATII_DISPONIBILE = [
-  "Parter - Săli de birou (11 locuri)",
-  "Etaj 1 - Săli de birou (17 locuri)",
-  "Etaj 2 - Săli de birou (16 locuri)",
-  "Corpul T1, Etaj 1 - Evenimente (25 locuri)",
-  "Corpul T1, Etaj 1 - Side-evenimente 1 (5 locuri)",
-  "Corpul T1, Etaj 1 - Stand-up Chat room (15 locuri)",
-  "Corpul T1, Etaj 1 - La Terasă (10 locuri)",
-  "Corpul T1, Parter - Lounge (8 locuri)",
-  "Corpul T1, Etaj 2 - Tenis (5 locuri)",
-  "Corpul T1, Etaj 2 - Gaming (11 locuri)",
-  "Corpul T2, Etaj 1 - Sala 404 (10 locuri)",
-  "Corpul T2, Etaj 2 - Outland (10 locuri)",
+  "Parter - Săli de birou",
+  "Etaj 1 - Săli de birou",
+  "Etaj 2 - Săli de birou",
+  "Corpul T1, Etaj 1 - Evenimente",
+  "Corpul T1, Etaj 1 - Stand-up Chat room",
+  "Corpul T1, Etaj 2 - Gaming",
+  "Corpul T2, Etaj 1 - Sala 404",
+]
+
+const DEPARTAMENTE = [
+  "Engineering",
+  "Design",
+  "Human Resources",
+  "Marketing",
+  "Sales",
+  "Quality Assurance",
 ]
 
 export default function Onboarding() {
   const navigate = useNavigate()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const [currentUser, setCurrentUser] = useState<User | null>(null)
-  const [domiciliu, setDomiciliu] = useState("")
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedColleagueIds, setSelectedColleagueIds] = useState<number[]>([])
-  const [selectedLocation, setSelectedLocation] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Informații Personale
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [phone, setPhone] = useState("")
+  const [department, setDepartment] = useState("")
+  const [hireDate, setHireDate] = useState("")
+  const [domiciliu, setDomiciliu] = useState("")
+
+  // Preferințe Birou
+  const [selectedLocation, setSelectedLocation] = useState("")
+  const [selectedColleagueIds, setSelectedColleagueIds] = useState<number[]>([])
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     async function loadData() {
-      try {
-        const user = await getCurrentUser()
+      const user = await getCurrentUser()
+      if (user) {
         setCurrentUser(user)
+        setAvatarUrl(user.avatarUrl || null)
+        setPhone(user.phone || "")
+        setDepartment(user.department || "")
+        setHireDate(user.hireDate || "")
         setDomiciliu(user.domiciliu || "")
-        if (user.preferences?.favoriteColleagueIds) {
-          setSelectedColleagueIds(user.preferences.favoriteColleagueIds)
-        }
-        if (user.preferences?.preferredLocation) {
-          setSelectedLocation(user.preferences.preferredLocation)
-        }
-      } catch (err) {
-        console.error("Eroare la încărcarea datelor utilizatorului:", err)
       }
     }
     loadData()
   }, [])
 
-  const filteredColleagues = colleagues.filter((colleague) =>
-    colleague.name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredColleagues = colleagues.filter(
+  (c) =>
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (c.department ?? "").toLowerCase().includes(searchQuery.toLowerCase()),
+)
 
-
-  function toggleColleague(id: number) {
+  const toggleColleague = (id: number) => {
     setSelectedColleagueIds((prev) =>
-      prev.includes(id) ? prev.filter((colleagueId) => colleagueId !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((colleagueId) => colleagueId !== id) : [...prev, id],
     )
   }
 
-  async function handleSave(event?: FormEvent) {
-    if (event) event.preventDefault()
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const imageUrl = URL.createObjectURL(file)
+      setAvatarUrl(imageUrl)
+    }
+  }
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
     if (!currentUser) return
 
     setIsSubmitting(true)
     try {
       await updateUserProfile(currentUser.id, {
-        domiciliu: domiciliu.trim(),
+        phone,
+        department,
+        hireDate,
+        domiciliu,
+        avatarUrl,
       })
 
       await updateUserPreferences(currentUser.id, {
@@ -78,152 +100,241 @@ export default function Onboarding() {
 
       navigate("/")
     } catch (error) {
-      console.error("Nu s-au putut salva preferințele:", error)
+      console.error("Eroare la salvarea preferințelor:", error)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  function handleSkip() {
-    navigate("/")
-  }
-
   return (
-    <AuthLayout
-      activeDot={2}
-      headline={"Configurează-ți locul\nideal de muncă."}
-      description="Personalizează experiența pentru a găsi locul perfect și a rămâne conectat cu echipa."
-    >
-      <div className="w-full rounded-3xl border border-border/60 bg-card p-6 shadow-xl sm:p-8 lg:p-10">
-        <div className="mb-6 text-center sm:text-left">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Personalizează-ți preferințele
-          </h2>
-          <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
-            Alege opțiunile rapide de mai jos
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 py-12">
+      <div className="max-w-2xl w-full bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-10 space-y-8">
+        
+        {/* Antet */}
+        <div className="text-center space-y-2">
+          <h1 className="text-2xl font-bold text-slate-900">Personalizează-ți profilul</h1>
+          <p className="text-slate-500 text-sm">
+            Completează detaliile tale și preferințele de lucru pentru a-ți optimiza experiența.
           </p>
         </div>
 
-        <form onSubmit={handleSave} className="flex flex-col gap-5">
-          {}
-          <div>
-            <label
-              htmlFor="domiciliu"
-              className="mb-1.5 block text-xs font-semibold text-foreground"
-            >
-              Adresă Domiciliu (pentru calcul traseu AI)
-            </label>
-            <Input
-              id="domiciliu"
-              type="text"
-              placeholder="ex: București, Str. Nițu Vasile 58"
-              value={domiciliu}
-              onChange={(e) => setDomiciliu(e.target.value)}
-              className="h-10 text-xs sm:text-sm"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          
+          {/* SECȚIUNEA 1: Informații Personale */}
+          <div className="space-y-6">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 border-b pb-2">
+              1. Informații Personale
+            </h2>
 
-          {}
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold text-foreground">
-              Colegi favoriți
-            </label>
-            <div className="relative mb-2">
-              <Input
-                type="text"
-                placeholder="Caută coleg..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-9 pr-9 text-xs placeholder:text-muted-foreground"
+            {/* Avatar Upload */}
+            <div className="flex flex-col items-center justify-center space-y-3">
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="relative w-24 h-24 rounded-full border-2 border-dashed border-slate-300 hover:border-slate-400 flex items-center justify-center cursor-pointer overflow-hidden bg-slate-50 transition-colors group"
+              >
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <UserIcon className="w-10 h-10 text-slate-400 group-hover:text-slate-500" />
+                )}
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Camera className="w-6 h-6 text-white" />
+                </div>
+              </div>
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                className="hidden"
               />
-              <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="text-xs font-medium text-emerald-600 hover:underline"
+              >
+                {avatarUrl ? "Schimbă poza de profil" : "Incarcă poză de profil"}
+              </button>
             </div>
 
-            {}
-            <div className="max-h-40 overflow-y-auto rounded-lg border border-border/80 bg-background/50 p-1">
-              {filteredColleagues.length === 0 ? (
-                <p className="p-3 text-center text-xs text-muted-foreground">
-                  Niciun coleg găsit.
-                </p>
-              ) : (
-                filteredColleagues.map((colleague) => {
-                  const isSelected = selectedColleagueIds.includes(colleague.id)
-                  return (
-                    <button
-                      key={colleague.id}
-                      type="button"
-                      onClick={() => toggleColleague(colleague.id)}
-                      className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-xs transition-colors ${
-                        isSelected
-                          ? "bg-primary/15 font-medium text-foreground"
-                          : "hover:bg-muted/60 text-muted-foreground"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <UserIcon className="h-4 w-4 text-muted-foreground" />
-                        <span>{colleague.name}</span>
-                      </div>
-                      <Star
-                        className={`h-4 w-4 transition-all ${
-                          isSelected
-                            ? "fill-amber-400 text-amber-400"
-                            : "text-muted-foreground/40 hover:text-muted-foreground"
-                        }`}
-                      />
-                    </button>
-                  )
-                })
-              )}
+            {/* Grid 2 coloane pentru date de contact */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Număr de telefon
+                </label>
+                <div className="relative">
+                  <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    type="tel"
+                    placeholder="+40 7xx xxx xxx"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Departament
+                </label>
+                <div className="relative">
+                  <Building2 className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  <select
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  >
+                    <option value="">Selectează departament</option>
+                    {DEPARTAMENTE.map((dep) => (
+                      <option key={dep} value={dep}>
+                        {dep}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Data angajării
+                </label>
+                <div className="relative">
+                  <Calendar className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    type="date"
+                    value={hireDate}
+                    onChange={(e) => setHireDate(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Adresă domiciliu
+                </label>
+                <div className="relative">
+                  <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    type="text"
+                    placeholder="Oraș, Strada..."
+                    value={domiciliu}
+                    onChange={(e) => setDomiciliu(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
-          {}
-          <div>
-            <label
-              htmlFor="preferredLocation"
-              className="mb-1.5 block text-xs font-semibold text-foreground"
-            >
-              Locație Preferată
-            </label>
-            <div className="relative">
+          {/* SECȚIUNEA 2: Preferințe Birou */}
+          <div className="space-y-6">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 border-b pb-2">
+              2. Preferințe Birou
+            </h2>
+
+            {/* Locație Preferată */}
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1">
+                Locație / Zonă preferată în birou
+              </label>
               <select
-                id="preferredLocation"
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
-                className="h-10 w-full appearance-none rounded-md border border-input bg-background px-3 pr-8 text-xs text-foreground shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-900"
               >
-                <option value="" disabled>
-                  Selectează o zonă...
-                </option>
+                <option value="">Selectează o zonă preferată</option>
                 {LOCATII_DISPONIBILE.map((loc) => (
                   <option key={loc} value={loc}>
                     {loc}
                   </option>
                 ))}
               </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            </div>
+
+            {/* Căutare Colegi Favoriți */}
+            <div className="space-y-3">
+              <label className="block text-xs font-medium text-slate-700">
+                Colegi favoriți
+              </label>
+
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Input
+                  type="text"
+                  placeholder="Cauta colegi după nume sau departament..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+
+              {/* Lista derulabilă de colegi */}
+              <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-lg divide-y divide-slate-100">
+                {filteredColleagues.length > 0 ? (
+                  filteredColleagues.map((colleague) => {
+                    const isSelected = selectedColleagueIds.includes(colleague.id)
+                    return (
+                      <div
+                        key={colleague.id}
+                        onClick={() => toggleColleague(colleague.id)}
+                        className={`flex items-center justify-between p-3 cursor-pointer hover:bg-slate-50 transition-colors ${
+                          isSelected ? "bg-amber-50/50" : ""
+                        }`}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-700 overflow-hidden">
+                            {colleague.avatarUrl ? (
+                              <img src={colleague.avatarUrl} alt={colleague.name} className="w-full h-full object-cover" />
+                            ) : (
+                              colleague.name[0]
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-slate-800">{colleague.name}</p>
+                            <p className="text-xs text-slate-400">{colleague.department}</p>
+                          </div>
+                        </div>
+
+                        <Star
+                          className={`w-5 h-5 ${
+                            isSelected ? "fill-amber-400 text-amber-400" : "text-slate-300"
+                          }`}
+                        />
+                      </div>
+                    )
+                  })
+                ) : (
+                  <p className="p-4 text-center text-xs text-slate-400">Niciun coleg găsit.</p>
+                )}
+              </div>
             </div>
           </div>
 
-          {}
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="mt-2 h-11 w-full rounded-full bg-primary font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
-          >
-            {isSubmitting ? "Se salvează..." : "Finalizează"}
-          </Button>
+          {/* Acțiuni Submit / Skip */}
+          <div className="pt-4 space-y-3">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-lg transition-colors"
+            >
+              {isSubmitting ? "Se salvează..." : "Finalizează Profilul"}
+            </Button>
 
-          {}
-          <button
-            type="button"
-            onClick={handleSkip}
-            className="text-center text-xs text-muted-foreground hover:text-foreground underline decoration-muted-foreground/40 underline-offset-2 transition-colors"
-          >
-            Sari peste acest pas
-          </button>
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="w-full text-center text-xs text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              Sari peste acest pas
+            </button>
+          </div>
+
         </form>
       </div>
-    </AuthLayout>
+    </div>
   )
 }
