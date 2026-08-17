@@ -53,3 +53,32 @@ export async function changeCurrentUserPassword(current: string, next: string): 
   if (next.length < 8) throw new Error("Parola nouă trebuie să conțină minimum 8 caractere.")
   currentPassword = next
 }
+
+export async function registerUser(userData: { firstName: string; lastName: string; email: string }): Promise<User> {
+  await delay()
+  const newUser: User = {
+    id: Date.now(),
+    firstName: userData.firstName,
+    lastName: userData.lastName,
+    initials: `${userData.firstName[0] || ""}${userData.lastName[0] || ""}`.toUpperCase(),
+    email: userData.email,
+    role: "User",
+    department: "General",
+    isOnline: true,
+    avatarUrl: null,
+    domiciliu: "",
+    isFirstTimeUser: true,
+    preferences: {
+      preferredFloor: 1,
+      preferredArea: "window",
+      preferredStartTime: "09:00",
+      preferredDays: [],
+      workPreferences: [],
+      preferredLocation: "",
+      favoriteColleagueIds: [],
+    },
+  }
+
+  users.push(newUser)
+  return newUser
+}

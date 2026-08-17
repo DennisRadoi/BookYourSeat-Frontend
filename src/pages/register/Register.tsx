@@ -4,6 +4,7 @@ import { AuthLayout } from "@/layouts"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PasswordToggle } from "./components/PasswordToggle"
+import { registerUser } from "@/services"
 
 export default function Register() {
   const navigate = useNavigate()
@@ -41,9 +42,14 @@ export default function Register() {
 
     setIsSubmitting(true)
     try {
-      // TODO: inlocuieste cu un apel real catre services/mockApi
-      await new Promise((resolve) => setTimeout(resolve, 400))
+      await registerUser({
+        firstName,
+        lastName,
+        email,
+      })
       navigate("/onboarding")
+    } catch (error) {
+      console.error("Eroare la înregistrare:", error)
     } finally {
       setIsSubmitting(false)
     }
