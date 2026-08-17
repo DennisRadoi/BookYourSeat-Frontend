@@ -10,6 +10,8 @@ export interface UserPreferences {
   preferredStartTime: string
   preferredDays: Weekday[]
   workPreferences: string[]
+  preferredLocation?: string 
+  favoriteColleagueIds?: number[]
 }
 
 export interface User {
@@ -23,6 +25,7 @@ export interface User {
   isOnline: boolean
   avatarUrl: string | null
   domiciliu?: string
+  isFirstTimeUser?: boolean
   preferences: UserPreferences
 }
 

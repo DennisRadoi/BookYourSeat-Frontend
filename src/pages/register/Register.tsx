@@ -43,7 +43,7 @@ export default function Register() {
     try {
       // TODO: inlocuieste cu un apel real catre services/mockApi
       await new Promise((resolve) => setTimeout(resolve, 400))
-      navigate("/")
+      navigate("/onboarding")
     } finally {
       setIsSubmitting(false)
     }
