@@ -37,9 +37,15 @@ export const defaultInsights: AIInsightsData = {
     },
   ],
   seatRec: {
-    colleagueName: "Ana H.",
-    seat: "Loc 15",
-    floor: "Etaj 1",
+    colleagueName: "Ana Popescu",
+    seat: "Loc A1 (ocupat)",
+    floor: "Parter (Corp T1)",
+    building: "Corp T1",
+    floorId: 1,
+    zoneType: "birouri",
+    roomId: 100,
+    targetSeatCode: "A2",
+    roomName: "Birouri Parter",
   },
   history: {
     topFloor: "etajul 1",

@@ -16,6 +16,9 @@ export interface SeatsPageRouterState {
   endTime?: string
   building?: string
   floorId?: number
+  zoneType?: RoomZoneType
+  roomId?: number
+  targetSeatCode?: string
 }
 
 export default function SeatsPage(): ReactElement {
@@ -48,8 +51,8 @@ export default function SeatsPage(): ReactElement {
     routerState.building ?? "Corp T1",
   )
   const [selectedFloorId, setSelectedFloorId] = useState<number>(routerState.floorId ?? 1)
-  const [selectedZoneType, setSelectedZoneType] = useState<RoomZoneType>("birouri")
-  const [selectedRoomId, setSelectedRoomId] = useState<number | undefined>(undefined)
+  const [selectedZoneType, setSelectedZoneType] = useState<RoomZoneType>(routerState.zoneType ?? "birouri")
+  const [selectedRoomId, setSelectedRoomId] = useState<number | undefined>(routerState.roomId)
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null)
 
   // Submission & Modal state
@@ -64,6 +67,46 @@ export default function SeatsPage(): ReactElement {
     }
     loadData()
   }, [])
+
+  // Explicitly sync routerState parameters when routerState changes
+  useEffect(() => {
+    if (routerState.building) setSelectedBuilding(routerState.building)
+    if (routerState.floorId) setSelectedFloorId(routerState.floorId)
+    if (routerState.zoneType) setSelectedZoneType(routerState.zoneType)
+    if (routerState.roomId) setSelectedRoomId(routerState.roomId)
+  }, [routerState.building, routerState.floorId, routerState.zoneType, routerState.roomId])
+
+  // Auto-select target seat from routerState if provided
+  useEffect(() => {
+    if (!routerState.targetSeatCode || locations.length === 0) return
+
+    const building = routerState.building || selectedBuilding
+    const floorId = routerState.floorId || selectedFloorId
+
+    const loc = locations.find((l) => l.building === building) || locations[0]
+    const fl = loc?.floors?.find((f) => f.id === floorId) || loc?.floors?.[0]
+    
+    let foundSeat: Seat | undefined
+    if (fl?.rooms) {
+      for (const rm of fl.rooms) {
+        if (routerState.roomId && rm.id !== routerState.roomId) continue
+        const match = rm.seats?.find((s) => s.code === routerState.targetSeatCode)
+        if (match) {
+          foundSeat = match
+          if (!selectedRoomId) setSelectedRoomId(rm.id)
+          break
+        }
+      }
+    }
+
+    if (!foundSeat && fl?.seats) {
+      foundSeat = fl.seats.find((s) => s.code === routerState.targetSeatCode)
+    }
+
+    if (foundSeat) {
+      setSelectedSeat(foundSeat)
+    }
+  }, [locations, routerState, selectedBuilding, selectedFloorId, selectedRoomId])
 
   // Step 1 -> Step 2 transition
   function handleConfirmSchedule() {

@@ -49,7 +49,7 @@ export interface InsightContext {
   currentTime: string
 }
 
-const DEFAULT_MODEL = "gemini-2.5-flash" // SAU Gemini 3.1 Flash Lite
+const DEFAULT_MODEL = "gemini-3.1-flash-lite"
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 
 function buildPrompt(
@@ -57,6 +57,7 @@ function buildPrompt(
   routeData: RouteData,
   liveWeather?: WeatherInsight,
 ): string {
+  const targetTime = ctx.user.preferences.preferredStartTime || "15:00"
   const weatherContext = liveWeather
     ? `Vreme curentă București: ${liveWeather.temp}°C, ${liveWeather.condition}, umiditate ${liveWeather.humidity}%, vânt ${liveWeather.windKmh} km/h`
     : `Vreme curentă București: 24°C, Parțial înnorat`
@@ -64,7 +65,9 @@ function buildPrompt(
   const routePayload = {
     distanceKm: routeData.distanceKm,
     durationMin: routeData.durationMin,
+    trafficDelayMin: routeData.trafficDelayMin,
     departureTime: routeData.departureTime,
+    targetArrivalTime: targetTime,
     incidents: routeData.incidents,
   }
 
@@ -75,7 +78,9 @@ ${JSON.stringify(routePayload, null, 2)}
 
 Context utilizator & mediu:
 - Utilizator: ${ctx.user.firstName} ${ctx.user.lastName} (${ctx.user.role})
+- Punct plecare: ${ctx.user.domiciliu || "București, Nițu Vasile 58"}
 - Traseu plecare: ${routeData.routeSummary}
+- Oră dorită sosire birou: ${targetTime}
 - ${weatherContext}
 
 Sarcina ta:
@@ -83,7 +88,7 @@ Sarcina ta:
 
 Exemplu ideal de redactare:
 "Traficul este mai intens pe Pasajul Basarab și pe Bd. Iuliu Maniu, unde întârzierile estimate sunt de aproximativ 14 minute în total.
-Pentru a ajunge la birou la ora dorită, recomandăm plecarea la 08:12.
+Pentru a ajunge la birou la ora dorită (${targetTime}), recomandăm plecarea la ${routeData.departureTime}.
 Condițiile meteo nu indică riscuri suplimentare."
 
 2. Generează lista de ALERTE DE TRAFIC ("trafficAlerts") bazată pe punctele aglomerate (incidente/întârzieri) din datele transmise.
@@ -106,9 +111,15 @@ Răspunde STRICT cu un JSON valid (fără alt text sau blocuri markdown suplimen
     }
   ],
   "seatRec": {
-    "colleagueName": "Ana H.",
-    "seat": "Loc 15",
-    "floor": "Etaj 1"
+    "colleagueName": "Ana Popescu",
+    "seat": "Loc A1 (ocupat)",
+    "floor": "Parter (Corp T1)",
+    "building": "Corp T1",
+    "floorId": 1,
+    "zoneType": "birouri",
+    "roomId": 100,
+    "targetSeatCode": "A2",
+    "roomName": "Birouri Parter"
   },
   "history": {
     "topFloor": "etajul 1",
@@ -123,10 +134,11 @@ function calculateFallbackResult(
   routeData: RouteData,
   liveWeather?: WeatherInsight,
 ): AIInsightsData {
+  const targetTime = ctx.user.preferences.preferredStartTime || "15:00"
   const totalDelay = routeData.trafficDelayMin || 14
   const incidentLocations = routeData.incidents.map((i) => i.location).join(" și pe ") || "Pasajul Basarab și Bd. Iuliu Maniu"
 
-  const defaultExplanation = `Traficul este mai intens pe ${incidentLocations}, unde întârzierile estimate sunt de aproximativ ${totalDelay} minute în total.\n\nPentru a ajunge la birou la ora dorită, recomandăm plecarea la ${routeData.departureTime}.\nCondițiile meteo nu indică riscuri suplimentare.`
+  const defaultExplanation = `Traficul este mai intens pe ${incidentLocations}, unde întârzierile estimate sunt de aproximativ ${totalDelay} minute în total.\n\nPentru a ajunge la birou la ora dorită (${targetTime}), recomandăm plecarea la ${routeData.departureTime}.\nCondițiile meteo nu indică riscuri suplimentare.`
 
   const trafficAlerts = routeData.incidents.map((inc, index) => ({
     id: String(index + 1),
@@ -157,7 +169,7 @@ function calculateFallbackResult(
 export async function getAIInsightsData(ctx: InsightContext): Promise<AIInsightsData> {
   const origin = ctx.user.domiciliu || "București, Nițu Vasile 58"
   const destination = ctx.officeAddress || OFFICE_ADDRESS
-  const targetTime = ctx.user.preferences.preferredStartTime || "09:00"
+  const targetTime = ctx.user.preferences.preferredStartTime || "15:00"
 
   // 1. Obținere date rutiere din Google Routes (calcul distanță, durată, întârzieri, incidente)
   const routeDataPromise = getRouteData(origin, destination, targetTime)

@@ -155,7 +155,19 @@ export default function HomePage() {
             isLoading={isAiLoading}
             onRefresh={handleFetchAiInsights}
             hasApiKey={hasApiKey}
-            onReserveAdjacent={() => navigate("/seats")}
+            onReserveAdjacent={() => {
+              const rec = insightsData.seatRec
+              navigate("/seats", {
+                state: {
+                  jumpToSeat: true,
+                  building: rec?.building || "Corp T1",
+                  floorId: rec?.floorId || 1,
+                  zoneType: rec?.zoneType || "birouri",
+                  roomId: rec?.roomId || 100,
+                  targetSeatCode: rec?.targetSeatCode || "A2",
+                },
+              })
+            }}
           />
         )}
       </div>

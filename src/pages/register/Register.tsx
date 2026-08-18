@@ -41,9 +41,9 @@ export default function Register() {
 
     setIsSubmitting(true)
     try {
-      // TODO: inlocuieste cu un apel real catre services/mockApi
+      // simulate account creation
       await new Promise((resolve) => setTimeout(resolve, 400))
-      navigate("/")
+      navigate("/cont")
     } finally {
       setIsSubmitting(false)
     }

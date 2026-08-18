@@ -46,7 +46,7 @@ export interface Seat {
   occupiedBy?: string
 }
 
-export type RoomLayoutType = "office" | "conference" | "events" | "small-meeting" | "standup" | "openspace" | "relaxare"
+export type RoomLayoutType = "office" | "conference" | "events" | "small-meeting" | "standup" | "openspace" | "relaxare" | "birouri"
 
 export interface Room {
   id: number
@@ -221,6 +221,12 @@ export interface SeatRecommendation {
   colleagueName: string
   seat: string
   floor: string
+  building?: string
+  floorId?: number
+  zoneType?: RoomZoneType
+  roomId?: number
+  targetSeatCode?: string
+  roomName?: string
 }
 
 export interface AnalyticsKpi { id: string; label: string; value: string }
