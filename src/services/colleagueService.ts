@@ -41,7 +41,7 @@ function mapToColleague(c: BeColleagueResponse): Colleague {
     role:       c.role,
     color:      "#6366f1",
     floor:      c.location ?? "—",
-    status:     (c.status === "La birou" ? "La birou" : "Remote") as Colleague["status"],
+    status:     (c.status === "La birou" || String(c.status).toLowerCase().includes("birou") || String(c.status).toLowerCase().includes("office") ? "La birou" : "Remote") as Colleague["status"],
     isFavorite: c.isFavorite,
   }
 }
@@ -64,7 +64,7 @@ export async function getColleagues(params: GetColleaguesParams = {}): Promise<C
   if (params.floor != null) query.set("floor", String(params.floor))
   if (params.favorite != null) query.set("favorite", String(params.favorite))
   query.set("page", String(params.page ?? 0))
-  query.set("size", String(params.size ?? 50))
+  query.set("size", String(params.size ?? 500))
 
   const data = await apiClient.get<BePageResponse<BeColleagueResponse>>(`/users?${query.toString()}`)
   return (data.content ?? []).map((c) => mapToColleague(c))

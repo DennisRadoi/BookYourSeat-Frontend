@@ -6,7 +6,6 @@ import { apiClient, setToken, removeToken } from "./apiClient"
 
 interface LoginResponse {
   token: string
-  // backend-ul poate returna și date despre user; le ignorăm aici
   [key: string]: unknown
 }
 
@@ -25,6 +24,9 @@ export interface RegisterData {
   lastName: string
   email: string
   password: string
+  phoneNumber?: string
+  departmentId?: number | null
+  addressId?: number | null
 }
 
 export async function login(credentials: LoginCredentials): Promise<void> {
@@ -36,8 +38,16 @@ export async function login(credentials: LoginCredentials): Promise<void> {
 }
 
 export async function register(data: RegisterData): Promise<void> {
-  const response = await apiClient.post<RegisterResponse>("/auth/register", data)
-  // Dacă backend-ul returnează și token la register, îl salvăm direct
+  const body = {
+    firstName: data.firstName,
+    lastName: data.lastName,
+    email: data.email,
+    password: data.password,
+    phoneNumber: data.phoneNumber || "",
+    departmentId: data.departmentId ?? null,
+    addressId: data.addressId ?? null,
+  }
+  const response = await apiClient.post<RegisterResponse>("/auth/register", body)
   if (response?.token) {
     setToken(response.token)
   }

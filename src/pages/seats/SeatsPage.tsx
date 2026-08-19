@@ -1,8 +1,9 @@
 import { useEffect, useState, type ReactElement } from "react"
 import { useLocation } from "react-router-dom"
 import { DateTimeSelectionStep, RoomSeatSelectionStep } from "./maps/components"
-import { getLocations, searchAvailableSeats } from "@/services/locationService"
+import { getLocations } from "@/services/locationService"
 import { createReservation } from "@/services/reservationService"
+import { getCurrentUser } from "@/services/userService"
 import { formatDateIso } from "@/utils"
 import type { Location, Seat, RoomZoneType, RecurrenceType } from "@/types"
 import { PillButton } from "@/components/ui"
@@ -58,12 +59,28 @@ export default function SeatsPage(): ReactElement {
   // Submission & Modal state
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState<boolean>(false)
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null)
 
-  // Fetch locations on mount
+  // Fetch locations & current user on mount
   useEffect(() => {
     async function loadData() {
-      const locs = await getLocations()
-      setLocations(locs)
+      try {
+        const dateStr = selectedDate ? formatDateIso(selectedDate) : formatDateIso(new Date())
+        const [locs, user] = await Promise.all([
+          getLocations({
+            date: dateStr,
+            startTime,
+            endTime,
+          }),
+          getCurrentUser(),
+        ])
+        setLocations(locs)
+        setCurrentUserId(user.id)
+      } catch (error) {
+        console.error("Eroare la încărcarea datelor inițiale:", error)
+        // Fallback în caz că getLocations merge dar getCurrentUser are o eroare
+        getLocations().then(setLocations).catch(console.error)
+      }
     }
     loadData()
   }, [])
@@ -75,7 +92,12 @@ export default function SeatsPage(): ReactElement {
     if (!selectedDate || locations.length === 0) return
     async function refreshAvailability() {
       try {
-        const locs = await getLocations()
+        const dateStr = formatDateIso(selectedDate as Date)
+        const locs = await getLocations({
+          date: dateStr,
+          startTime,
+          endTime,
+        })
         setLocations(locs)
       } catch (error) {
         console.error("Eroare la actualizarea disponibilității:", error)
@@ -138,7 +160,7 @@ export default function SeatsPage(): ReactElement {
     try {
       const activeLoc = locations.find((l) => l.building === selectedBuilding) || locations[0]
       await createReservation({
-        userId: 1,
+        userId: currentUserId || 1,
         locationId: activeLoc?.id ?? 1,
         floorId: selectedFloorId,
         seatId: selectedSeat.id,

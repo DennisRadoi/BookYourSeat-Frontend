@@ -3,7 +3,7 @@
 // - Injectează automat Authorization: Bearer <token> din localStorage
 // - Aruncă ApiError pentru orice răspuns non-2xx
 
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || "http://localhost:8081/api"
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || "http://localhost:8081"
 
 const TOKEN_KEY = "auth_token"
 
@@ -45,7 +45,13 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     headers["Authorization"] = `Bearer ${token}`
   }
 
-  const response = await fetch(`${BASE_URL}${path}`, {
+  // Prepend /api ONLY for bookings and recurring-bookings endpoints
+  const needsApiPrefix = path.startsWith("/bookings") || path.startsWith("/recurring-bookings")
+  const finalUrl = needsApiPrefix
+    ? `${BASE_URL.replace(/\/api$/, "")}/api${path}`
+    : `${BASE_URL.replace(/\/api$/, "")}${path}`
+
+  const response = await fetch(finalUrl, {
     ...options,
     headers,
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined,

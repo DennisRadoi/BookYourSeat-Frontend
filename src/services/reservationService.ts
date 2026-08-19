@@ -1,6 +1,7 @@
 import { apiClient } from "./apiClient"
 import { locations as mockLocations } from "@/data"
-import type { DetailedReservation, Reservation, ReservationStatus } from "@/types"
+import { getLocations } from "./locationService"
+import type { Location, DetailedReservation, Reservation, ReservationStatus } from "@/types"
 
 // ─── Reservation Service ───────────────────────────────────────────────────────
 // GET  /bookings/me?status=        → rezervările userului curent
@@ -28,31 +29,6 @@ interface BeBookingResponse {
   updatedAt: string
 }
 
-// ─── Mappings ──────────────────────────────────────────────────────────────────
-
-export function getBackendSeatId(feSeatId: number): number {
-  const mapping: Record<number, number> = {
-    2000: 1, // A1 (Parter T1)
-    2001: 2, // A2 (Parter T1)
-    1100: 3, // T1 (Etaj 1 T1)
-    2200: 4, // M1 (Etaj 2 T2)
-    2201: 5, // M2 (Etaj 2 T2)
-  }
-  if (mapping[feSeatId]) return mapping[feSeatId]
-  return (feSeatId % 5) + 1
-}
-
-export function getFrontendSeatInfo(beSeatId: number): { id: number; code: string } {
-  const mapping: Record<number, { id: number; code: string }> = {
-    1: { id: 2000, code: "A1" },
-    2: { id: 2001, code: "A2" },
-    3: { id: 1100, code: "T1" },
-    4: { id: 2200, code: "M1" },
-    5: { id: 2201, code: "M2" },
-  }
-  return mapping[beSeatId] || { id: beSeatId, code: `Loc ${beSeatId}` }
-}
-
 // ─── Mapare status BE → FE ─────────────────────────────────────────────────────
 
 function mapStatus(beStatus: BeBookingStatus): ReservationStatus {
@@ -75,16 +51,40 @@ function mapStatusToFe(feStatus: ReservationStatus): BeBookingStatus {
   return map[feStatus] ?? "IN_ASTEPTARE"
 }
 
+// Helper to find building and floor by seatId from dynamically loaded locations list
+function findLocationInfo(seatId: number, locationsList?: Location[]) {
+  const activeLocations = (locationsList && locationsList.length > 0) ? locationsList : mockLocations
+  for (const loc of activeLocations) {
+    for (const floor of loc.floors) {
+      const matchInFloor = floor.seats?.find((s) => s.id === seatId)
+      if (matchInFloor) {
+        return { loc, floor, seat: matchInFloor }
+      }
+      if (floor.rooms) {
+        for (const room of floor.rooms) {
+          const matchInRoom = room.seats?.find((s) => s.id === seatId)
+          if (matchInRoom) {
+            return { loc, floor, seat: matchInRoom }
+          }
+        }
+      }
+    }
+  }
+  return null
+}
+
 // ─── Mapare răspuns BE → Reservation FE ───────────────────────────────────────
 
-function mapToReservation(b: BeBookingResponse): Reservation {
-  const seatInfo = getFrontendSeatInfo(b.seatId ?? 1)
+function mapToReservation(b: BeBookingResponse, locationsList?: Location[]): Reservation {
+  const seatId = b.seatId ?? 0
+  const info = findLocationInfo(seatId, locationsList)
+
   return {
     id: b.id,
     userId: b.userId,
-    locationId: 0,
-    floorId: 0,
-    seatId: seatInfo.id,
+    locationId: info?.loc?.id ?? 0,
+    floorId: info?.floor?.id ?? 0,
+    seatId: seatId,
     date: b.startDate,
     startTime: b.startTime?.substring(0, 5) ?? "",  // "09:00:00" → "09:00"
     endTime: b.endTime?.substring(0, 5) ?? "",
@@ -93,77 +93,52 @@ function mapToReservation(b: BeBookingResponse): Reservation {
   }
 }
 
-function mapToDetailedReservation(b: BeBookingResponse): DetailedReservation {
-  const r = mapToReservation(b)
-  const seatInfo = getFrontendSeatInfo(b.seatId ?? 1)
-
-  let foundLoc: any = null
-  let foundFloor: any = null
-  let foundSeat: any = null
-
-  for (const loc of mockLocations) {
-    for (const floor of loc.floors) {
-      const matchInFloor = floor.seats?.find((s) => s.id === seatInfo.id)
-      if (matchInFloor) {
-        foundLoc = loc
-        foundFloor = floor
-        foundSeat = matchInFloor
-        break
-      }
-      if (floor.rooms) {
-        for (const room of floor.rooms) {
-          const matchInRoom = room.seats?.find((s) => s.id === seatInfo.id)
-          if (matchInRoom) {
-            foundLoc = loc
-            foundFloor = floor
-            foundSeat = matchInRoom
-            break
-          }
-        }
-      }
-      if (foundSeat) break
-    }
-    if (foundSeat) break
-  }
+function mapToDetailedReservation(b: BeBookingResponse, locationsList?: Location[]): DetailedReservation {
+  const r = mapToReservation(b, locationsList)
+  const seatId = b.seatId ?? 0
+  const info = findLocationInfo(seatId, locationsList)
 
   return {
     ...r,
-    location: foundLoc
+    location: info?.loc
       ? {
-        id: foundLoc.id,
-        name: foundLoc.name,
-        address: foundLoc.address,
-        building: foundLoc.building,
-      }
+          id: info.loc.id,
+          name: info.loc.name,
+          address: info.loc.address,
+          building: info.loc.building,
+        }
       : null,
-    floor: foundFloor
+    floor: info?.floor
       ? {
-        id: foundFloor.id,
-        number: foundFloor.number,
-        name: foundFloor.name,
-      }
+          id: info.floor.id,
+          number: info.floor.number,
+          name: info.floor.name,
+        }
       : null,
-    seat: foundSeat
+    seat: info?.seat
       ? {
-        id: foundSeat.id,
-        code: foundSeat.code,
-        area: foundSeat.area,
-        type: foundSeat.type,
-      }
+          id: info.seat.id,
+          code: info.seat.code,
+          area: info.seat.area,
+          type: info.seat.type,
+        }
       : {
-        id: seatInfo.id,
-        code: seatInfo.code,
-        area: "open",
-        type: "standard",
-      },
+          id: seatId,
+          code: `Loc ${seatId}`,
+          area: "open",
+          type: "standard",
+        },
   }
 }
 
 // ─── API ───────────────────────────────────────────────────────────────────────
 
 export async function getReservations(): Promise<Reservation[]> {
-  const data = await apiClient.get<BeBookingResponse[]>("/bookings/me")
-  return data.map(mapToReservation)
+  const [data, locationsList] = await Promise.all([
+    apiClient.get<BeBookingResponse[]>("/bookings/me"),
+    getLocations().catch(() => [] as Location[]),
+  ])
+  return data.map((b) => mapToReservation(b, locationsList))
 }
 
 export async function getDetailedReservationsByUserId(
@@ -171,20 +146,31 @@ export async function getDetailedReservationsByUserId(
   status?: string,
 ): Promise<DetailedReservation[]> {
   const params = status ? `?status=${encodeURIComponent(status)}` : ""
-  const data = await apiClient.get<BeBookingResponse[]>(`/bookings/me${params}`)
-  return data.map(mapToDetailedReservation)
+  const [data, locationsList] = await Promise.all([
+    apiClient.get<BeBookingResponse[]>(`/bookings/me${params}`),
+    getLocations().catch(() => [] as Location[]),
+  ])
+  return data.map((b) => mapToDetailedReservation(b, locationsList))
 }
 
 export async function createReservation(
   reservationData: Omit<Reservation, "id" | "createdAt">,
 ): Promise<Reservation> {
+  // Format times to HH:mm:ss as required by backend API
+  const formattedStartTime = reservationData.startTime.length === 5 ? `${reservationData.startTime}:00` : reservationData.startTime
+  const formattedEndTime = reservationData.endTime.length === 5 ? `${reservationData.endTime}:00` : reservationData.endTime
+
   const body = {
-    seatId: getBackendSeatId(reservationData.seatId),
+    userId: reservationData.userId || 1,
     roomId: null,
+    seatId: reservationData.seatId,
     startDate: reservationData.date,
     endDate: reservationData.date,
-    startTime: reservationData.startTime,
-    endTime: reservationData.endTime,
+    startTime: formattedStartTime,
+    endTime: formattedEndTime,
+    recurrenceFrequency: null,
+    recurrenceDaysOfWeek: null,
+    recurrenceIntervalOfRecurrence: null
   }
   const data = await apiClient.post<BeBookingResponse>("/bookings", body)
   return mapToReservation(data)
@@ -194,11 +180,14 @@ export async function updateReservation(
   reservationId: number,
   updates: Partial<Pick<Reservation, "date" | "startTime" | "endTime" | "status">>,
 ): Promise<Reservation | null> {
+  const formattedStartTime = updates.startTime && updates.startTime.length === 5 ? `${updates.startTime}:00` : updates.startTime
+  const formattedEndTime = updates.endTime && updates.endTime.length === 5 ? `${updates.endTime}:00` : updates.endTime
+
   const body = {
     startDate: updates.date,
     endDate: updates.date,
-    startTime: updates.startTime,
-    endTime: updates.endTime,
+    startTime: formattedStartTime,
+    endTime: formattedEndTime,
     status: updates.status ? mapStatusToFe(updates.status) : undefined,
   }
   const data = await apiClient.put<BeBookingResponse>(`/bookings/${reservationId}`, body)
@@ -209,4 +198,3 @@ export async function cancelReservation(reservationId: number): Promise<boolean>
   await apiClient.put<unknown>(`/bookings/${reservationId}/cancel`)
   return true
 }
-

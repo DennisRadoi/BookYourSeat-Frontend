@@ -27,8 +27,8 @@ export default function Login() {
     try {
       await login({ email, password })
       navigate("/")
-    } catch {
-      setError("Email sau parolă incorecte.")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Email sau parolă incorecte.")
     } finally {
       setIsSubmitting(false)
     }

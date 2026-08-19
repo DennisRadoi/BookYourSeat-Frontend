@@ -22,12 +22,12 @@ interface BeMyAccountResponse {
 
 // ─── Mapare BE → User FE ──────────────────────────────────────────────────────
 
-function mapToUser(be: BeMyAccountResponse): User {
+function mapToUser(be: BeMyAccountResponse & { id?: number; userId?: number }): User {
   const initials =
     (be.firstName?.[0] ?? "").toUpperCase() + (be.lastName?.[0] ?? "").toUpperCase()
 
   return {
-    id:         0,   // BE nu returnează id în MyAccountResponse; extragem din token dacă e necesar
+    id:         be.id ?? be.userId ?? 0,
     firstName:  be.firstName,
     lastName:   be.lastName,
     initials,
@@ -39,7 +39,7 @@ function mapToUser(be: BeMyAccountResponse): User {
     domiciliu:  be.formatedAdress ?? undefined,
     preferences: {
       preferredFloor:     1,
-      preferredArea:      be.nearWindow ? "window" : be.quietPlace ? "quiet" : "open",
+      preferredArea:      be.nearWindow ? "window" : (be.quietPlace || (be as any).quietPlaces) ? "quiet" : "open",
       preferredStartTime: "09:00",
       preferredDays:      [],
       workPreferences:    [],
