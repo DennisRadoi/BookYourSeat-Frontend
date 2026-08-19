@@ -1,54 +1,92 @@
-import { users, currentUserId } from "@/data"
+import { apiClient } from "./apiClient"
 import type { User, UserPreferences } from "@/types"
 
-const delay = (ms = 150) => new Promise((resolve) => setTimeout(resolve, ms))
-let currentPassword = "password123"
+// ─── User Service ──────────────────────────────────────────────────────────────
+// GET   /users/me              → MyAccountResponse
+// PATCH /users/me              → actualizare profil
+// PATCH /users/me/preferences  → actualizare preferințe
 
-// TODO: Replace mock data with backend API integration
-export async function getCurrentUser(): Promise<User> {
-  await delay()
-  const user = users.find((item) => item.id === currentUserId)
-  if (!user) {
-    throw new Error("Utilizatorul curent nu a fost găsit.")
+// ─── Tipuri BE ────────────────────────────────────────────────────────────────
+
+interface BeMyAccountResponse {
+  firstName: string
+  lastName: string
+  email: string
+  departmentName: string | null
+  formatedAdress: string | null
+  profilePhoto: string | null
+  quietPlace: boolean
+  nearWindow: boolean
+  preferedColleague: string | null
+}
+
+// ─── Mapare BE → User FE ──────────────────────────────────────────────────────
+
+function mapToUser(be: BeMyAccountResponse): User {
+  const initials =
+    (be.firstName?.[0] ?? "").toUpperCase() + (be.lastName?.[0] ?? "").toUpperCase()
+
+  return {
+    id:         0,   // BE nu returnează id în MyAccountResponse; extragem din token dacă e necesar
+    firstName:  be.firstName,
+    lastName:   be.lastName,
+    initials,
+    email:      be.email,
+    role:       "",
+    department: be.departmentName ?? "",
+    isOnline:   true,
+    avatarUrl:  be.profilePhoto ?? null,
+    domiciliu:  be.formatedAdress ?? undefined,
+    preferences: {
+      preferredFloor:     1,
+      preferredArea:      be.nearWindow ? "window" : be.quietPlace ? "quiet" : "open",
+      preferredStartTime: "09:00",
+      preferredDays:      [],
+      workPreferences:    [],
+    },
   }
-  return structuredClone(user)
+}
+
+// ─── API ───────────────────────────────────────────────────────────────────────
+
+export async function getCurrentUser(): Promise<User> {
+  const data = await apiClient.get<BeMyAccountResponse>("/users/me")
+  return mapToUser(data)
 }
 
 export async function updateUserProfile(
-  userId: number,
+  _userId: number,
   updates: Partial<Pick<User, "firstName" | "lastName" | "email" | "department" | "domiciliu">>,
 ): Promise<User> {
-  await delay()
-  const userIndex = users.findIndex((item) => item.id === userId)
-  if (userIndex === -1) {
-    throw new Error(`Utilizatorul cu ID-ul ${userId} nu a fost găsit.`)
+  const body: Record<string, unknown> = {}
+  if (updates.firstName !== undefined || updates.lastName !== undefined) {
+    body.fullname = `${updates.firstName ?? ""} ${updates.lastName ?? ""}`.trim()
   }
-  users[userIndex] = {
-    ...users[userIndex],
-    ...updates,
-  }
-  return structuredClone(users[userIndex])
+  if (updates.email !== undefined)      body.email = updates.email
+  if (updates.department !== undefined) body.departmentName = updates.department
+
+  const data = await apiClient.patch<BeMyAccountResponse>("/users/me", body)
+  return mapToUser(data)
 }
 
 export async function updateUserPreferences(
-  userId: number,
+  _userId: number,
   preferenceUpdates: Partial<UserPreferences>,
 ): Promise<User> {
-  await delay()
-  const userIndex = users.findIndex((item) => item.id === userId)
-  if (userIndex === -1) {
-    throw new Error(`Utilizatorul cu ID-ul ${userId} nu a fost găsit.`)
+  const body: Record<string, unknown> = {}
+  if (preferenceUpdates.preferredArea !== undefined) {
+    body.nearWindow   = preferenceUpdates.preferredArea === "window"
+    body.quietPlaces  = preferenceUpdates.preferredArea === "quiet"
   }
-  users[userIndex].preferences = {
-    ...users[userIndex].preferences,
-    ...preferenceUpdates,
-  }
-  return structuredClone(users[userIndex])
+
+  const data = await apiClient.patch<BeMyAccountResponse>("/users/me/preferences", body)
+  return mapToUser(data)
 }
 
-// Mock implementation; replace with an authenticated backend endpoint in production.
+// Endpoint de schimbare parolă nu este disponibil în backend deocamdată.
+let currentPassword = "password123"
+
 export async function changeCurrentUserPassword(current: string, next: string): Promise<void> {
-  await delay()
   if (current !== currentPassword) throw new Error("Parola curentă nu este corectă.")
   if (next.length < 8) throw new Error("Parola nouă trebuie să conțină minimum 8 caractere.")
   currentPassword = next

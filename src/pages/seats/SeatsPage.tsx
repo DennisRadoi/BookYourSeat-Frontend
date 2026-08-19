@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactElement } from "react"
 import { useLocation } from "react-router-dom"
 import { DateTimeSelectionStep, RoomSeatSelectionStep } from "./maps/components"
-import { getLocations } from "@/services/locationService"
+import { getLocations, searchAvailableSeats } from "@/services/locationService"
 import { createReservation } from "@/services/reservationService"
 import { formatDateIso } from "@/utils"
 import type { Location, Seat, RoomZoneType, RecurrenceType } from "@/types"
@@ -68,6 +68,22 @@ export default function SeatsPage(): ReactElement {
     loadData()
   }, [])
 
+  // Sync disponibilitate când data/ora se schimbă.
+  // locationService.getLocations() aplică statusul din BE peste layout-ul mock,
+  // deci e suficient să re-facem fetch.
+  useEffect(() => {
+    if (!selectedDate || locations.length === 0) return
+    async function refreshAvailability() {
+      try {
+        const locs = await getLocations()
+        setLocations(locs)
+      } catch (error) {
+        console.error("Eroare la actualizarea disponibilității:", error)
+      }
+    }
+    refreshAvailability()
+  }, [selectedDate, startTime, endTime])
+
   // Explicitly sync routerState parameters when routerState changes
   useEffect(() => {
     if (routerState.building) setSelectedBuilding(routerState.building)
@@ -85,7 +101,7 @@ export default function SeatsPage(): ReactElement {
 
     const loc = locations.find((l) => l.building === building) || locations[0]
     const fl = loc?.floors?.find((f) => f.id === floorId) || loc?.floors?.[0]
-    
+
     let foundSeat: Seat | undefined
     if (fl?.rooms) {
       for (const rm of fl.rooms) {

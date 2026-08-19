@@ -4,6 +4,7 @@ import { AuthLayout } from "@/layouts"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PasswordToggle } from "./components/PasswordToggle"
+import { register } from "@/services/authService"
 
 export default function Register() {
   const navigate = useNavigate()
@@ -41,9 +42,10 @@ export default function Register() {
 
     setIsSubmitting(true)
     try {
-      // simulate account creation
-      await new Promise((resolve) => setTimeout(resolve, 400))
-      navigate("/cont")
+      await register({ firstName, lastName, email, password })
+      navigate("/")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "A apărut o eroare. Încearcă din nou.")
     } finally {
       setIsSubmitting(false)
     }
