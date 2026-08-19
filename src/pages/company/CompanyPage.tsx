@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { CompanyToolbar } from "./components/CompanyToolbar"
 import { ColleaguesTable } from "./components/ColleaguesTable"
 import type { CompanyFilters } from "./components/CompanyFilterPopover"
-import { getColleagues, toggleFavoriteColleague } from "@/services"
+import { getBuildings, getColleaguesPage, toggleFavoriteColleague } from "@/services"
 import type { Colleague } from "@/types"
+import { Button } from "@/components/ui"
 
-const initialFilters: CompanyFilters = { status: "all", floor: "all", favorite: "all" }
+const initialFilters: CompanyFilters = { status: "all", building: "all", favorite: "all" }
+const PAGE_SIZE = 5
 
 export default function CompanyPage() {
   const navigate = useNavigate()
@@ -14,22 +16,60 @@ export default function CompanyPage() {
   const [query, setQuery] = useState("")
   const [filters, setFilters] = useState<CompanyFilters>(initialFilters)
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalElements, setTotalElements] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+  const [buildings, setBuildings] = useState<string[]>([])
 
-  useEffect(() => { getColleagues().then(setColleagues).catch((error) => console.error("Eroare la încărcarea colegilor:", error)) }, [])
+  useEffect(() => {
+    getBuildings().then((data) => setBuildings(data.map((building) => building.name))).catch((error) => console.error("Eroare la încărcarea clădirilor:", error))
+  }, [])
 
-  const floors = useMemo(() => [...new Set(colleagues.map((colleague) => colleague.floor))].sort(), [colleagues])
-  const visibleColleagues = useMemo(() => colleagues.filter((colleague) => {
-    const matchesName = colleague.name.toLocaleLowerCase("ro-RO").includes(query.trim().toLocaleLowerCase("ro-RO"))
-    const matchesStatus = filters.status === "all" || colleague.status === filters.status
-    const matchesFloor = filters.floor === "all" || colleague.floor === filters.floor
-    const matchesFavorite = filters.favorite === "all" || (filters.favorite === "favorite" ? colleague.isFavorite : !colleague.isFavorite)
-    return matchesName && matchesStatus && matchesFloor && matchesFavorite
-  }), [colleagues, query, filters])
+  useEffect(() => {
+    let active = true
+    getColleaguesPage({
+      search: query.trim() || undefined,
+      status: filters.status === "all" ? undefined : filters.status,
+      building: filters.building === "all" ? undefined : filters.building,
+      favorite: filters.favorite === "all" ? undefined : filters.favorite === "favorite",
+      page,
+      size: PAGE_SIZE,
+    }).then((result) => {
+      if (!active) return
+      setColleagues(result.colleagues)
+      setTotalPages(result.totalPages)
+      setTotalElements(result.totalElements)
+    }).catch((error) => console.error("Eroare la încărcarea colegilor:", error))
+      .finally(() => active && setIsLoading(false))
+    return () => { active = false }
+  }, [query, filters, page])
+
+  function updateQuery(value: string) { setQuery(value); setPage(0) }
+  function updateFilters(value: CompanyFilters) { setFilters(value); setPage(0) }
 
   async function handleToggleFavorite(id: number) {
-    try { const updated = await toggleFavoriteColleague(id); setColleagues((current) => current.map((colleague) => colleague.id === updated.id ? updated : colleague)) }
-    catch (error) { console.error("Eroare la actualizarea favoritului:", error) }
+    try {
+      const updated = await toggleFavoriteColleague(id)
+      if (filters.favorite !== "all" && (filters.favorite === "favorite") !== updated.isFavorite) {
+        setPage(0)
+      } else {
+        setColleagues((current) => current.map((colleague) => colleague.id === id ? updated : colleague))
+      }
+    } catch (error) { console.error("Eroare la actualizarea favoritului:", error) }
   }
 
-  return <section className="min-h-screen bg-[var(--background)] text-[var(--foreground)]"><div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8"><CompanyToolbar query={query} filters={filters} floors={floors} filtersOpen={filtersOpen} onQueryChange={setQuery} onFiltersChange={setFilters} onFiltersOpenChange={setFiltersOpen} /><ColleaguesTable colleagues={visibleColleagues} onToggleFavorite={handleToggleFavorite} onViewProfile={(colleague) => navigate(`/companie/${colleague.id}`)} /></div></section>
+  const pageLabel = totalElements === 0 ? "Niciun coleg" : `Pagina ${page + 1} din ${Math.max(totalPages, 1)} · ${totalElements} colegi`
+
+  return <section className="min-h-screen bg-[var(--background)] text-[var(--foreground)]"><div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <CompanyToolbar query={query} filters={filters} buildings={buildings} filtersOpen={filtersOpen} onQueryChange={updateQuery} onFiltersChange={updateFilters} onFiltersOpenChange={setFiltersOpen} />
+    {isLoading ? <p className="py-10 text-center text-sm text-[var(--muted-foreground)]">Se încarcă colegii...</p> : <ColleaguesTable colleagues={colleagues} onToggleFavorite={handleToggleFavorite} onViewProfile={(colleague) => navigate(`/companie/${colleague.id}`)} />}
+    <div className="mt-5 flex flex-wrap items-center justify-between gap-3 max-w-[920px]">
+      <p className="text-xs text-[var(--muted-foreground)]">{pageLabel}</p>
+      <div className="flex gap-2">
+        <Button size="sm" variant="outline" disabled={page === 0 || isLoading} onClick={() => setPage((current) => current - 1)}>Înapoi</Button>
+        <Button size="sm" variant="outline" disabled={page + 1 >= totalPages || isLoading} onClick={() => setPage((current) => current + 1)}>Înainte</Button>
+      </div>
+    </div>
+  </div></section>
 }

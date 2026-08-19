@@ -170,6 +170,7 @@ export interface Notification {
   text: string
   time: string
   isUnread: boolean
+  officeInvitationId?: number | null
 }
 
 export interface UserSettings {

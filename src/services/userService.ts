@@ -42,7 +42,7 @@ function mapToUser(be: BeMyAccountResponse & { id?: number; userId?: number }): 
       preferredArea:      be.nearWindow ? "window" : (be.quietPlace || (be as any).quietPlaces) ? "quiet" : "open",
       preferredStartTime: "09:00",
       preferredDays:      [],
-      workPreferences:    [],
+      workPreferences:    [be.nearWindow ? "Lângă fereastră" : "", be.quietPlace ? "Loc liniștit" : ""].filter(Boolean),
     },
   }
 }
@@ -78,16 +78,42 @@ export async function updateUserPreferences(
     body.nearWindow   = preferenceUpdates.preferredArea === "window"
     body.quietPlaces  = preferenceUpdates.preferredArea === "quiet"
   }
+  if (preferenceUpdates.workPreferences !== undefined) {
+    body.nearWindow = preferenceUpdates.workPreferences.includes("Lângă fereastră")
+    body.quietPlaces = preferenceUpdates.workPreferences.includes("Loc liniștit")
+  }
 
   const data = await apiClient.patch<BeMyAccountResponse>("/users/me/preferences", body)
   return mapToUser(data)
 }
 
 // Endpoint de schimbare parolă nu este disponibil în backend deocamdată.
-let currentPassword = "password123"
-
 export async function changeCurrentUserPassword(current: string, next: string): Promise<void> {
-  if (current !== currentPassword) throw new Error("Parola curentă nu este corectă.")
-  if (next.length < 8) throw new Error("Parola nouă trebuie să conțină minimum 8 caractere.")
-  currentPassword = next
+  await apiClient.patch<void>("/users/me/change-password", {
+    currentPassword: current,
+    newPassword: next,
+  })
+}
+
+export interface AddressFormData { county: string; locality: string; street: string; number: string; apartmentBlock: string; floor: string; postalCode: string }
+export interface OnboardingData { departmentName: string; phoneNumber: string; role: string; employmentDate: string; address: AddressFormData }
+
+export function completeOnboarding(data: OnboardingData): Promise<User> {
+  return apiClient.patch<BeMyAccountResponse>("/users/me", {
+    departmentName: data.departmentName,
+    phoneNumber: data.phoneNumber,
+    role: data.role,
+    employmentDate: data.employmentDate,
+    updateMyAdressRequest: { ...data.address, floor: data.address.floor ? Number(data.address.floor) : null },
+  }).then(mapToUser)
+}
+
+export function updateUserAddress(address: AddressFormData): Promise<User> {
+  return apiClient.patch<BeMyAccountResponse>("/users/me", {
+    updateMyAdressRequest: { ...address, floor: address.floor ? Number(address.floor) : null },
+  }).then(mapToUser)
+}
+
+export function getDepartments(): Promise<Array<{ id: number; name: string }>> {
+  return apiClient.get<Array<{ id: number; name: string }>>("/departments")
 }

@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react"
 import { Check } from "lucide-react"
-import { changeCurrentUserPassword, getUserSettings, updateUserSettings } from "@/services"
-import { availableFloors, availableWorkspaceTypes, availableWeekdays } from "@/data"
+import { changeCurrentUserPassword, getBuildings, getUserSettings, updatePreferredBuilding, updateUserSettings } from "@/services"
+import { availableWeekdays } from "@/data"
 import { PasswordField } from "@/components/common/PasswordField"
 import { ToggleRow } from "./components/ToggleRow"
 import { Button, PillButton } from "@/components/ui"
 
 export default function SetariPage() {
-  const [selectedFloor, setSelectedFloor] = useState("Parter")
-  const [selectedWorkspaces, setSelectedWorkspaces] = useState(
-    new Set(["Lângă fereastră", "Lângă cafenea"]),
-  )
+  const [selectedBuilding, setSelectedBuilding] = useState("")
+  const [buildings, setBuildings] = useState<Array<{ id: number; name: string }>>([])
   const [selectedDays, setSelectedDays] = useState(new Set(availableWeekdays.slice(0, 5)))
   const [emailConfirmation, setEmailConfirmation] = useState(true)
   const [dailyReminder, setDailyReminder] = useState(true)
@@ -31,12 +29,18 @@ export default function SetariPage() {
         setDailyReminder(settings.autoReserve)
         setStartTime(settings.defaultStartTime)
         setEndTime(settings.defaultEndTime)
+        const dayLabels: Record<string, string> = {
+          monday: "Lu", tuesday: "Ma", wednesday: "Mi", thursday: "Jo",
+          friday: "Vi", saturday: "Sâ", sunday: "Du",
+        }
+        setSelectedDays(new Set(settings.preferredDays.map((day) => dayLabels[day])))
       } catch (error) {
         console.error("Eroare la încărcarea setărilor:", error)
       }
     }
 
     loadSettings()
+    getBuildings().then(setBuildings).catch((error) => console.error("Eroare la încărcarea clădirilor:", error))
   }, [])
 
   function toggleSetItem(
@@ -61,7 +65,12 @@ export default function SetariPage() {
         autoReserve: dailyReminder,
         defaultStartTime: startTime,
         defaultEndTime: endTime,
+        preferredDays: Array.from(selectedDays).map((day) => ({
+          Lu: "monday", Ma: "tuesday", Mi: "wednesday", Jo: "thursday",
+          Vi: "friday", "Sâ": "saturday", Du: "sunday",
+        })[day]).filter((day): day is "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday" => Boolean(day)),
       })
+      if (selectedBuilding) await updatePreferredBuilding(selectedBuilding)
       setIsSaved(true)
       setTimeout(() => setIsSaved(false), 2500)
     } catch (error) {
@@ -105,32 +114,32 @@ export default function SetariPage() {
               Preferințe muncă
             </legend>
             <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 shadow-[0_1px_6px_rgba(0,0,0,0.04)] sm:p-4">
-              <p className="text-xs font-medium text-[var(--muted-foreground)]">Floor preferat</p>
+              <p className="text-xs font-medium text-[var(--muted-foreground)]">Clădire preferată</p>
               <div className="mt-2 flex flex-wrap gap-2">
-                {availableFloors.map((item) => (
+                {buildings.map((item) => (
                   <PillButton
-                    key={item}
+                    key={item.id}
                     type="button"
                     size="sm"
-                    isActive={selectedFloor === item}
-                    onClick={() => setSelectedFloor(item)}
+                    isActive={selectedBuilding === item.name}
+                    onClick={() => setSelectedBuilding(item.name)}
                   >
-                    {item}
+                    {item.name}
                   </PillButton>
                 ))}
               </div>
 
               <p className="mt-4 text-xs font-medium text-[var(--muted-foreground)]">Tipuri de spații</p>
               <div className="mt-2 flex flex-wrap gap-2">
-                {availableWorkspaceTypes.map((item) => {
-                  const selected = selectedWorkspaces.has(item)
+                {([] as string[]).map((item) => {
+                  const selected = false
                   return (
                     <PillButton
                       key={item}
                       type="button"
                       size="xs"
                       isActive={selected}
-                      onClick={() => toggleSetItem(item, setSelectedWorkspaces)}
+                      onClick={() => undefined}
                     >
                       {selected && "✓ "}
                       {item}

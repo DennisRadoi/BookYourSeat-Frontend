@@ -52,22 +52,57 @@ export interface GetColleaguesParams {
   search?: string
   status?: string
   floor?: number
+  building?: string
   favorite?: boolean
   page?: number
   size?: number
 }
 
-export async function getColleagues(params: GetColleaguesParams = {}): Promise<Colleague[]> {
+export interface ColleaguesPage {
+  colleagues: Colleague[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
+
+export interface ColleagueProfile {
+  fullname: string
+  departmentName: string | null
+  role: string | null
+  quietPlace: boolean
+  nearWindow: boolean
+  profilePhoto: string | null
+  preferredStartTime: string | null
+  daysOfWeek: string | null
+  location: string | null
+  isFavorite: boolean
+  bookingDto: Array<{ dateOfBooking: string; startTime: string; endTime: string; floor: number; building: string }>
+}
+
+export async function getColleaguesPage(params: GetColleaguesParams = {}): Promise<ColleaguesPage> {
   const query = new URLSearchParams()
-  if (params.search)   query.set("search", params.search)
-  if (params.status)   query.set("status", params.status)
+  if (params.search) query.set("search", params.search)
+  if (params.status) query.set("status", params.status)
   if (params.floor != null) query.set("floor", String(params.floor))
+  if (params.building) query.set("building", params.building)
   if (params.favorite != null) query.set("favorite", String(params.favorite))
   query.set("page", String(params.page ?? 0))
-  query.set("size", String(params.size ?? 500))
+  query.set("size", String(params.size ?? 10))
 
   const data = await apiClient.get<BePageResponse<BeColleagueResponse>>(`/users?${query.toString()}`)
-  return (data.content ?? []).map((c) => mapToColleague(c))
+  return {
+    colleagues: (data.content ?? []).map(mapToColleague),
+    page: data.page,
+    size: data.size,
+    totalElements: data.totalElements,
+    totalPages: data.totalPages,
+  }
+}
+
+export async function getColleagues(params: GetColleaguesParams = {}): Promise<Colleague[]> {
+  const result = await getColleaguesPage({ ...params, size: params.size ?? 500 })
+  return result.colleagues
 }
 
 export async function getFavoriteColleagues(): Promise<Colleague[]> {
@@ -80,6 +115,10 @@ export async function getColleagueById(colleagueId: number): Promise<Colleague |
   return mapToColleague(data)
 }
 
+export function getColleagueProfile(colleagueId: number): Promise<ColleagueProfile> {
+  return apiClient.get<ColleagueProfile>(`/users/${colleagueId}`)
+}
+
 export async function toggleFavoriteColleague(colleagueId: number): Promise<Colleague> {
   // Citim starea curentă pentru a decide add sau remove
   const favorites = await getFavoriteColleagues()
@@ -88,7 +127,7 @@ export async function toggleFavoriteColleague(colleagueId: number): Promise<Coll
   if (isFav) {
     await apiClient.delete(`/users/me/favorites/${colleagueId}`)
   } else {
-    await apiClient.put(`/users/me/favorites/${colleagueId}`)
+    await apiClient.post(`/users/me/favorites/${colleagueId}`)
   }
 
   // Returnăm colegul cu starea actualizată

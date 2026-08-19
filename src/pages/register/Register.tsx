@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { AuthLayout } from "@/layouts"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -7,7 +7,6 @@ import { PasswordToggle } from "./components/PasswordToggle"
 import { register } from "@/services/authService"
 
 export default function Register() {
-  const navigate = useNavigate()
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
@@ -43,7 +42,7 @@ export default function Register() {
     setIsSubmitting(true)
     try {
       await register({ firstName, lastName, email, password })
-      navigate("/")
+      window.location.assign("/onboarding")
     } catch (err) {
       setError(err instanceof Error ? err.message : "A apărut o eroare. Încearcă din nou.")
     } finally {

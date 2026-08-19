@@ -17,6 +17,7 @@ interface BeNotificationResponse {
   type: string
   createdAt: string
   bookingId: number | null
+  officeInvitationId: number | null
   hasBeenRead: boolean
 }
 
@@ -31,6 +32,7 @@ function mapToNotification(n: BeNotificationResponse): Notification {
                 ? new Date(n.createdAt).toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit" })
                 : "",
     isUnread: !n.hasBeenRead,
+    officeInvitationId: n.officeInvitationId,
   }
 }
 
@@ -38,7 +40,7 @@ function mapToNotification(n: BeNotificationResponse): Notification {
 
 let cachedUserId: number | null = null
 
-async function getCurrentUserId(): Promise<number> {
+export async function getCurrentUserId(): Promise<number> {
   if (cachedUserId) return cachedUserId
   const me = await apiClient.get<{ id?: number; userId?: number }>("/users/me")
   // BE returnează MyAccountResponse — nu are id direct, îl extragem din token dacă e disponibil
@@ -59,18 +61,12 @@ async function getCurrentUserId(): Promise<number> {
 // ─── API ───────────────────────────────────────────────────────────────────────
 
 export async function getNotifications(): Promise<Notification[]> {
-  const userId = await getCurrentUserId()
-  const data = await apiClient.get<BeNotificationResponse[]>(
-    `/users/me/notifications?userId=${userId}`,
-  )
+  const data = await apiClient.get<BeNotificationResponse[]>("/users/me/notifications")
   return data.map(mapToNotification)
 }
 
 export async function markNotificationAsRead(notificationId: number): Promise<Notification> {
-  const userId = await getCurrentUserId()
-  await apiClient.put<void>(
-    `/users/me/notifications/${notificationId}/read?userId=${userId}`,
-  )
+  await apiClient.put<void>(`/users/me/notifications/${notificationId}/read`)
   // BE returnează 200 fără body — reconstruim obiectul local
   return {
     id:       notificationId,
@@ -82,8 +78,7 @@ export async function markNotificationAsRead(notificationId: number): Promise<No
 }
 
 export async function markAllNotificationsAsRead(): Promise<Notification[]> {
-  const userId = await getCurrentUserId()
-  await apiClient.put<void>(`/users/me/notifications/read-all?userId=${userId}`)
+  await apiClient.put<void>("/users/me/notifications/read-all")
   // Returnăm lista actualizată
   return getNotifications()
 }

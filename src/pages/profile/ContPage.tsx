@@ -1,6 +1,7 @@
-import { Pencil, Plus, X, Check } from "lucide-react"
+import { Pencil, X, Check } from "lucide-react"
 import { useEffect, useState } from "react"
-import { getCurrentUser, updateUserProfile, updateUserPreferences } from "@/services"
+import { answerInvitation, getCurrentUser, getMyInvitations, updateUserAddress, updateUserProfile, updateUserPreferences, type AddressFormData } from "@/services"
+import type { InvitationDirection, OfficeInvitation } from "@/services"
 import type { User } from "@/types"
 import { ProfileField } from "./components/ProfileField"
 import { AlertBanner } from "@/components/common"
@@ -11,9 +12,12 @@ export default function ContPage() {
   const [editing, setEditing] = useState(false)
   const [preferences, setPreferences] = useState<string[]>([])
   const [newPreference, setNewPreference] = useState("")
-  const [addingPreference, setAddingPreference] = useState(false)
   const [savedSuccess, setSavedSuccess] = useState(false)
   const [saveError, setSaveError] = useState(false)
+  const [invitationDirection, setInvitationDirection] = useState<InvitationDirection>("received")
+  const [invitations, setInvitations] = useState<OfficeInvitation[]>([])
+  const [invitationsLoading, setInvitationsLoading] = useState(true)
+  const [address, setAddress] = useState<AddressFormData>({ county: "", locality: "", street: "", number: "", apartmentBlock: "", floor: "", postalCode: "" })
   const [form, setForm] = useState({
     name: "Claudiu Ciupitu",
     email: "claudiu.ciupitu@bys.ro",
@@ -40,6 +44,23 @@ export default function ContPage() {
     loadUserData()
   }, [])
 
+  useEffect(() => {
+    let active = true
+    setInvitationsLoading(true)
+    getMyInvitations(invitationDirection)
+      .then((data) => active && setInvitations(data))
+      .catch((error) => console.error("Nu s-au putut încărca invitațiile:", error))
+      .finally(() => active && setInvitationsLoading(false))
+    return () => { active = false }
+  }, [invitationDirection])
+
+  async function respondToInvitation(id: number, status: "ACCEPTATA" | "REFUZATA") {
+    try {
+      const updated = await answerInvitation(id, status)
+      setInvitations((current) => current.map((invitation) => invitation.id === id ? updated : invitation))
+    } catch (error) { console.error("Nu s-a putut răspunde invitației:", error) }
+  }
+
   async function handleToggleEdit() {
     if (editing && user) {
       try {
@@ -49,6 +70,7 @@ export default function ContPage() {
         const lastName = nameParts.slice(1).join(" ") || user.lastName
 
         await updateUserProfile(user.id, { firstName, lastName, email: form.email, department: form.department, domiciliu: form.domiciliu })
+        if (address.county && address.locality && address.street && address.number && address.postalCode) await updateUserAddress(address)
         await updateUserPreferences(user.id, { workPreferences: preferences })
         setSavedSuccess(true)
         setTimeout(() => setSavedSuccess(false), 2500)
@@ -69,7 +91,6 @@ export default function ContPage() {
     const value = newPreference.trim()
     if (value && !preferences.includes(value)) setPreferences((current) => [...current, value])
     setNewPreference("")
-    setAddingPreference(false)
   }
 
   return (
@@ -124,7 +145,7 @@ export default function ContPage() {
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 flex-wrap gap-2">
             {preferences.map((preference) => (
-              <span key={preference} className="inline-flex max-w-full items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--muted)] px-2.5 py-1 text-[10px] font-medium text-[var(--foreground)]">
+              <span key={preference} className="inline-flex max-w-full items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
                 <span className="truncate">{preference}</span>
                 {editing && (
                   <IconButton
@@ -140,19 +161,28 @@ export default function ContPage() {
                 )}
               </span>
             ))}
-            {addingPreference && <input autoFocus value={newPreference} onChange={(event) => setNewPreference(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") addPreference(); if (event.key === "Escape") { setAddingPreference(false); setNewPreference("") } }} placeholder="Adaugă..." className="h-7 min-w-24 rounded-full border border-[var(--primary)] bg-[var(--card)] px-2 text-[10px] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] outline-none" />}
           </div>
-          <Button
-            id="cont-add-pref-btn"
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={() => addingPreference ? addPreference() : setAddingPreference(true)}
-            leftIcon={<Plus size={14} />}
-            className="w-full sm:w-auto font-bold"
-          >
-            {addingPreference ? "Adaugă" : "Adaugă preferințe"}
-          </Button>
+          {editing && <select value={newPreference} onChange={(event) => setNewPreference(event.target.value)} className="h-9 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2 text-xs"><option value="">Adaugă preferință</option>{["Loc liniștit", "Lângă fereastră"].filter((option) => !preferences.includes(option)).map((option) => <option key={option} value={option}>{option}</option>)}</select>}
+          {editing && newPreference && <Button type="button" variant="secondary" size="sm" onClick={addPreference}>Adaugă</Button>}
+        </div>
+      </section>
+
+      <section className="rounded-xl bg-[var(--card)] p-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)] sm:p-5">
+        <h3 className="text-xs font-bold text-[var(--foreground)]">Adresă</h3>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">{([['county','Județ'],['locality','Localitate'],['street','Stradă'],['number','Număr'],['apartmentBlock','Bloc'],['floor','Etaj'],['postalCode','Cod poștal']] as Array<[keyof AddressFormData,string]>).map(([key,label]) => <ProfileField key={key} label={label} value={address[key]} disabled={!editing} onChange={(value) => setAddress((current) => ({ ...current, [key]: value }))} />)}</div>
+      </section>
+
+      <section className="rounded-xl bg-[var(--card)] p-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)] sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-xs font-bold text-[var(--foreground)]">Invitații la birou</h3>
+          <div className="flex rounded-lg bg-[var(--muted)] p-1 text-xs">
+            {(["received", "sent"] as const).map((direction) => <button key={direction} type="button" onClick={() => setInvitationDirection(direction)} className={`rounded-md px-3 py-1.5 font-semibold ${invitationDirection === direction ? "bg-[var(--card)] text-[var(--foreground)] shadow-sm" : "text-[var(--muted-foreground)]"}`}>{direction === "received" ? "Primite" : "Trimise"}</button>)}
+          </div>
+        </div>
+        <div className="mt-4 space-y-3">
+          {invitationsLoading && <p className="text-xs text-[var(--muted-foreground)]">Se încarcă invitațiile...</p>}
+          {!invitationsLoading && invitations.length === 0 && <p className="text-xs text-[var(--muted-foreground)]">Nu există invitații {invitationDirection === "received" ? "primite" : "trimise"}.</p>}
+          {invitations.map((invitation) => <article key={invitation.id} className="rounded-lg border border-[var(--border)] p-3 text-xs"><div className="flex flex-wrap items-start justify-between gap-2"><div><p className="font-semibold text-[var(--foreground)]">{invitationDirection === "received" ? `De la ${invitation.senderName || `Utilizator #${invitation.senderId}`}` : `Către ${invitation.receiverName || `Utilizator #${invitation.receiverId}`}`}</p><p className="mt-1 text-[var(--muted-foreground)]">{invitation.proposedDate}{invitation.message ? ` · ${invitation.message}` : ""}</p></div><span className="rounded-full bg-[var(--muted)] px-2 py-1 font-semibold text-[var(--muted-foreground)]">{invitation.status.replace("IN_ASTEPTARE", "În așteptare").replace("ACCEPTATA", "Acceptată").replace("REFUZATA", "Refuzată")}</span></div>{invitationDirection === "received" && invitation.status === "IN_ASTEPTARE" && <div className="mt-3 flex gap-2"><Button size="sm" onClick={() => respondToInvitation(invitation.id, "ACCEPTATA")}>Acceptă</Button><Button size="sm" variant="outline" onClick={() => respondToInvitation(invitation.id, "REFUZATA")}>Refuză</Button></div>}</article>)}
         </div>
       </section>
     </section>

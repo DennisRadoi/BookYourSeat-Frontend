@@ -70,7 +70,12 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   // Răspuns fără body (ex: 204 No Content)
   const text = await response.text()
-  return text ? (JSON.parse(text) as T) : (undefined as T)
+  if (!text) return undefined as T
+  try {
+    return JSON.parse(text) as T
+  } catch {
+    return text as T
+  }
 }
 
 export const apiClient = {

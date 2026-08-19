@@ -36,6 +36,13 @@ type Weekday = UserSettings["preferredDays"][number]
 function parseDays(daysStr: string): Weekday[] {
   if (!daysStr) return []
   const map: Record<string, Weekday> = {
+    "1":       "monday",
+    "2":       "tuesday",
+    "3":       "wednesday",
+    "4":       "thursday",
+    "5":       "friday",
+    "6":       "saturday",
+    "7":       "sunday",
     MONDAY:    "monday",
     TUESDAY:   "tuesday",
     WEDNESDAY: "wednesday",
@@ -86,4 +93,8 @@ export async function updateUserSettings(settingsUpdate: Partial<UserSettings>):
 
   const data = await apiClient.patch<BeMySettingsResponse>("/users/me/settings/preferences", body)
   return mapToUserSettings(data)
+}
+
+export async function updatePreferredBuilding(preferredBuilding: string): Promise<void> {
+  await apiClient.patch<void>("/users/me/settings/preferences", { preferredBuilding })
 }
