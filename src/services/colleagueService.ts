@@ -16,6 +16,8 @@ interface BeColleagueResponse {
   role: string
   status: string       // ex: "La birou", "Remote"
   location: string     // ex: "Etaj 2"
+  building?: string | null
+  room?: string | null
   isFavorite: boolean
 }
 
@@ -29,6 +31,11 @@ interface BePageResponse<T> {
 
 // ─── Mapare BE → Colleague FE ──────────────────────────────────────────────────
 
+function colleagueLocation(c: BeColleagueResponse): string {
+  const parts = [c.building, c.location != null ? `Etaj ${c.location}` : null, c.room].filter(Boolean)
+  return parts.join(" · ") || "—"
+}
+
 function mapToColleague(c: BeColleagueResponse): Colleague {
   return {
     id:         c.id,
@@ -40,7 +47,7 @@ function mapToColleague(c: BeColleagueResponse): Colleague {
     name:       c.fullname,
     role:       c.role,
     color:      "#6366f1",
-    floor:      c.location ?? "—",
+    floor:      colleagueLocation(c),
     status:     (c.status === "La birou" || String(c.status).toLowerCase().includes("birou") || String(c.status).toLowerCase().includes("office") ? "La birou" : "Remote") as Colleague["status"],
     isFavorite: c.isFavorite,
   }

@@ -8,7 +8,7 @@ import type { Colleague } from "@/types"
 import { Button } from "@/components/ui"
 
 const initialFilters: CompanyFilters = { status: "all", building: "all", favorite: "all" }
-const PAGE_SIZE = 5
+const PAGE_SIZE_OPTIONS = [5, 10, 20]
 
 export default function CompanyPage() {
   const navigate = useNavigate()
@@ -17,6 +17,7 @@ export default function CompanyPage() {
   const [filters, setFilters] = useState<CompanyFilters>(initialFilters)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [page, setPage] = useState(0)
+  const [pageSize, setPageSize] = useState(5)
   const [totalPages, setTotalPages] = useState(0)
   const [totalElements, setTotalElements] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
@@ -34,7 +35,7 @@ export default function CompanyPage() {
       building: filters.building === "all" ? undefined : filters.building,
       favorite: filters.favorite === "all" ? undefined : filters.favorite === "favorite",
       page,
-      size: PAGE_SIZE,
+      size: pageSize,
     }).then((result) => {
       if (!active) return
       setColleagues(result.colleagues)
@@ -43,7 +44,7 @@ export default function CompanyPage() {
     }).catch((error) => console.error("Eroare la încărcarea colegilor:", error))
       .finally(() => active && setIsLoading(false))
     return () => { active = false }
-  }, [query, filters, page])
+  }, [query, filters, page, pageSize])
 
   function updateQuery(value: string) { setQuery(value); setPage(0) }
   function updateFilters(value: CompanyFilters) { setFilters(value); setPage(0) }
@@ -66,7 +67,19 @@ export default function CompanyPage() {
     {isLoading ? <p className="py-10 text-center text-sm text-[var(--muted-foreground)]">Se încarcă colegii...</p> : <ColleaguesTable colleagues={colleagues} onToggleFavorite={handleToggleFavorite} onViewProfile={(colleague) => navigate(`/companie/${colleague.id}`)} />}
     <div className="mt-5 flex flex-wrap items-center justify-between gap-3 max-w-[920px]">
       <p className="text-xs text-[var(--muted-foreground)]">{pageLabel}</p>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
+          Afișează
+          <select
+            value={pageSize}
+            onChange={(event) => { setPageSize(Number(event.target.value)); setPage(0) }}
+            className="h-9 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2 text-sm text-[var(--foreground)] outline-none focus:ring-2 focus:ring-[var(--ring)]"
+            aria-label="Număr colegi pe pagină"
+          >
+            {PAGE_SIZE_OPTIONS.map((size) => <option key={size} value={size}>{size}</option>)}
+          </select>
+          colegi / pagină
+        </label>
         <Button size="sm" variant="outline" disabled={page === 0 || isLoading} onClick={() => setPage((current) => current - 1)}>Înapoi</Button>
         <Button size="sm" variant="outline" disabled={page + 1 >= totalPages || isLoading} onClick={() => setPage((current) => current + 1)}>Înainte</Button>
       </div>

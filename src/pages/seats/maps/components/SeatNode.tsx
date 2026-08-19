@@ -89,7 +89,7 @@ export function SeatNode({
       {showTooltip && (
         <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-30 px-2.5 py-1 rounded-md text-[11px] font-medium bg-[var(--foreground)] text-[var(--background)] whitespace-nowrap shadow-md pointer-events-none animate-in fade-in-0 zoom-in-95">
           {isOccupied ? (
-            <span>Ocupat{seat.occupiedBy ? `: ${seat.occupiedBy}` : ""}</span>
+            <span>{seat.occupiedBy ? `Ocupat: ${seat.occupiedBy}` : seat.unavailableReason ?? "Nu se poate rezerva"}</span>
           ) : isSelected ? (
             <span>Locul selectat ({seat.code})</span>
           ) : (

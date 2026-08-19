@@ -29,6 +29,7 @@ export default function SetariPage() {
         setDailyReminder(settings.autoReserve)
         setStartTime(settings.defaultStartTime)
         setEndTime(settings.defaultEndTime)
+        setSelectedBuilding((settings as typeof settings & { preferredBuilding?: string }).preferredBuilding ?? "")
         const dayLabels: Record<string, string> = {
           monday: "Lu", tuesday: "Ma", wednesday: "Mi", thursday: "Jo",
           friday: "Vi", saturday: "Sâ", sunday: "Du",

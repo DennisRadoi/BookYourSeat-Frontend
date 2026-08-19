@@ -40,9 +40,9 @@ export default function SeatsPage(): ReactElement {
   })
   const [startTime, setStartTime] = useState<string>(routerState.startTime ?? "09:00")
   const [endTime, setEndTime] = useState<string>(routerState.endTime ?? "10:00")
-  const [recurrence, setRecurrence] = useState<RecurrenceType>("lunar")
+  const [recurrence, setRecurrence] = useState<RecurrenceType>("niciuna")
   const [repeatEvery, setRepeatEvery] = useState<number>(1)
-  const [endsMode, setEndsMode] = useState<"niciodata" | "la_data" | "dupa">("niciodata")
+  const [endsMode, setEndsMode] = useState<"niciodata" | "la_data" | "dupa">("la_data")
   const [endsOnDate, setEndsOnDate] = useState<string>("")
   const [endsAfterCount, setEndsAfterCount] = useState<number>(1)
 

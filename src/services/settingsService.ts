@@ -15,6 +15,7 @@ interface BeMySettingsResponse {
   preferredEndTime: string    // ex: "17:00"
   reminderBeforeBooking: boolean
   bookingConfirmationOnEmail: boolean
+  preferredBuilding: string | null
 }
 
 // ─── Mapare BE → UserSettings FE ──────────────────────────────────────────────
@@ -28,6 +29,7 @@ function mapToUserSettings(be: BeMySettingsResponse): UserSettings {
     preferredFloor:       1,    // BE nu returnează etaj în settings
     preferredArea:        be.nearWindow ? "window" : be.quietPlace ? "quiet" : "open",
     preferredDays:        parseDays(be.daysOfWeek),
+    ...(be.preferredBuilding ? { preferredBuilding: be.preferredBuilding } : {}),
   }
 }
 

@@ -36,6 +36,8 @@ export type SeatGroup = "meeting" | "workstation" | "workspace" | "side" | "loun
 export interface Seat {
   id: number
   code: string
+  xPosition?: number | null
+  yPosition?: number | null
   area: SeatArea
   type: SeatType
   hasMonitor: boolean
@@ -44,6 +46,7 @@ export interface Seat {
   position?: SeatPosition
   group?: SeatGroup
   occupiedBy?: string
+  unavailableReason?: string
 }
 
 export type RoomLayoutType = "office" | "conference" | "events" | "small-meeting" | "standup" | "openspace" | "relaxare" | "birouri"

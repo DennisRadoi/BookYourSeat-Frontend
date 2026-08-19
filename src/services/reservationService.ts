@@ -1,5 +1,4 @@
 import { apiClient } from "./apiClient"
-import { locations as mockLocations } from "@/data"
 import { getLocations } from "./locationService"
 import type { Location, DetailedReservation, Reservation, ReservationStatus } from "@/types"
 
@@ -53,7 +52,7 @@ function mapStatusToFe(feStatus: ReservationStatus): BeBookingStatus {
 
 // Helper to find building and floor by seatId from dynamically loaded locations list
 function findLocationInfo(seatId: number, locationsList?: Location[]) {
-  const activeLocations = (locationsList && locationsList.length > 0) ? locationsList : mockLocations
+  const activeLocations = locationsList ?? []
   for (const loc of activeLocations) {
     for (const floor of loc.floors) {
       const matchInFloor = floor.seats?.find((s) => s.id === seatId)
@@ -156,6 +155,10 @@ export async function getDetailedReservationsByUserId(
 export async function createReservation(
   reservationData: Omit<Reservation, "id" | "createdAt">,
 ): Promise<Reservation> {
+  // ID-ul selectat trebuie să existe în backend; harta vizuală nu are voie să
+  // trimită ID-uri mock către tabela de booking-uri.
+  await apiClient.get<{ id: number }>(`/seats/${reservationData.seatId}`)
+
   // Format times to HH:mm:ss as required by backend API
   const formattedStartTime = reservationData.startTime.length === 5 ? `${reservationData.startTime}:00` : reservationData.startTime
   const formattedEndTime = reservationData.endTime.length === 5 ? `${reservationData.endTime}:00` : reservationData.endTime
