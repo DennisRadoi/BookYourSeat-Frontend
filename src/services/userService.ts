@@ -1,4 +1,4 @@
-import { apiClient } from "./apiClient"
+import { apiClient, getToken } from "./apiClient"
 import { withCache, invalidateCache } from "./cache"
 import type { User, UserPreferences } from "@/types"
 
@@ -37,9 +37,53 @@ function mapToUser(be: BeMyAccountResponse & { id?: number; userId?: number }): 
   }
 }
 
-export async function getCurrentUser(): Promise<User> {
-  return withCache("currentUser", async () => mapToUser(await apiClient.get<BeMyAccountResponse>("/users/me")), 300_000) // 5 min
+function parseDays(daysStr: string | null | undefined): Array<"monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday"> {
+  if (!daysStr) return []
+  const map: Record<string, "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday"> = {
+    "1":       "monday",
+    "2":       "tuesday",
+    "3":       "wednesday",
+    "4":       "thursday",
+    "5":       "friday",
+    "6":       "saturday",
+    "7":       "sunday",
+    MONDAY:    "monday",
+    TUESDAY:   "tuesday",
+    WEDNESDAY: "wednesday",
+    THURSDAY:  "thursday",
+    FRIDAY:    "friday",
+    SATURDAY:  "saturday",
+    SUNDAY:    "sunday",
+  }
+  return daysStr
+    .split(",")
+    .map((d) => map[d.trim().toUpperCase()])
+    .filter(Boolean) as Array<"monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday">
 }
+
+export async function getCurrentUser(): Promise<User> {
+  const token = getToken()
+  if (!token) {
+    throw new Error("No token available")
+  }
+  return withCache("currentUser", async () => {
+    const [me, settings] = await Promise.all([
+      apiClient.get<BeMyAccountResponse>("/users/me"),
+      apiClient.get<{ preferredStartTime?: string; daysOfWeek?: string }>("/users/me/settings").catch(() => ({}) as Record<string, string | undefined>),
+    ])
+    const user = mapToUser(me)
+    if (settings) {
+      if (settings.preferredStartTime) {
+        user.preferences.preferredStartTime = settings.preferredStartTime
+      }
+      if (settings.daysOfWeek) {
+        user.preferences.preferredDays = parseDays(settings.daysOfWeek)
+      }
+    }
+    return user
+  }, 300_000) // 5 min
+}
+
 
 
 export async function updateUserProfile(

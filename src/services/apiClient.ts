@@ -67,7 +67,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     }
 
     // Token expirat sau invalid → delogăm și redirectăm la login
-    if (response.status === 401 || response.status === 403) {
+    if (response.status === 401 || (response.status === 403 && path === "/users/me")) {
       localStorage.removeItem(TOKEN_KEY)
       if (!window.location.pathname.startsWith("/login") && !window.location.pathname.startsWith("/register")) {
         window.location.href = "/login"
