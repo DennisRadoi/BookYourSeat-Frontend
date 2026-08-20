@@ -57,7 +57,7 @@ function buildPrompt(
   routeData: RouteData,
   liveWeather?: WeatherInsight,
 ): string {
-  const targetTime = ctx.user.preferences.preferredStartTime || "15:00"
+  const targetTime = ctx.user.preferences.preferredStartTime || "09:00"
   const weatherContext = liveWeather
     ? `Vreme curentă București: ${liveWeather.temp}°C, ${liveWeather.condition}, umiditate ${liveWeather.humidity}%, vânt ${liveWeather.windKmh} km/h`
     : `Vreme curentă București: 24°C, Parțial înnorat`
@@ -78,7 +78,7 @@ ${JSON.stringify(routePayload, null, 2)}
 
 Context utilizator & mediu:
 - Utilizator: ${ctx.user.firstName} ${ctx.user.lastName} (${ctx.user.role})
-- Punct plecare: ${ctx.user.domiciliu || "București, Nițu Vasile 58"}
+- Punct plecare: ${ctx.user.domiciliu || "Nesetat"}
 - Traseu plecare: ${routeData.routeSummary}
 - Oră dorită sosire birou: ${targetTime}
 - ${weatherContext}
@@ -134,7 +134,7 @@ function calculateFallbackResult(
   routeData: RouteData,
   liveWeather?: WeatherInsight,
 ): AIInsightsData {
-  const targetTime = ctx.user.preferences.preferredStartTime || "15:00"
+  const targetTime = ctx.user.preferences.preferredStartTime || "09:00"
   const totalDelay = routeData.trafficDelayMin || 14
   const incidentLocations = routeData.incidents.map((i) => i.location).join(" și pe ") || "Pasajul Basarab și Bd. Iuliu Maniu"
 
@@ -156,7 +156,7 @@ function calculateFallbackResult(
       durationMin: routeData.durationMin,
       distanceKm: routeData.distanceKm,
       trafficLevel: routeData.trafficLevel,
-      originAddress: ctx.user.domiciliu || "București, Nițu Vasile 58",
+      originAddress: ctx.user.domiciliu || "",
       destinationAddress: ctx.officeAddress || OFFICE_ADDRESS,
       routeVia: routeData.routeSummary,
       aiExplanation: defaultExplanation,
@@ -167,9 +167,30 @@ function calculateFallbackResult(
 }
 
 export async function getAIInsightsData(ctx: InsightContext): Promise<AIInsightsData> {
-  const origin = ctx.user.domiciliu || "București, Nițu Vasile 58"
+  const origin = ctx.user.domiciliu ? ctx.user.domiciliu.trim() : ""
   const destination = ctx.officeAddress || OFFICE_ADDRESS
-  const targetTime = ctx.user.preferences.preferredStartTime || "15:00"
+  const targetTime = ctx.user.preferences.preferredStartTime || "09:00"
+
+  if (!origin) {
+    const liveWeather = await fetchLiveWeather().catch(() => defaultInsights.weather)
+    return {
+      ...defaultInsights,
+      weather: liveWeather || defaultInsights.weather,
+      departure: {
+        time: "--:--",
+        minutesToLeave: 0,
+        durationMin: 0,
+        distanceKm: 0,
+        trafficLevel: "Scăzut",
+        originAddress: "Nesetată",
+        destinationAddress: destination,
+        routeVia: "Nespecificat",
+        aiExplanation: "Te rugăm să îți setezi adresa de domiciliu în pagina de profil (Cont) pentru a calcula automat ruta și timpul optim de plecare către birou.",
+        incidents: [],
+      },
+      trafficAlerts: [],
+    }
+  }
 
   // 1. Obținere date rutiere din Google Routes (calcul distanță, durată, întârzieri, incidente)
   const routeDataPromise = getRouteData(origin, destination, targetTime)

@@ -30,6 +30,7 @@ const notificationIconMap: Record<NotificationType, LucideIcon> = {
 
 export default function NotificationsPage() {
   const [notificationsList, setNotificationsList] = useState<Notification[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [selectedNotif, setSelectedNotif] = useState<Notification | null>(null)
   const [pendingInvitationId, setPendingInvitationId] = useState<number | null>(null)
   const [invitationError, setInvitationError] = useState<string | null>(null)
@@ -42,6 +43,8 @@ export default function NotificationsPage() {
         setNotificationsList(data)
       } catch (error) {
         console.error("Eroare la încărcarea notificărilor:", error)
+      } finally {
+        setIsLoading(false)
       }
     }
 
@@ -122,7 +125,21 @@ export default function NotificationsPage() {
         </CardHeader>
 
         <CardContent className="p-0 flex flex-col">
-          {notificationsList.map((notif) => {
+          {isLoading ? (
+            <div className="flex flex-col animate-pulse">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center gap-4 px-6 py-4 border-b border-[var(--border)] last:border-0">
+                  <div className="w-9 h-9 rounded-lg bg-[var(--muted)] shrink-0" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[var(--muted)] shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 w-3/4 rounded bg-[var(--muted)]" />
+                    <div className="h-3 w-1/2 rounded bg-[var(--muted)]" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            notificationsList.map((notif) => {
             const Icon = notificationIconMap[notif.type] ?? Bell
             return (
               <div
@@ -150,7 +167,8 @@ export default function NotificationsPage() {
 
               </div>
             )
-          })}
+          })
+          )}
         </CardContent>
       </Card>
 

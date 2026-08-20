@@ -1,4 +1,5 @@
 import { apiClient } from "./apiClient"
+import { withCache } from "./cache"
 import type { Floor, Location, Room, Seat } from "@/types"
 
 interface BeBuilding { id: number; name: string }
@@ -26,23 +27,30 @@ export async function getLocations(params?: { date?: string; startTime?: string;
   if (params?.date) query.set("date", params.date)
   if (params?.startTime) query.set("startTime", params.startTime.length === 5 ? `${params.startTime}:00` : params.startTime)
   if (params?.endTime) query.set("endTime", params.endTime.length === 5 ? `${params.endTime}:00` : params.endTime)
-  const [buildings, rooms, seats] = await Promise.all([
-    apiClient.get<BeBuilding[]>("/buildings"),
-    apiClient.get<BeRoom[]>("/rooms"),
-    apiClient.get<BeSeat[]>(`/seats${query.size ? `?${query.toString()}` : ""}`),
-  ])
-  return buildings.map((building) => {
-    const buildingRooms = rooms.filter((room) => room.buildingId === building.id)
-    const floors: Floor[] = [...new Set(buildingRooms.map((room) => room.floor))].sort((a, b) => a - b).map((floorNumber) => {
-      const floorRooms: Room[] = buildingRooms.filter((room) => room.floor === floorNumber).map((room) => ({
-        id: room.id, name: room.name, floorId: floorNumber, building: building.name,
-        type: room.type === "DE_CONFERINTA" ? "conferinte" : "birouri",
-        seats: seats.filter((seat) => seat.roomId === room.id).map(seatFromApi),
-      }))
-      return { id: floorNumber, number: floorNumber, name: `Etaj ${floorNumber}`, rooms: floorRooms, seats: [] }
+
+  const cacheKey = `locations:${query.toString()}`
+  // 10s TTL for availability queries (time-sensitive), 60s for plain location structure
+  const ttl = params?.date ? 10_000 : 60_000
+
+  return withCache(cacheKey, async () => {
+    const [buildings, rooms, seats] = await Promise.all([
+      apiClient.get<BeBuilding[]>("/buildings"),
+      apiClient.get<BeRoom[]>("/rooms"),
+      apiClient.get<BeSeat[]>(`/seats${query.size ? `?${query.toString()}` : ""}`),
+    ])
+    return buildings.map((building) => {
+      const buildingRooms = rooms.filter((room) => room.buildingId === building.id)
+      const floors: Floor[] = [...new Set(buildingRooms.map((room) => room.floor))].sort((a, b) => a - b).map((floorNumber) => {
+        const floorRooms: Room[] = buildingRooms.filter((room) => room.floor === floorNumber).map((room) => ({
+          id: room.id, name: room.name, floorId: floorNumber, building: building.name,
+          type: room.type === "DE_CONFERINTA" ? "conferinte" : "birouri",
+          seats: seats.filter((seat) => seat.roomId === room.id).map(seatFromApi),
+        }))
+        return { id: floorNumber, number: floorNumber, name: `Etaj ${floorNumber}`, rooms: floorRooms, seats: [] }
+      })
+      return { id: building.id, name: building.name, building: building.name, address: "", city: "", floors }
     })
-    return { id: building.id, name: building.name, building: building.name, address: "", city: "", floors }
-  })
+  }, ttl)
 }
 
 export async function getLocationById(id: number) { return (await getLocations()).find((location) => location.id === id) ?? null }
