@@ -137,11 +137,13 @@ export async function getColleagues(params: GetColleaguesParams = {}): Promise<C
   return result.colleagues
 }
 
-export function getFavoriteColleagues(): Promise<Colleague[]> {
-  return withCache("colleagues:favorites", async () => {
-    const data = await apiClient.get<BeColleagueResponse[]>("/users/me/favorites")
-    return data.map((c) => mapToColleague(c))
-  }, 120_000) // 2 min
+export function getActiveColleagueCount(): Promise<number> {
+  return apiClient.get<number>("/users/active-count")
+}
+
+export async function getFavoriteColleagues(): Promise<Colleague[]> {
+  const data = await apiClient.get<BeColleagueResponse[]>("/users/me/favorites")
+  return data.map((c) => mapToColleague(c))
 }
 
 

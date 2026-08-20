@@ -125,13 +125,22 @@ export function completeOnboarding(data: OnboardingData): Promise<User> {
     phoneNumber: data.phoneNumber,
     role: data.role,
     employmentDate: data.employmentDate,
-    updateMyAdressRequest: { ...data.address, floor: data.address.floor ? Number(data.address.floor) : null },
+    updateMyAdressRequest: { ...data.address, floor: data.address.floor ? Number(data.address.floor) : null, clearApartmentBlock: false, clearFloor: false },
   }).then(mapToUser)
 }
 
 export function updateUserAddress(address: AddressFormData): Promise<User> {
+  const update = Object.fromEntries(
+    Object.entries(address)
+      .filter(([key, value]) => key === "floor" ? Boolean(String(value).trim()) : Boolean(String(value).trim())),
+  ) as Partial<AddressFormData>
   return apiClient.patch<BeMyAccountResponse>("/users/me", {
-    updateMyAdressRequest: { ...address, floor: address.floor ? Number(address.floor) : null },
+    updateMyAdressRequest: {
+      ...update,
+      floor: update.floor ? Number(update.floor) : undefined,
+      clearApartmentBlock: !address.apartmentBlock.trim(),
+      clearFloor: !address.floor.trim(),
+    },
   }).then(mapToUser)
 }
 

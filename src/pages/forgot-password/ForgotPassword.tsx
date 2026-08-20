@@ -4,6 +4,7 @@ import { AuthShell } from "@/layouts"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CheckCircle2 } from "lucide-react"
+import { requestPasswordReset } from "@/services"
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("")
@@ -22,12 +23,10 @@ export default function ForgotPassword() {
 
     setIsSubmitting(true)
     try {
-      // TODO: inlocuieste cu un apel real catre services/mockApi
-      // ex: await requestPasswordReset(email)
-      await new Promise((resolve) => setTimeout(resolve, 400))
+      await requestPasswordReset(email.trim())
       setIsSent(true)
-    } catch {
-      setError("Nu am gasit niciun cont cu acest email.")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Nu s-a putut trimite linkul de resetare.")
     } finally {
       setIsSubmitting(false)
     }

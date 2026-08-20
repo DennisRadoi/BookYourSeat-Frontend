@@ -3,8 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { AuthShell } from "@/layouts"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-
-const MIN_PASSWORD_LENGTH = 8
+import { resetForgottenPassword } from "@/services"
+import { isValidPassword, passwordRequirementsMessage } from "@/lib/validation"
 
 export default function ResetPassword() {
   const navigate = useNavigate()
@@ -12,6 +12,7 @@ export default function ResetPassword() {
   // in productie, emailul (si un token) vin din link-ul primit pe email, ex:
   // /reset-password?token=xxxx&email=nume@companie.com
   const email = searchParams.get("email") ?? "contul tau"
+  const token = searchParams.get("token")
 
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -22,21 +23,25 @@ export default function ResetPassword() {
     event.preventDefault()
     setError(null)
 
-    if (password.length < MIN_PASSWORD_LENGTH) {
-      setError(`Parola trebuie sa aiba minim ${MIN_PASSWORD_LENGTH} caractere.`)
+    if (!isValidPassword(password)) {
+      setError(passwordRequirementsMessage)
       return
     }
     if (password !== confirmPassword) {
       setError("Parolele nu coincid.")
       return
     }
+    if (!token) {
+      setError("Linkul de resetare este invalid sau incomplet.")
+      return
+    }
 
     setIsSubmitting(true)
     try {
-      // TODO: inlocuieste cu un apel real catre services/mockApi
-      // ex: await resetPassword(token, password)
-      await new Promise((resolve) => setTimeout(resolve, 400))
+      await resetForgottenPassword(token, password)
       navigate("/login")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Parola nu a putut fi resetată.")
     } finally {
       setIsSubmitting(false)
     }

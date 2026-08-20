@@ -53,6 +53,14 @@ export async function register(data: RegisterData): Promise<void> {
   }
 }
 
+export function requestPasswordReset(email: string): Promise<void> {
+  return apiClient.post<void>("/auth/forgot-password", { email })
+}
+
+export function resetForgottenPassword(token: string, newPassword: string): Promise<void> {
+  return apiClient.post<void>("/auth/reset-password", { token, newPassword })
+}
+
 export function logout(): void {
   removeToken()
 }
