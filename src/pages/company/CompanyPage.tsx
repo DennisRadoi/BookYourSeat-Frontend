@@ -51,11 +51,12 @@ export default function CompanyPage() {
 
   async function handleToggleFavorite(id: number) {
     try {
-      const updated = await toggleFavoriteColleague(id)
-      if (filters.favorite !== "all" && (filters.favorite === "favorite") !== updated.isFavorite) {
-        setPage(0)
+      const isFavorite = await toggleFavoriteColleague(id)
+      if (filters.favorite === "favorite" && !isFavorite) {
+        setColleagues((current) => current.filter((colleague) => colleague.id !== id))
+        setTotalElements((current) => Math.max(0, current - 1))
       } else {
-        setColleagues((current) => current.map((colleague) => colleague.id === id ? updated : colleague))
+        setColleagues((current) => current.map((colleague) => colleague.id === id ? { ...colleague, isFavorite } : colleague))
       }
     } catch (error) { console.error("Eroare la actualizarea favoritului:", error) }
   }

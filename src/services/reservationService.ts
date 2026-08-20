@@ -157,7 +157,10 @@ export async function createReservation(
 ): Promise<Reservation> {
   // ID-ul selectat trebuie să existe în backend; harta vizuală nu are voie să
   // trimită ID-uri mock către tabela de booking-uri.
-  await apiClient.get<{ id: number }>(`/seats/${reservationData.seatId}`)
+  const isWholeRoomReservation = reservationData.seatId < 0
+  if (!isWholeRoomReservation) {
+    await apiClient.get<{ id: number }>(`/seats/${reservationData.seatId}`)
+  }
 
   // Format times to HH:mm:ss as required by backend API
   const formattedStartTime = reservationData.startTime.length === 5 ? `${reservationData.startTime}:00` : reservationData.startTime
@@ -165,8 +168,8 @@ export async function createReservation(
 
   const body = {
     userId: reservationData.userId || 1,
-    roomId: null,
-    seatId: reservationData.seatId,
+    roomId: isWholeRoomReservation ? -reservationData.seatId : null,
+    seatId: isWholeRoomReservation ? null : reservationData.seatId,
     startDate: reservationData.date,
     endDate: reservationData.date,
     startTime: formattedStartTime,

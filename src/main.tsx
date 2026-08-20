@@ -6,11 +6,11 @@ import App from "./App"
 import { ThemeProvider } from "@/hooks/useTheme"
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+  // <StrictMode>
     <BrowserRouter>
       <ThemeProvider>
         <App />
       </ThemeProvider>
     </BrowserRouter>
-  </StrictMode>
+  // {/* </StrictMode> */}
 )
