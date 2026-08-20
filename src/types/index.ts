@@ -156,7 +156,7 @@ export interface Colleague {
   role: string
   color: string
   floor: string
-  status: "La birou" | "Remote"
+  status: "La birou" | "Remote" | "OOO"
   isFavorite: boolean
   department?: string
   avatarUrl?: string | null

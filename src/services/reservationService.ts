@@ -173,7 +173,11 @@ export async function getDetailedReservationsByUserId(
 }
 
 export async function createReservation(
-  reservationData: Omit<Reservation, "id" | "createdAt">,
+  reservationData: Omit<Reservation, "id" | "createdAt"> & {
+    recurrenceFrequency?: "zilnic" | "saptamanal" | "lunar" | null
+    recurrenceEndDate?: string
+    recurrenceInterval?: number
+  },
 ): Promise<Reservation> {
   // ID-ul selectat trebuie să existe în backend; harta vizuală nu are voie să
   // trimită ID-uri mock către tabela de booking-uri.
@@ -191,12 +195,12 @@ export async function createReservation(
     roomId: isWholeRoomReservation ? -reservationData.seatId : null,
     seatId: isWholeRoomReservation ? null : reservationData.seatId,
     startDate: reservationData.date,
-    endDate: reservationData.date,
+    endDate: reservationData.recurrenceEndDate ?? reservationData.date,
     startTime: formattedStartTime,
     endTime: formattedEndTime,
-    recurrenceFrequency: null,
+    recurrenceFrequency: reservationData.recurrenceFrequency ?? null,
     recurrenceDaysOfWeek: null,
-    recurrenceIntervalOfRecurrence: null
+    recurrenceIntervalOfRecurrence: reservationData.recurrenceInterval ?? null
   }
   const data = await apiClient.post<BeBookingResponse>("/bookings", body)
   invalidateCachePrefix("locations:") // seat availability changed
