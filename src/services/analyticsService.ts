@@ -21,7 +21,13 @@ interface MonthlyBookingsResponse {
   totalBookings: number
 }
 
-/** Datele Analytics sunt citite exclusiv din endpointurile backendului. */
+interface TopBookingResponse {
+  employeeName: string
+  seatCount: number
+  occupancyPercentage: number
+}
+
+/** Analytics data is loaded only from backend endpoints. */
 export async function getAnalyticsDashboardData(): Promise<AnalyticsDashboardData> {
   const now = new Date()
   const [today, weekly, monthly] = await Promise.all([
@@ -32,17 +38,28 @@ export async function getAnalyticsDashboardData(): Promise<AnalyticsDashboardDat
     ),
   ])
 
+  let topBookings: TopBookingResponse[] = []
+  try {
+    topBookings = await apiClient.get<TopBookingResponse[]>("/analytics/top-bookings")
+  } catch (error) {
+    console.warn("Top bookings endpoint unavailable. Rendering analytics without top bookings.", error)
+  }
+
   return {
     kpis: [
-      { id: "totalBookings", label: "Rezervări luna curentă", value: String(monthly.totalBookings) },
-      { id: "roomOccupancy", label: "Ocupare săli conferință", value: `${today.conferenceRoomsOccupancyPercent}%` },
+      { id: "totalBookings", label: "Rezervari luna curenta", value: String(monthly.totalBookings) },
+      { id: "roomOccupancy", label: "Ocupare sali conferinta", value: `${today.conferenceRoomsOccupancyPercent}%` },
       { id: "deskOccupancy", label: "Ocupare birouri", value: `${today.officeOccupancyPercent}%` },
-      { id: "peopleInOffice", label: "Persoane în birou", value: String(today.peopleInOffice) },
+      { id: "peopleInOffice", label: "Persoane in birou", value: String(today.peopleInOffice) },
     ],
     weeklyBookings: weekly.days,
     occupancyTrend: [{ label: "Azi", value: today.officeOccupancyPercent }],
-    // Backendul nu expune încă agregări pe zone sau utilizatori.
+    // Backend does not expose zone-level aggregation yet.
     zoneSegments: [],
-    topBookings: [],
+    topBookings: topBookings.map((entry) => ({
+      name: entry.employeeName,
+      seats: entry.seatCount,
+      percent: entry.occupancyPercentage,
+    })),
   }
 }
