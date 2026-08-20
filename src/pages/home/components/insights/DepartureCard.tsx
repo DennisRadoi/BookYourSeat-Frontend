@@ -21,7 +21,7 @@ function getArrivalTime(depTime: string, durationMin: number): string {
 }
 
 export function DepartureCard({ departure }: DepartureCardProps) {
-  const origin = departure.originAddress || "București, Nițu Vasile 58"
+  const origin = departure.originAddress || "Adresa de domiciliu nu este setată"
   const destination = departure.destinationAddress || "Aleea Țibleș 26, Sector 6 · București"
   const arrivalTime = getArrivalTime(departure.time, departure.durationMin)
 

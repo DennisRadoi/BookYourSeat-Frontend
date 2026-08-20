@@ -11,6 +11,8 @@ export interface RouteData {
   departureTime: string
   minutesToLeave: number
   incidents: RouteIncident[]
+  isLive: boolean
+  unavailableReason?: string
 }
 
 const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined
@@ -25,7 +27,7 @@ export async function getRouteData(
 
   try {
     if (!GOOGLE_API_KEY) {
-      return getFallbackRouteData(defaultOrigin, defaultDestination, targetArrivalTime)
+      return getUnavailableRouteData("Lipsește cheia Google Routes API.")
     }
 
     const response = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
@@ -45,14 +47,14 @@ export async function getRouteData(
 
     if (!response.ok) {
       console.warn(`[routeService] Google Routes API returned status ${response.status}. Using fallback.`)
-      return getFallbackRouteData(defaultOrigin, defaultDestination, targetArrivalTime)
+      return getUnavailableRouteData("Google Routes nu a putut calcula traseul acum.")
     }
 
     const data = await response.json()
     const route = data?.routes?.[0]
 
     if (!route) {
-      return getFallbackRouteData(defaultOrigin, defaultDestination, targetArrivalTime)
+      return getUnavailableRouteData("Google Routes nu a returnat un traseu.")
     }
 
     const distanceKm = Number((route.distanceMeters / 1000).toFixed(1))
@@ -89,10 +91,11 @@ export async function getRouteData(
       departureTime,
       minutesToLeave,
       incidents,
+      isLive: true,
     }
   } catch (error) {
     console.error("[routeService] Exception fetching route data:", error)
-    return getFallbackRouteData(defaultOrigin, defaultDestination, targetArrivalTime)
+    return getUnavailableRouteData("Google Routes nu a putut fi contactat.")
   }
 }
 
@@ -153,27 +156,19 @@ function extractIncidents(route: any, totalDelay: number): RouteIncident[] {
   return incidents
 }
 
-function getFallbackRouteData(_origin: string, _destination: string, targetArrivalTime: string): RouteData {
-  const distanceKm = 13.4
-  const durationMin = 48
-  const staticDurationMin = 34
-  const trafficDelayMin = 14
-
-  const { departureTime, minutesToLeave } = calculateDepartureInfo(targetArrivalTime, durationMin)
-
+function getUnavailableRouteData(reason: string): RouteData {
   return {
-    distanceKm,
-    durationMin,
-    durationInTrafficMin: durationMin,
-    staticDurationMin,
-    trafficDelayMin,
-    trafficLevel: "Ridicat",
-    routeSummary: "via Pasajul Basarab & Bd. Iuliu Maniu",
-    departureTime: departureTime || "14:12",
-    minutesToLeave,
-    incidents: [
-      { location: "Pasaj Basarab", delay: 6 },
-      { location: "Bd. Iuliu Maniu", delay: 8 },
-    ],
+    distanceKm: 0,
+    durationMin: 0,
+    durationInTrafficMin: 0,
+    staticDurationMin: 0,
+    trafficDelayMin: 0,
+    trafficLevel: "Scăzut",
+    routeSummary: "Date live indisponibile",
+    departureTime: "--:--",
+    minutesToLeave: 0,
+    incidents: [],
+    isLive: false,
+    unavailableReason: reason,
   }
 }
