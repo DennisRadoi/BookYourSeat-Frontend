@@ -17,6 +17,8 @@ export default function ContPage() {
   const [invitationDirection, setInvitationDirection] = useState<InvitationDirection>("received")
   const [invitations, setInvitations] = useState<OfficeInvitation[]>([])
   const [invitationsLoading, setInvitationsLoading] = useState(true)
+  const [invitationError, setInvitationError] = useState<string | null>(null)
+  const [respondingInvitationId, setRespondingInvitationId] = useState<number | null>(null)
   const [address, setAddress] = useState<AddressFormData>({ county: "", locality: "", street: "", number: "", apartmentBlock: "", floor: "", postalCode: "" })
   const [form, setForm] = useState({
     name: "Claudiu Ciupitu",
@@ -55,10 +57,17 @@ export default function ContPage() {
   }, [invitationDirection])
 
   async function respondToInvitation(id: number, status: "ACCEPTATA" | "REFUZATA") {
+    setInvitationError(null)
+    setRespondingInvitationId(id)
     try {
       const updated = await answerInvitation(id, status)
       setInvitations((current) => current.map((invitation) => invitation.id === id ? updated : invitation))
-    } catch (error) { console.error("Nu s-a putut răspunde invitației:", error) }
+    } catch (error) {
+      console.error("Nu s-a putut răspunde invitației:", error)
+      setInvitationError(error instanceof Error ? error.message : "Nu s-a putut răspunde invitației.")
+    } finally {
+      setRespondingInvitationId(null)
+    }
   }
 
   async function handleToggleEdit() {
@@ -181,8 +190,9 @@ export default function ContPage() {
         </div>
         <div className="mt-4 space-y-3">
           {invitationsLoading && <p className="text-xs text-[var(--muted-foreground)]">Se încarcă invitațiile...</p>}
+          {invitationError && <p className="rounded-md bg-[var(--destructive)]/10 p-2 text-xs font-medium text-[var(--destructive)]">{invitationError}</p>}
           {!invitationsLoading && invitations.length === 0 && <p className="text-xs text-[var(--muted-foreground)]">Nu există invitații {invitationDirection === "received" ? "primite" : "trimise"}.</p>}
-          {invitations.map((invitation) => <article key={invitation.id} className="rounded-lg border border-[var(--border)] p-3 text-xs"><div className="flex flex-wrap items-start justify-between gap-2"><div><p className="font-semibold text-[var(--foreground)]">{invitationDirection === "received" ? `De la ${invitation.senderName || `Utilizator #${invitation.senderId}`}` : `Către ${invitation.receiverName || `Utilizator #${invitation.receiverId}`}`}</p><p className="mt-1 text-[var(--muted-foreground)]">{invitation.proposedDate}{invitation.message ? ` · ${invitation.message}` : ""}</p></div><span className="rounded-full bg-[var(--muted)] px-2 py-1 font-semibold text-[var(--muted-foreground)]">{invitation.status.replace("IN_ASTEPTARE", "În așteptare").replace("ACCEPTATA", "Acceptată").replace("REFUZATA", "Refuzată")}</span></div>{invitationDirection === "received" && invitation.status === "IN_ASTEPTARE" && <div className="mt-3 flex gap-2"><Button size="sm" onClick={() => respondToInvitation(invitation.id, "ACCEPTATA")}>Acceptă</Button><Button size="sm" variant="outline" onClick={() => respondToInvitation(invitation.id, "REFUZATA")}>Refuză</Button></div>}</article>)}
+          {invitations.map((invitation) => <article key={invitation.id} className="rounded-lg border border-[var(--border)] p-3 text-xs"><div className="flex flex-wrap items-start justify-between gap-2"><div><p className="font-semibold text-[var(--foreground)]">{invitationDirection === "received" ? `De la ${invitation.senderName || `Utilizator #${invitation.senderId}`}` : `Către ${invitation.receiverName || `Utilizator #${invitation.receiverId}`}`}</p><p className="mt-1 text-[var(--muted-foreground)]">{invitation.proposedDate}{invitation.message ? ` · ${invitation.message}` : ""}</p></div><span className="rounded-full bg-[var(--muted)] px-2 py-1 font-semibold text-[var(--muted-foreground)]">{invitation.status.replace("IN_ASTEPTARE", "În așteptare").replace("ACCEPTATA", "Acceptată").replace("REFUZATA", "Refuzată")}</span></div>{invitationDirection === "received" && invitation.status === "IN_ASTEPTARE" && <div className="mt-3 flex gap-2"><Button size="sm" isLoading={respondingInvitationId === invitation.id} disabled={respondingInvitationId !== null} onClick={() => respondToInvitation(invitation.id, "ACCEPTATA")}>Acceptă</Button><Button size="sm" variant="outline" disabled={respondingInvitationId !== null} onClick={() => respondToInvitation(invitation.id, "REFUZATA")}>Refuză</Button></div>}</article>)}
         </div>
       </section>
     </section>

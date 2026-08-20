@@ -3,7 +3,9 @@
 // - Injectează automat Authorization: Bearer <token> din localStorage
 // - Aruncă ApiError pentru orice răspuns non-2xx
 
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || "http://localhost:8081"
+const BASE_URL = import.meta.env.DEV
+  ? "/backend"
+  : ((import.meta.env.VITE_API_BASE_URL as string) || "http://localhost:8081")
 
 const TOKEN_KEY = "auth_token"
 
@@ -51,11 +53,19 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     ? `${BASE_URL.replace(/\/api$/, "")}/api${path}`
     : `${BASE_URL.replace(/\/api$/, "")}${path}`
 
-  const response = await fetch(finalUrl, {
-    ...options,
-    headers,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-  })
+  let response: Response
+  try {
+    response = await fetch(finalUrl, {
+      ...options,
+      headers,
+      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    })
+  } catch (error) {
+    // O eroare de rețea/CORS nu are un răspuns HTTP din care să putem extrage
+    // mesajul. O transformăm într-o eroare previzibilă pentru interfață.
+    const detail = error instanceof Error ? error.message : "Eroare de rețea"
+    throw new ApiError(0, `Nu s-a putut contacta serverul (${detail}). Verifică dacă backendul rulează pe ${BASE_URL}.`)
+  }
 
   if (!response.ok) {
     let message = `HTTP ${response.status}`

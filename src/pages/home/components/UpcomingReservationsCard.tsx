@@ -22,9 +22,7 @@ export function UpcomingReservationsCard({
 
   // Sync from parent when reservations load/change
   useEffect(() => {
-    if (reservations.length > 0) {
-      setLocalReservations(reservations)
-    }
+    setLocalReservations(reservations.filter((reservation) => reservation.status !== "cancelled"))
   }, [reservations])
 
   const upcomingReservations = localReservations
@@ -100,7 +98,7 @@ export function UpcomingReservationsCard({
                       </div>
                       <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                         <span className="truncate text-sm font-semibold text-[var(--foreground)]">
-                          {reservation.floor?.name ?? "—"} · Loc {reservation.seat?.code ?? "—"}
+                          {reservation.floor?.name ?? "—"} · {reservation.seat?.code?.startsWith("Sala ") ? reservation.seat.code : `Loc ${reservation.seat?.code ?? "—"}`}
                         </span>
                         <span className="flex flex-wrap items-center gap-1 text-xs text-[var(--muted-foreground)]">
                           <Clock size={12} className="shrink-0" />

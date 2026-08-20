@@ -1,8 +1,10 @@
 import { useLocation, useNavigate } from "react-router-dom"
+import { useEffect, useState } from "react"
 import { Moon, Sun, LogOut, User, Menu } from "lucide-react"
 import { useLiveClock } from "@/hooks"
 import { IconButton } from "@/components/ui"
 import { useTheme } from "@/hooks/useTheme"
+import { getNotifications } from "@/services"
 
 function DateTimeSubtitle() {
   const currentDateTime = useLiveClock()
@@ -35,6 +37,8 @@ function ColleaguesSubtitle() {
     </span>
   )
 }
+
+void ColleaguesSubtitle
 
 function NotificariSubtitle() {
   return (
@@ -70,7 +74,7 @@ type NavMeta = { title: string; subtitle: () => React.ReactNode }
 
 const navMeta: Record<string, NavMeta> = {
   "/": { title: "Dashboard", subtitle: () => <DateTimeSubtitle /> },
-  "/companie": { title: "Companie", subtitle: () => <ColleaguesSubtitle /> },
+  "/companie": { title: "Companie", subtitle: () => null },
   "/notificari": { title: "Notificări", subtitle: () => <NotificariSubtitle /> },
   "/analytics": { title: "Analytics", subtitle: () => <AnalyticsSubtitle /> },
   "/cont": { title: "Contul meu", subtitle: () => <ContSubtitle /> },
@@ -86,11 +90,21 @@ export default function Navbar({ onBurgerClick }: NavbarProps) {
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const { isDark, toggle, setLight } = useTheme()
+  const [unreadNotifications, setUnreadNotifications] = useState(0)
+
+  useEffect(() => {
+    getNotifications()
+      .then((notifications) => setUnreadNotifications(notifications.filter((notification) => notification.isUnread).length))
+      .catch(() => setUnreadNotifications(0))
+  }, [pathname])
 
   // keep backwards-compatible meta detection
   const meta = pathname.startsWith("/companie/")
     ? { title: "Profil", subtitle: () => <span className="navbar__subtitle">Info coleg</span> }
     : navMeta[pathname] ?? { title: "Book Your Seat", subtitle: () => null }
+  const subtitle = pathname === "/notificari"
+    ? <span className="flex items-center gap-1.5 text-sm text-[var(--muted-foreground)]"><NavBadge>{unreadNotifications}</NavBadge> notificări necitite</span>
+    : meta.subtitle()
 
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-[var(--border)] bg-[var(--background)] px-8 py-[18px] md:pl-14">
@@ -107,7 +121,7 @@ export default function Navbar({ onBurgerClick }: NavbarProps) {
         <h1 className="m-0 text-xl font-extrabold uppercase tracking-[0.5px] text-[var(--foreground)] leading-[1.2]">
           {meta.title}
         </h1>
-        <div className="flex min-h-5 items-center gap-1.5 text-[var(--muted-foreground)]">{meta.subtitle()}</div>
+        {subtitle && <div className="flex items-center gap-1.5 text-[var(--muted-foreground)]">{subtitle}</div>}
       </div>
 
       <div className="ml-auto flex items-center gap-2.5">

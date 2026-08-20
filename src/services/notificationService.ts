@@ -28,9 +28,7 @@ function mapToNotification(n: BeNotificationResponse): Notification {
     id:       n.id,
     type:     "confirmed",   // BE trimite tipuri ca string liber; mappăm la cel mai generic
     text:     n.message,
-    time:     n.createdAt
-                ? new Date(n.createdAt).toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit" })
-                : "",
+    time:     "",
     isUnread: !n.hasBeenRead,
     officeInvitationId: n.officeInvitationId,
   }

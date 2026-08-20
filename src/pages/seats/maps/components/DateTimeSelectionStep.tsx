@@ -138,18 +138,20 @@ export function DateTimeSelectionStep({
               const isSelected = cell && selectedDate && isSameDay(cell, selectedDate)
               const isToday = cell && isSameDay(cell, new Date())
               const isPast = cell ? isBeforeToday(cell) : false
+              const isWeekend = cell ? cell.getDay() === 0 || cell.getDay() === 6 : false
+              const isUnavailable = isPast || isWeekend
 
               return (
                 <Button
                   key={idx}
                   type="button"
-                  onClick={() => cell && !isPast && onSelectDate(cell)}
-                  disabled={!cell || isPast}
+                  onClick={() => cell && !isUnavailable && onSelectDate(cell)}
+                  disabled={!cell || isUnavailable}
                   variant={isSelected ? "default" : isToday ? "outline" : "ghost"}
                   className={`h-10 p-0 rounded-lg flex items-center justify-center text-sm transition-all duration-150 select-none ${
                     !cell
                       ? "opacity-0 cursor-default"
-                      : isPast
+                      : isUnavailable
                         ? "opacity-30 cursor-not-allowed text-[var(--muted-foreground)] line-through bg-[var(--muted)]/20"
                         : isSelected
                           ? "font-bold shadow-xs scale-105"
