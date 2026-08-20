@@ -13,7 +13,7 @@ import {
   Repeat,
   type LucideIcon,
 } from "lucide-react"
-import { getNotifications, markAllNotificationsAsRead, markNotificationAsRead } from "@/services"
+import { answerInvitation, getMyInvitations, getNotifications, markAllNotificationsAsRead, markNotificationAsRead } from "@/services"
 import type { Notification, NotificationType } from "@/types"
 
 const notificationIconMap: Record<NotificationType, LucideIcon> = {
@@ -31,6 +31,7 @@ const notificationIconMap: Record<NotificationType, LucideIcon> = {
 export default function NotificationsPage() {
   const [notificationsList, setNotificationsList] = useState<Notification[]>([])
   const [selectedNotif, setSelectedNotif] = useState<Notification | null>(null)
+  const [pendingInvitationId, setPendingInvitationId] = useState<number | null>(null)
 
   useEffect(() => {
     async function loadNotifications() {
@@ -56,16 +57,33 @@ export default function NotificationsPage() {
 
   async function handleNotificationClick(notif: Notification) {
     setSelectedNotif(notif)
+    setPendingInvitationId(null)
     if (notif.isUnread) {
       try {
         const updated = await markNotificationAsRead(notif.id)
         setNotificationsList((current) =>
-          current.map((n) => (n.id === updated.id ? updated : n)),
+          current.map((n) => (n.id === updated.id ? { ...n, isUnread: false } : n)),
         )
       } catch (error) {
         console.error("Eroare la marcarea notificării:", error)
       }
     }
+    if (notif.officeInvitationId) {
+      try {
+        const invitations = await getMyInvitations("received")
+        const invitation = invitations.find((item) => item.id === notif.officeInvitationId)
+        if (invitation?.status === "IN_ASTEPTARE") setPendingInvitationId(invitation.id)
+      } catch (error) { console.error("Eroare la încărcarea invitației:", error) }
+    }
+  }
+
+  async function respondToInvitation(status: "ACCEPTATA" | "REFUZATA") {
+    if (!pendingInvitationId) return
+    try {
+      await answerInvitation(pendingInvitationId, status)
+      setPendingInvitationId(null)
+      setSelectedNotif(null)
+    } catch (error) { console.error("Eroare la răspunsul invitației:", error) }
   }
 
   const totalNotifications = notificationsList.length
@@ -152,6 +170,7 @@ export default function NotificationsPage() {
             </p>
           </ModalBody>
           <ModalFooter>
+            {pendingInvitationId && <><Button className="flex-1" onClick={() => respondToInvitation("ACCEPTATA")}>Acceptă</Button><Button variant="outline" className="flex-1" onClick={() => respondToInvitation("REFUZATA")}>Refuză</Button></>}
             <Button
               className="w-full bg-[var(--primary)] hover:bg-[var(--sidebar-accent-hover)] text-[var(--primary-foreground)]"
               onClick={() => setSelectedNotif(null)}

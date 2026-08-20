@@ -1,84 +1,203 @@
-import { reservations, locations } from "@/data"
-import type { DetailedReservation, Reservation } from "@/types"
+import { apiClient } from "./apiClient"
+import { getLocations } from "./locationService"
+import type { Location, DetailedReservation, Reservation, ReservationStatus } from "@/types"
 
-const delay = (ms = 150) => new Promise((resolve) => setTimeout(resolve, ms))
+// ─── Reservation Service ───────────────────────────────────────────────────────
+// GET  /bookings/me?status=        → rezervările userului curent
+// GET  /bookings/{id}              → o rezervare
+// POST /bookings                   → creează rezervare
+// PUT  /bookings/{id}              → actualizează rezervare
+// PUT  /bookings/{id}/cancel       → anulează rezervare
 
-// TODO: Replace mock data with backend API integration
-export async function getReservations(): Promise<Reservation[]> {
-  await delay()
-  return structuredClone(reservations)
+// ─── Tipuri BE ────────────────────────────────────────────────────────────────
+
+type BeBookingStatus = "IN_ASTEPTARE" | "FINALIZATA" | "ANULATA" | "CONFIRMATA"
+
+interface BeBookingResponse {
+  id: number
+  userId: number
+  roomId: number | null
+  seatId: number | null
+  recurringBookingId: number | null
+  startDate: string   // "2026-08-18"
+  endDate: string     // "2026-08-18"
+  startTime: string   // "09:00:00"
+  endTime: string     // "17:00:00"
+  status: BeBookingStatus
+  createdAt: string
+  updatedAt: string
 }
 
-export async function getDetailedReservationsByUserId(userId: number): Promise<DetailedReservation[]> {
-  await delay()
-  const userReservations = reservations.filter((reservation) => reservation.userId === userId)
+// ─── Mapare status BE → FE ─────────────────────────────────────────────────────
 
-  return userReservations.map((reservation) => {
-    const location = locations.find((item) => item.id === reservation.locationId)
-    const floor = location?.floors.find((item) => item.id === reservation.floorId)
-    const seat = floor?.seats.find((item) => item.id === reservation.seatId)
+function mapStatus(beStatus: BeBookingStatus): ReservationStatus {
+  const map: Record<BeBookingStatus, ReservationStatus> = {
+    IN_ASTEPTARE: "pending",
+    FINALIZATA: "completed",
+    ANULATA: "cancelled",
+    CONFIRMATA: "confirmed",
+  }
+  return map[beStatus] ?? "pending"
+}
 
-    return {
-      ...reservation,
-      location: location
-        ? {
-            id: location.id,
-            name: location.name,
-            address: location.address,
-            building: location.building,
+function mapStatusToFe(feStatus: ReservationStatus): BeBookingStatus {
+  const map: Record<ReservationStatus, BeBookingStatus> = {
+    pending: "IN_ASTEPTARE",
+    completed: "FINALIZATA",
+    cancelled: "ANULATA",
+    confirmed: "CONFIRMATA",
+  }
+  return map[feStatus] ?? "IN_ASTEPTARE"
+}
+
+// Helper to find building and floor by seatId from dynamically loaded locations list
+function findLocationInfo(seatId: number, locationsList?: Location[]) {
+  const activeLocations = locationsList ?? []
+  for (const loc of activeLocations) {
+    for (const floor of loc.floors) {
+      const matchInFloor = floor.seats?.find((s) => s.id === seatId)
+      if (matchInFloor) {
+        return { loc, floor, seat: matchInFloor }
+      }
+      if (floor.rooms) {
+        for (const room of floor.rooms) {
+          const matchInRoom = room.seats?.find((s) => s.id === seatId)
+          if (matchInRoom) {
+            return { loc, floor, seat: matchInRoom }
           }
-        : null,
-      floor: floor
-        ? {
-            id: floor.id,
-            number: floor.number,
-            name: floor.name,
-          }
-        : null,
-      seat: seat
-        ? {
-            id: seat.id,
-            code: seat.code,
-            area: seat.area,
-            type: seat.type,
-          }
-        : null,
+        }
+      }
     }
-  })
+  }
+  return null
+}
+
+// ─── Mapare răspuns BE → Reservation FE ───────────────────────────────────────
+
+function mapToReservation(b: BeBookingResponse, locationsList?: Location[]): Reservation {
+  const seatId = b.seatId ?? 0
+  const info = findLocationInfo(seatId, locationsList)
+
+  return {
+    id: b.id,
+    userId: b.userId,
+    locationId: info?.loc?.id ?? 0,
+    floorId: info?.floor?.id ?? 0,
+    seatId: seatId,
+    date: b.startDate,
+    startTime: b.startTime?.substring(0, 5) ?? "",  // "09:00:00" → "09:00"
+    endTime: b.endTime?.substring(0, 5) ?? "",
+    status: mapStatus(b.status),
+    createdAt: b.createdAt,
+  }
+}
+
+function mapToDetailedReservation(b: BeBookingResponse, locationsList?: Location[]): DetailedReservation {
+  const r = mapToReservation(b, locationsList)
+  const seatId = b.seatId ?? 0
+  const info = findLocationInfo(seatId, locationsList)
+
+  return {
+    ...r,
+    location: info?.loc
+      ? {
+          id: info.loc.id,
+          name: info.loc.name,
+          address: info.loc.address,
+          building: info.loc.building,
+        }
+      : null,
+    floor: info?.floor
+      ? {
+          id: info.floor.id,
+          number: info.floor.number,
+          name: info.floor.name,
+        }
+      : null,
+    seat: info?.seat
+      ? {
+          id: info.seat.id,
+          code: info.seat.code,
+          area: info.seat.area,
+          type: info.seat.type,
+        }
+      : {
+          id: seatId,
+          code: `Loc ${seatId}`,
+          area: "open",
+          type: "standard",
+        },
+  }
+}
+
+// ─── API ───────────────────────────────────────────────────────────────────────
+
+export async function getReservations(): Promise<Reservation[]> {
+  const [data, locationsList] = await Promise.all([
+    apiClient.get<BeBookingResponse[]>("/bookings/me"),
+    getLocations().catch(() => [] as Location[]),
+  ])
+  return data.map((b) => mapToReservation(b, locationsList))
+}
+
+export async function getDetailedReservationsByUserId(
+  _userId: number,
+  status?: string,
+): Promise<DetailedReservation[]> {
+  const params = status ? `?status=${encodeURIComponent(status)}` : ""
+  const [data, locationsList] = await Promise.all([
+    apiClient.get<BeBookingResponse[]>(`/bookings/me${params}`),
+    getLocations().catch(() => [] as Location[]),
+  ])
+  return data.map((b) => mapToDetailedReservation(b, locationsList))
 }
 
 export async function createReservation(
   reservationData: Omit<Reservation, "id" | "createdAt">,
 ): Promise<Reservation> {
-  await delay()
-  const newReservation: Reservation = {
-    ...reservationData,
-    id: Date.now(),
-    createdAt: new Date().toISOString(),
-  }
-  reservations.push(newReservation)
-  return structuredClone(newReservation)
-}
+  // ID-ul selectat trebuie să existe în backend; harta vizuală nu are voie să
+  // trimită ID-uri mock către tabela de booking-uri.
+  await apiClient.get<{ id: number }>(`/seats/${reservationData.seatId}`)
 
-export async function cancelReservation(reservationId: number): Promise<boolean> {
-  await delay()
-  const reservation = reservations.find((r) => r.id === reservationId)
-  if (reservation) {
-    reservation.status = "cancelled"
-    return true
+  // Format times to HH:mm:ss as required by backend API
+  const formattedStartTime = reservationData.startTime.length === 5 ? `${reservationData.startTime}:00` : reservationData.startTime
+  const formattedEndTime = reservationData.endTime.length === 5 ? `${reservationData.endTime}:00` : reservationData.endTime
+
+  const body = {
+    userId: reservationData.userId || 1,
+    roomId: null,
+    seatId: reservationData.seatId,
+    startDate: reservationData.date,
+    endDate: reservationData.date,
+    startTime: formattedStartTime,
+    endTime: formattedEndTime,
+    recurrenceFrequency: null,
+    recurrenceDaysOfWeek: null,
+    recurrenceIntervalOfRecurrence: null
   }
-  return false
+  const data = await apiClient.post<BeBookingResponse>("/bookings", body)
+  return mapToReservation(data)
 }
 
 export async function updateReservation(
   reservationId: number,
   updates: Partial<Pick<Reservation, "date" | "startTime" | "endTime" | "status">>,
 ): Promise<Reservation | null> {
-  await delay()
-  const reservation = reservations.find((r) => r.id === reservationId)
-  if (reservation) {
-    Object.assign(reservation, updates)
-    return structuredClone(reservation)
+  const formattedStartTime = updates.startTime && updates.startTime.length === 5 ? `${updates.startTime}:00` : updates.startTime
+  const formattedEndTime = updates.endTime && updates.endTime.length === 5 ? `${updates.endTime}:00` : updates.endTime
+
+  const body = {
+    startDate: updates.date,
+    endDate: updates.date,
+    startTime: formattedStartTime,
+    endTime: formattedEndTime,
+    status: updates.status ? mapStatusToFe(updates.status) : undefined,
   }
-  return null
+  const data = await apiClient.put<BeBookingResponse>(`/bookings/${reservationId}`, body)
+  return mapToReservation(data)
+}
+
+export async function cancelReservation(reservationId: number): Promise<boolean> {
+  await apiClient.put<unknown>(`/bookings/${reservationId}/cancel`)
+  return true
 }

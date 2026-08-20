@@ -10,6 +10,7 @@ import {
   getCurrentUser,
   getDetailedReservationsByUserId,
   getColleagues,
+  getFavoriteColleagues,
   calculateRouteInsights,
   OFFICE_ADDRESS,
   type InsightContext,
@@ -31,12 +32,13 @@ export default function HomePage() {
   const loadData = useCallback(async () => {
     try {
       const today = new Date()
-      const [userData, allColleagues] = await Promise.all([
+      const [userData, allColleagues, favoriteColleagues] = await Promise.all([
         getCurrentUser(),
         getColleagues(),
+        getFavoriteColleagues(),
       ])
       setCurrentUser(userData)
-      setColleaguesList(allColleagues)
+      setColleaguesList(favoriteColleagues)
 
       const userReservations = await getDetailedReservationsByUserId(userData.id)
       setReservations(userReservations)
@@ -143,7 +145,7 @@ export default function HomePage() {
 
         <FavoriteColleaguesCard
           colleagues={colleaguesList}
-          totalColleaguesCount={30}
+          totalColleaguesCount={colleaguesList.length}
           onNavigateToCompany={() => navigate("/companie")}
         />
       </div>
@@ -155,7 +157,19 @@ export default function HomePage() {
             isLoading={isAiLoading}
             onRefresh={handleFetchAiInsights}
             hasApiKey={hasApiKey}
-            onReserveAdjacent={() => navigate("/seats")}
+            onReserveAdjacent={() => {
+              const rec = insightsData.seatRec
+              navigate("/seats", {
+                state: {
+                  jumpToSeat: true,
+                  building: rec?.building || "Corp T1",
+                  floorId: rec?.floorId || 1,
+                  zoneType: rec?.zoneType || "birouri",
+                  roomId: rec?.roomId || 100,
+                  targetSeatCode: rec?.targetSeatCode || "A2",
+                },
+              })
+            }}
           />
         )}
       </div>

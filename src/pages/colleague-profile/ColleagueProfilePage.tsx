@@ -5,78 +5,43 @@ import { InviteColleagueDialog } from "./components/InviteColleagueDialog"
 import { ProfileMetricCard } from "./components/ProfileMetricCard"
 import { InfoCard } from "@/components/common"
 import { Button } from "@/components/ui"
-import { getColleagues } from "@/services"
-import type { Colleague } from "@/types"
+import { getColleagueProfile, type ColleagueProfile } from "@/services"
 
 const days = ["Lu", "Ma", "Mi", "Jo", "Vi", "Sâ", "Du"]
 
+function lastWeekBookings(profile: ColleagueProfile) {
+  const today = new Date()
+  const day = (today.getDay() + 6) % 7
+  const monday = new Date(today)
+  monday.setHours(0, 0, 0, 0)
+  monday.setDate(monday.getDate() - day - 7)
+  const sunday = new Date(monday)
+  sunday.setDate(sunday.getDate() + 6)
+  return profile.bookingDto.filter((booking) => {
+    const date = new Date(`${booking.dateOfBooking}T00:00:00`)
+    return date >= monday && date <= sunday
+  }).length
+}
+
 export default function ColleagueProfilePage() {
   const { colleagueId } = useParams()
-  const [colleague, setColleague] = useState<Colleague | null>(null)
+  const [profile, setProfile] = useState<ColleagueProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [inviteOpen, setInviteOpen] = useState(false)
 
   useEffect(() => {
     const id = Number(colleagueId)
     if (!Number.isInteger(id)) { setLoading(false); return }
-    getColleagues()
-      .then((colleagues) => setColleague(colleagues.find((item) => item.id === id) ?? null))
-      .catch((error) => console.error("Nu s-a putut încărca profilul colegului:", error))
-      .finally(() => setLoading(false))
+    getColleagueProfile(id).then(setProfile).catch((error) => console.error("Nu s-a putut încărca profilul colegului:", error)).finally(() => setLoading(false))
   }, [colleagueId])
 
   if (loading) return <div className="grid min-h-[280px] place-items-center text-sm text-[var(--muted-foreground)]">Se încarcă profilul colegului…</div>
-  if (!colleague) return <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)]">Colegul căutat nu a fost găsit.</div>
+  if (!profile || !colleagueId) return <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)]">Colegul căutat nu a fost găsit.</div>
 
-  const initials = colleague.initials || colleague.name.split(" ").map((part) => part[0]).join("").slice(0, 2)
-  const location = colleague.status === "Remote" ? "Lucrează remote azi" : `Azi la: ${colleague.floor}`
-  const department = colleague.department || "Engineering"
+  const initials = profile.fullname.split(" ").map((part) => part[0]).join("").slice(0, 2)
+  const preferredDays = new Set((profile.daysOfWeek || "").split(",").map((day) => Number(day.trim())).filter(Boolean))
+  const preferences = [profile.nearWindow && "Lângă fereastră", profile.quietPlace && "Loc liniștit"].filter(Boolean) as string[]
+  const bookingsLastWeek = lastWeekBookings(profile)
 
-  return (
-    <section className="w-full max-w-[920px] text-[var(--foreground)]">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(260px,0.85fr)]">
-        <div className="min-w-0 space-y-5">
-          <article className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-[0_1px_6px_rgba(0,0,0,0.04)]">
-            <div className="h-11 bg-gradient-to-r from-[var(--secondary)] to-[var(--muted)]" />
-            <div className="px-4 pb-4 sm:px-5 sm:pb-5">
-              <div className="-mt-5 flex flex-wrap items-start justify-between gap-3">
-                <div className="grid size-12 place-items-center rounded-lg border-2 border-[var(--primary)] bg-[var(--secondary)] text-sm font-bold text-[var(--secondary-foreground)] shadow-sm">{initials}</div>
-                <Button type="button" size="xs" onClick={() => setInviteOpen(true)} leftIcon={<Users size={13} />} className="font-bold">Invită la muncă</Button>
-              </div>
-              <div className="mt-3 flex flex-wrap items-center gap-2"><h2 className="break-words text-base font-bold">{colleague.name}</h2>{colleague.isFavorite && <Star size={15} fill="currentColor" className="shrink-0 text-[var(--warning)]" />}</div>
-              <p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">{colleague.role} · {department}</p>
-              <p className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--primary)]"><MapPin size={13} />{location}</p>
-            </div>
-          </article>
-          <div className="grid grid-cols-1 gap-3 min-[430px]:grid-cols-2 sm:grid-cols-4">
-            <ProfileMetricCard icon={<CalendarDays size={14} />} value="—" label="Rezervări / săpt." color="bg-[var(--secondary)] text-[var(--secondary-foreground)]" />
-            <ProfileMetricCard icon={<MapPin size={14} />} value={colleague.floor} label="Locație curentă" color="bg-[var(--secondary)] text-[var(--secondary-foreground)]" />
-            <ProfileMetricCard icon={<Clock3 size={14} />} value={colleague.status === "Remote" ? "Remote" : "09:00"} label="Începe de obicei" color="bg-[var(--warning)] text-[var(--warning)]" />
-            <ProfileMetricCard icon={<Users size={14} />} value={department} label="Departament" color="bg-[var(--secondary)] text-[var(--secondary-foreground)]" />
-          </div>
-          <InfoCard title="Rezervări recente" text="Istoricul rezervărilor nu este disponibil momentan." />
-        </div>
-        <div className="space-y-5">
-          <InfoCard title="Preferințe muncă" text="Preferințele colegului nu sunt disponibile momentan." />
-          <InfoCard title="Program obișnuit">
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {days.map((day, index) => (
-                <span
-                  key={day}
-                  className={`grid size-6 place-items-center rounded-full text-[10px] font-bold ${
-                    index < 5
-                      ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-                      : "bg-[var(--muted)] text-[var(--muted-foreground)]"
-                  }`}
-                >
-                  {day}
-                </span>
-              ))}
-            </div>
-          </InfoCard>
-        </div>
-      </div>
-      <InviteColleagueDialog colleagueName={colleague.name} open={inviteOpen} onClose={() => setInviteOpen(false)} />
-    </section>
-  )
+  return <section className="w-full max-w-[920px] text-[var(--foreground)]"><div className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(260px,0.85fr)]"><div className="min-w-0 space-y-5"><article className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-[0_1px_6px_rgba(0,0,0,0.04)]"><div className="h-11 bg-gradient-to-r from-[var(--secondary)] to-[var(--muted)]" /><div className="px-4 pb-4 sm:px-5 sm:pb-5"><div className="-mt-5 flex flex-wrap items-start justify-between gap-3"><div className="grid size-12 place-items-center rounded-lg border-2 border-[var(--primary)] bg-[var(--secondary)] text-sm font-bold">{initials}</div><Button type="button" size="xs" onClick={() => setInviteOpen(true)} leftIcon={<Users size={13} />} className="font-bold">Invită la muncă</Button></div><div className="mt-3 flex flex-wrap items-center gap-2"><h2 className="break-words text-base font-bold">{profile.fullname}</h2>{profile.isFavorite && <Star size={15} fill="currentColor" className="text-[var(--warning)]" />}</div><p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">{profile.role || "—"}{profile.departmentName ? ` · ${profile.departmentName}` : ""}</p><p className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--primary)]"><MapPin size={13} />{profile.location || "Lucrează remote azi"}</p></div></article><div className="grid grid-cols-1 gap-3 min-[430px]:grid-cols-3"><ProfileMetricCard icon={<CalendarDays size={14} />} value={String(bookingsLastWeek)} label="Rezervări săptămâna trecută" color="bg-[var(--secondary)] text-[var(--secondary-foreground)]" /><ProfileMetricCard icon={<MapPin size={14} />} value={profile.location || "Remote"} label="Locație curentă" color="bg-[var(--secondary)] text-[var(--secondary-foreground)]" /><ProfileMetricCard icon={<Clock3 size={14} />} value={profile.preferredStartTime?.slice(0, 5) || "—"} label="Începe de obicei" color="bg-[var(--warning)] text-[var(--warning)]" /></div></div><div className="space-y-5"><InfoCard title="Preferințe muncă">{preferences.length ? <div className="mt-3 flex flex-wrap gap-2">{preferences.map((preference) => <span key={preference} className="rounded-full bg-[var(--secondary)] px-2.5 py-1 text-xs font-semibold">{preference}</span>)}</div> : <p className="mt-3 text-xs text-[var(--muted-foreground)]">Nu are preferințe setate.</p>}</InfoCard><InfoCard title="Program obișnuit"><div className="mt-3 flex flex-wrap gap-1.5">{days.map((day, index) => <span key={day} className={`grid size-6 place-items-center rounded-full text-[10px] font-bold ${preferredDays.has(index + 1) ? "bg-[var(--primary)] text-[var(--primary-foreground)]" : "bg-[var(--muted)] text-[var(--muted-foreground)]"}`}>{day}</span>)}</div></InfoCard></div></div><InviteColleagueDialog colleagueId={Number(colleagueId)} colleagueName={profile.fullname} open={inviteOpen} onClose={() => setInviteOpen(false)} /></section>
 }

@@ -12,6 +12,7 @@ import Login from "@/pages/login/Login"
 import ForgotPassword from "@/pages/forgot-password/ForgotPassword"
 import ResetPassword from "@/pages/reset-password/ResetPassword"
 import Register from "@/pages/register/Register"
+import OnboardingPage from "@/pages/onboarding/OnboardingPage"
 import Onboarding from "@/pages/onboarding/Onboarding"
 
 export function AppRoutes() {
@@ -22,6 +23,7 @@ export function AppRoutes() {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/onboarding" element={<OnboardingPage />} />
       <Route path="/onboarding" element={<Onboarding />} />
 
       {/* Authenticated layout routes */}

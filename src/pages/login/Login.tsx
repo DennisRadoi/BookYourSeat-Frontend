@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { AuthLayout } from "@/layouts"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { login } from "@/services/authService"
 import { useTheme } from "@/hooks/useTheme"
 
 export default function Login() {
@@ -31,14 +32,15 @@ export default function Login() {
 
     setIsSubmitting(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 400))
+      await login({ email, password })
       navigate("/")
-    } catch {
-      setError("Email sau parolă incorecte.")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Email sau parolă incorecte.")
     } finally {
       setIsSubmitting(false)
     }
   }
+
 
   return (
     <AuthLayout activeDot={0}>

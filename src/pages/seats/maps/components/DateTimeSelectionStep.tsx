@@ -35,12 +35,9 @@ export function DateTimeSelectionStep({
   onRecurrenceChange,
   repeatEvery,
   onRepeatEveryChange,
-  endsMode,
   onEndsModeChange,
   endsOnDate,
   onEndsOnDateChange,
-  endsAfterCount,
-  onEndsAfterCountChange,
   onConfirmSchedule,
 }: DateTimeSelectionStepProps): ReactElement {
   const [monthOffset, setMonthOffset] = useState(0)
@@ -182,7 +179,7 @@ export function DateTimeSelectionStep({
                 onClick={() => onRecurrenceChange(r)}
                 className="px-4 py-1.5 text-xs font-semibold"
               >
-                {r === "niciuna" ? "Niciuna" : r === "zilnic" ? "Zilnic" : r === "saptamanal" ? "Săptămânal" : "Lunar"}
+                {r === "niciuna" ? "Fără recurență" : r === "zilnic" ? "Zilnic" : r === "saptamanal" ? "Săptămânal" : "Lunar"}
               </PillButton>
             ))}
           </div>
@@ -204,59 +201,15 @@ export function DateTimeSelectionStep({
               </div>
 
               <div className="space-y-2 text-sm">
-                <label className="flex items-center gap-2.5 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="ends"
-                    checked={endsMode === "niciodata"}
-                    onChange={() => onEndsModeChange("niciodata")}
-                    className="accent-[var(--primary)] w-4 h-4"
-                  />
-                  <span className={endsMode === "niciodata" ? "text-[var(--primary)] font-medium" : "text-[var(--card-foreground)]"}>
-                    Niciodată
-                  </span>
-                </label>
-
-                <label className="flex items-center gap-2.5 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="ends"
-                    checked={endsMode === "la_data"}
-                    onChange={() => onEndsModeChange("la_data")}
-                    className="accent-[var(--primary)] w-4 h-4"
-                  />
-                  <span className={endsMode === "la_data" ? "text-[var(--primary)] font-medium" : "text-[var(--card-foreground)]"}>
-                    La data
-                  </span>
+                <label className="flex items-center gap-2.5">
+                  <span className="text-[var(--card-foreground)] font-medium">Până la data de</span>
                   <input
                     type="date"
                     value={endsOnDate}
-                    onChange={(e) => onEndsOnDateChange(e.target.value)}
-                    disabled={endsMode !== "la_data"}
-                    className="ml-2 p-1.5 rounded-lg bg-[var(--card)] border border-[var(--border)] text-xs text-[var(--card-foreground)] disabled:opacity-50"
+                    min={selectedDate ? selectedDate.toISOString().slice(0, 10) : undefined}
+                    onChange={(e) => { onEndsModeChange("la_data"); onEndsOnDateChange(e.target.value) }}
+                    className="ml-2 p-1.5 rounded-lg bg-[var(--card)] border border-[var(--border)] text-xs text-[var(--card-foreground)]"
                   />
-                </label>
-
-                <label className="flex items-center gap-2.5 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="ends"
-                    checked={endsMode === "dupa"}
-                    onChange={() => onEndsModeChange("dupa")}
-                    className="accent-[var(--primary)] w-4 h-4"
-                  />
-                  <span className={endsMode === "dupa" ? "text-[var(--primary)] font-medium" : "text-[var(--card-foreground)]"}>
-                    După
-                  </span>
-                  <input
-                    type="number"
-                    min={1}
-                    value={endsAfterCount}
-                    onChange={(e) => onEndsAfterCountChange(Math.max(1, Number(e.target.value || 1)))}
-                    disabled={endsMode !== "dupa"}
-                    className="ml-2 w-16 p-1.5 text-center rounded-lg bg-[var(--card)] border border-[var(--border)] text-xs text-[var(--card-foreground)] disabled:opacity-50"
-                  />
-                  <span className="text-xs text-[var(--muted-foreground)]">repetări</span>
                 </label>
               </div>
             </div>

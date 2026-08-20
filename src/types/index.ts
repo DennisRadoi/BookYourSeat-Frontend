@@ -41,6 +41,8 @@ export type SeatGroup = "meeting" | "workstation" | "workspace" | "side" | "loun
 export interface Seat {
   id: number
   code: string
+  xPosition?: number | null
+  yPosition?: number | null
   area: SeatArea
   type: SeatType
   hasMonitor: boolean
@@ -49,9 +51,10 @@ export interface Seat {
   position?: SeatPosition
   group?: SeatGroup
   occupiedBy?: string
+  unavailableReason?: string
 }
 
-export type RoomLayoutType = "office" | "conference" | "events" | "small-meeting" | "standup" | "openspace" | "relaxare"
+export type RoomLayoutType = "office" | "conference" | "events" | "small-meeting" | "standup" | "openspace" | "relaxare" | "birouri"
 
 export interface Room {
   id: number
@@ -176,6 +179,7 @@ export interface Notification {
   text: string
   time: string
   isUnread: boolean
+  officeInvitationId?: number | null
 }
 
 export interface UserSettings {
@@ -227,6 +231,12 @@ export interface SeatRecommendation {
   colleagueName: string
   seat: string
   floor: string
+  building?: string
+  floorId?: number
+  zoneType?: RoomZoneType
+  roomId?: number
+  targetSeatCode?: string
+  roomName?: string
 }
 
 export interface AnalyticsKpi { id: string; label: string; value: string }

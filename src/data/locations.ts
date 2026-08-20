@@ -287,6 +287,35 @@ export function createStandup8Seats(
   return seats
 }
 
+// 🏢 Parter Birouri (Parter Comun T1 & T2): 12 locuri (A1..A2, B1..B2, C1..C2, D1..D2, E1..E2, F1..F2)
+export function createParterBirouri12Seats(
+  baseId: number,
+  occupiedCodes: string[] = ["A1", "B2", "D1"]
+): Seat[] {
+  const seats: Seat[] = []
+  let id = baseId
+  const deskLetters = ["A", "B", "C", "D", "E", "F"]
+
+  deskLetters.forEach((letter) => {
+    for (let i = 1; i <= 2; i++) {
+      const code = `${letter}${i}`
+      const isOccupied = occupiedCodes.includes(code)
+      seats.push({
+        id: id++,
+        code,
+        area: "team",
+        type: "standard",
+        hasMonitor: true,
+        isAvailable: !isOccupied,
+        occupiedBy: isOccupied ? colleagueNames[code] || "Coleg" : undefined,
+        row: letter,
+      })
+    }
+  })
+
+  return seats
+}
+
 // Sala 404: 12 locuri (A1..A5, B1..B5, C1, C2)
 export function createConference12Seats(
   baseId: number,
@@ -398,6 +427,17 @@ export const locations: Location[] = [
         name: "Parter",
         rooms: [
           {
+            id: 100,
+            name: "Birouri Parter",
+            type: "birouri",
+            layout: "birouri",
+            floorId: 1,
+            building: "Corp T1",
+            hasTv: true,
+            hasWhiteboard: true,
+            seats: createParterBirouri12Seats(1000, ["A1", "B2", "D1"]),
+          },
+          {
             id: 101,
             name: "Stand-Up Desk",
             type: "birouri",
@@ -406,7 +446,7 @@ export const locations: Location[] = [
             building: "Corp T1",
             hasTv: false,
             hasWhiteboard: false,
-            seats: createStandup8Seats(1000, ["L3"]),
+            seats: createStandup8Seats(1010, ["L3"]),
           },
           {
             id: 102,
@@ -420,7 +460,7 @@ export const locations: Location[] = [
             seats: createRelaxare10Seats(1020, ["A2"]),
           },
         ],
-        seats: createStandup8Seats(1000, ["L3"]),
+        seats: createParterBirouri12Seats(1000, ["A1", "B2", "D1"]),
       },
       {
         id: 2,
@@ -520,6 +560,17 @@ export const locations: Location[] = [
         name: "Parter",
         rooms: [
           {
+            id: 200,
+            name: "Birouri Parter",
+            type: "birouri",
+            layout: "birouri",
+            floorId: 4,
+            building: "Corp T2",
+            hasTv: true,
+            hasWhiteboard: true,
+            seats: createParterBirouri12Seats(2000, ["A1", "B2", "D1"]),
+          },
+          {
             id: 201,
             name: "Stand-Up Desk",
             type: "birouri",
@@ -528,7 +579,7 @@ export const locations: Location[] = [
             building: "Corp T2",
             hasTv: false,
             hasWhiteboard: false,
-            seats: createStandup8Seats(2000, ["L3"]),
+            seats: createStandup8Seats(2010, ["L3"]),
           },
           {
             id: 202,
@@ -542,7 +593,7 @@ export const locations: Location[] = [
             seats: createRelaxare10Seats(2020, ["A2"]),
           },
         ],
-        seats: createStandup8Seats(2000, ["L3"]),
+        seats: createParterBirouri12Seats(2000, ["A1", "B2", "D1"]),
       },
 
       // ----------------- ETAJ 1 (T2) -----------------

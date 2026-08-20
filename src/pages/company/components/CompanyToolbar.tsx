@@ -6,7 +6,7 @@ import { Button } from "@/components/ui"
 interface CompanyToolbarProps {
   query: string
   filters: CompanyFilters
-  floors: string[]
+  buildings: string[]
   filtersOpen: boolean
   onQueryChange: (query: string) => void
   onFiltersChange: (filters: CompanyFilters) => void
@@ -16,7 +16,7 @@ interface CompanyToolbarProps {
 export function CompanyToolbar({
   query,
   filters,
-  floors,
+  buildings,
   filtersOpen,
   onQueryChange,
   onFiltersChange,
@@ -48,7 +48,7 @@ export function CompanyToolbar({
       <CompanyFilterPopover
         open={filtersOpen}
         filters={filters}
-        floors={floors}
+        buildings={buildings}
         onChange={onFiltersChange}
         onClose={() => onFiltersOpenChange(false)}
       />

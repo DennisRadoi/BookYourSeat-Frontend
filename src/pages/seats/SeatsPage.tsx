@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom"
 import { DateTimeSelectionStep, RoomSeatSelectionStep } from "./maps/components"
 import { getLocations } from "@/services/locationService"
 import { createReservation } from "@/services/reservationService"
+import { getCurrentUser } from "@/services/userService"
 import { formatDateIso } from "@/utils"
 import type { Location, Seat, RoomZoneType, RecurrenceType } from "@/types"
 import { PillButton } from "@/components/ui"
@@ -15,6 +16,9 @@ export interface SeatsPageRouterState {
   endTime?: string
   building?: string
   floorId?: number
+  zoneType?: RoomZoneType
+  roomId?: number
+  targetSeatCode?: string
 }
 
 export default function SeatsPage(): ReactElement {
@@ -34,9 +38,9 @@ export default function SeatsPage(): ReactElement {
   })
   const [startTime, setStartTime] = useState<string>(routerState.startTime ?? "09:00")
   const [endTime, setEndTime] = useState<string>(routerState.endTime ?? "10:00")
-  const [recurrence, setRecurrence] = useState<RecurrenceType>("lunar")
+  const [recurrence, setRecurrence] = useState<RecurrenceType>("niciuna")
   const [repeatEvery, setRepeatEvery] = useState<number>(1)
-  const [endsMode, setEndsMode] = useState<"niciodata" | "la_data" | "dupa">("niciodata")
+  const [endsMode, setEndsMode] = useState<"niciodata" | "la_data" | "dupa">("la_data")
   const [endsOnDate, setEndsOnDate] = useState<string>("")
   const [endsAfterCount, setEndsAfterCount] = useState<number>(1)
 
@@ -46,22 +50,99 @@ export default function SeatsPage(): ReactElement {
     routerState.building ?? "Corp T1",
   )
   const [selectedFloorId, setSelectedFloorId] = useState<number>(routerState.floorId ?? 1)
-  const [selectedZoneType, setSelectedZoneType] = useState<RoomZoneType>("birouri")
-  const [selectedRoomId, setSelectedRoomId] = useState<number | undefined>(undefined)
+  const [selectedZoneType, setSelectedZoneType] = useState<RoomZoneType>(routerState.zoneType ?? "birouri")
+  const [selectedRoomId, setSelectedRoomId] = useState<number | undefined>(routerState.roomId)
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null)
 
   // Submission & Modal state
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState<boolean>(false)
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null)
 
-  // Fetch locations on mount
+  // Fetch locations & current user on mount
   useEffect(() => {
     async function loadData() {
-      const locs = await getLocations()
-      setLocations(locs)
+      try {
+        const dateStr = selectedDate ? formatDateIso(selectedDate) : formatDateIso(new Date())
+        const [locs, user] = await Promise.all([
+          getLocations({
+            date: dateStr,
+            startTime,
+            endTime,
+          }),
+          getCurrentUser(),
+        ])
+        setLocations(locs)
+        setCurrentUserId(user.id)
+      } catch (error) {
+        console.error("Eroare la încărcarea datelor inițiale:", error)
+        // Fallback în caz că getLocations merge dar getCurrentUser are o eroare
+        getLocations().then(setLocations).catch(console.error)
+      }
     }
     loadData()
   }, [])
+
+  // Sync disponibilitate când data/ora se schimbă.
+  // locationService.getLocations() aplică statusul din BE peste layout-ul mock,
+  // deci e suficient să re-facem fetch.
+  useEffect(() => {
+    if (!selectedDate || locations.length === 0) return
+    async function refreshAvailability() {
+      try {
+        const dateStr = formatDateIso(selectedDate as Date)
+        const locs = await getLocations({
+          date: dateStr,
+          startTime,
+          endTime,
+        })
+        setLocations(locs)
+      } catch (error) {
+        console.error("Eroare la actualizarea disponibilității:", error)
+      }
+    }
+    refreshAvailability()
+  }, [selectedDate, startTime, endTime])
+
+  // Explicitly sync routerState parameters when routerState changes
+  useEffect(() => {
+    if (routerState.building) setSelectedBuilding(routerState.building)
+    if (routerState.floorId) setSelectedFloorId(routerState.floorId)
+    if (routerState.zoneType) setSelectedZoneType(routerState.zoneType)
+    if (routerState.roomId) setSelectedRoomId(routerState.roomId)
+  }, [routerState.building, routerState.floorId, routerState.zoneType, routerState.roomId])
+
+  // Auto-select target seat from routerState if provided
+  useEffect(() => {
+    if (!routerState.targetSeatCode || locations.length === 0) return
+
+    const building = routerState.building || selectedBuilding
+    const floorId = routerState.floorId || selectedFloorId
+
+    const loc = locations.find((l) => l.building === building) || locations[0]
+    const fl = loc?.floors?.find((f) => f.id === floorId) || loc?.floors?.[0]
+
+    let foundSeat: Seat | undefined
+    if (fl?.rooms) {
+      for (const rm of fl.rooms) {
+        if (routerState.roomId && rm.id !== routerState.roomId) continue
+        const match = rm.seats?.find((s) => s.code === routerState.targetSeatCode)
+        if (match) {
+          foundSeat = match
+          if (!selectedRoomId) setSelectedRoomId(rm.id)
+          break
+        }
+      }
+    }
+
+    if (!foundSeat && fl?.seats) {
+      foundSeat = fl.seats.find((s) => s.code === routerState.targetSeatCode)
+    }
+
+    if (foundSeat) {
+      setSelectedSeat(foundSeat)
+    }
+  }, [locations, routerState, selectedBuilding, selectedFloorId, selectedRoomId])
 
   // Step 1 -> Step 2 transition
   function handleConfirmSchedule() {
@@ -77,7 +158,7 @@ export default function SeatsPage(): ReactElement {
     try {
       const activeLoc = locations.find((l) => l.building === selectedBuilding) || locations[0]
       await createReservation({
-        userId: 1,
+        userId: currentUserId || 1,
         locationId: activeLoc?.id ?? 1,
         floorId: selectedFloorId,
         seatId: selectedSeat.id,

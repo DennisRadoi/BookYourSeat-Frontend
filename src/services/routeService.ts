@@ -18,7 +18,7 @@ const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | unde
 export async function getRouteData(
   origin: string,
   destination: string,
-  targetArrivalTime: string = "09:00",
+  targetArrivalTime: string = "15:00",
 ): Promise<RouteData> {
   const defaultOrigin = origin || "București, Nițu Vasile 58"
   const defaultDestination = destination || "Aleea Țibleș 26, Sector 6 · București"
@@ -39,7 +39,7 @@ export async function getRouteData(
         origin: { address: defaultOrigin },
         destination: { address: defaultDestination },
         travelMode: "DRIVE",
-        routingPreference: "TRAFFIC_AWARE",
+        routingPreference: "TRAFFIC_AWARE_OPTIMAL",
       }),
     })
 
@@ -85,7 +85,7 @@ export async function getRouteData(
       staticDurationMin,
       trafficDelayMin,
       trafficLevel,
-      routeSummary: route.description || "via Pasajul Basarab & Bd. Iuliu Maniu",
+      routeSummary: route.description ? `via ${route.description}` : "via Pasajul Basarab & Bd. Iuliu Maniu",
       departureTime,
       minutesToLeave,
       incidents,
@@ -99,7 +99,7 @@ export async function getRouteData(
 function calculateDepartureInfo(targetTime: string, durationMin: number) {
   const [targetH, targetM] = targetTime.split(":").map(Number)
   const targetDate = new Date()
-  targetDate.setHours(targetH || 9, targetM || 0, 0, 0)
+  targetDate.setHours(targetH || 15, targetM || 0, 0, 0)
 
   const departureDate = new Date(targetDate.getTime() - durationMin * 60000)
   const depHours = String(departureDate.getHours()).padStart(2, "0")
@@ -117,19 +117,37 @@ function calculateDepartureInfo(targetTime: string, durationMin: number) {
   }
 }
 
-function extractIncidents(_route: any, totalDelay: number): RouteIncident[] {
+function extractIncidents(route: any, totalDelay: number): RouteIncident[] {
   const incidents: RouteIncident[] = []
+  const steps = route?.legs?.[0]?.steps || []
+  const roads: string[] = []
 
-  if (totalDelay >= 10) {
-    const delay1 = Math.round(totalDelay * 0.45)
-    const delay2 = totalDelay - delay1
+  steps.forEach((step: any) => {
+    const text = step?.navigationInstruction?.instructions || step?.description || ""
+    const match = text.match(/(?:Bd\.|Bulevardul|Pasajul|Șos\.|Șoseaua|Calea|Piața|Str\.|Strada)\s+[A-ZÎȘȚÂa-zîșțâ0-9\s-]+(?=,|\s+pe|\s+spre|\s+în|$)/i)
+    if (match) {
+      const roadName = match[0].trim()
+      if (roadName.length > 3 && !roads.includes(roadName)) {
+        roads.push(roadName)
+      }
+    }
+  })
+
+  if (roads.length >= 2) {
+    const delay1 = Math.max(2, Math.round(totalDelay * 0.55))
+    const delay2 = Math.max(2, totalDelay - delay1)
+    incidents.push({ location: roads[0], delay: delay1 })
+    incidents.push({ location: roads[1], delay: delay2 })
+  } else if (roads.length === 1) {
+    const delay1 = Math.max(2, Math.round(totalDelay * 0.6))
+    const delay2 = Math.max(2, totalDelay - delay1)
+    incidents.push({ location: roads[0], delay: delay1 })
+    incidents.push({ location: "Bd. Iuliu Maniu", delay: delay2 })
+  } else {
+    const delay1 = Math.max(3, Math.round(totalDelay * 0.45) || 6)
+    const delay2 = Math.max(2, totalDelay - delay1 || 8)
     incidents.push({ location: "Pasaj Basarab", delay: delay1 })
     incidents.push({ location: "Bd. Iuliu Maniu", delay: delay2 })
-  } else if (totalDelay >= 4) {
-    incidents.push({ location: "Pasaj Basarab", delay: totalDelay })
-  } else {
-    incidents.push({ location: "Pasaj Basarab", delay: 2 })
-    incidents.push({ location: "Bd. Iuliu Maniu", delay: 3 })
   }
 
   return incidents
@@ -151,7 +169,7 @@ function getFallbackRouteData(_origin: string, _destination: string, targetArriv
     trafficDelayMin,
     trafficLevel: "Ridicat",
     routeSummary: "via Pasajul Basarab & Bd. Iuliu Maniu",
-    departureTime: departureTime || "08:12",
+    departureTime: departureTime || "14:12",
     minutesToLeave,
     incidents: [
       { location: "Pasaj Basarab", delay: 6 },
