@@ -10,6 +10,7 @@ import { isValidPostalCode } from "@/lib/validation"
 
 export default function ContPage() {
   const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [editing, setEditing] = useState(false)
   const [preferences, setPreferences] = useState<string[]>([])
   const [newPreference, setNewPreference] = useState("")
@@ -24,10 +25,10 @@ export default function ContPage() {
   const addressCardRef = useRef<HTMLElement | null>(null)
   const [address, setAddress] = useState<AddressFormData>({ county: "", locality: "", street: "", number: "", apartmentBlock: "", floor: "", postalCode: "" })
   const [form, setForm] = useState({
-    name: "Claudiu Ciupitu",
-    email: "claudiu.ciupitu@bys.ro",
-    department: "Engineering",
-    domiciliu: "București, Nițu Vasile 58",
+    name: "",
+    email: "",
+    department: "",
+    domiciliu: "",
   })
 
   useEffect(() => {
@@ -40,10 +41,12 @@ export default function ContPage() {
           name: `${currentUser.firstName} ${currentUser.lastName}`.trim(),
           email: currentUser.email,
           department: currentUser.department || "",
-          domiciliu: currentUser.domiciliu || "București, Nițu Vasile 58",
+          domiciliu: currentUser.domiciliu || "",
         })
       } catch (err) {
         console.error("Error loading user in ContPage:", err)
+      } finally {
+        setIsLoading(false)
       }
     }
     loadUserData()
@@ -127,11 +130,28 @@ export default function ContPage() {
     setNewPreference("")
   }
 
+  if (isLoading) {
+    return (
+      <section className="w-full max-w-[760px] space-y-5 text-[var(--foreground)] sm:space-y-6">
+        <div className="flex flex-col gap-4 rounded-xl bg-[var(--card)] p-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)] sm:flex-row sm:items-center sm:p-5 animate-pulse">
+          <div className="grid size-12 shrink-0 place-items-center rounded-full bg-[var(--muted)] sm:size-16" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 w-40 rounded bg-[var(--muted)]" />
+            <div className="h-3 w-56 rounded bg-[var(--muted)]" />
+          </div>
+        </div>
+        <div className="rounded-xl bg-[var(--card)] p-5 shadow-[0_1px_4px_rgba(0,0,0,0.07)] space-y-3 animate-pulse">
+          {[1,2,3,4].map((i) => <div key={i} className="h-9 rounded-lg bg-[var(--muted)]" />)}
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="w-full max-w-[760px] space-y-5 text-[var(--foreground)] sm:space-y-6">
       <div className="flex flex-col gap-4 rounded-xl bg-[var(--card)] p-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)] sm:flex-row sm:items-center sm:p-5">
         <div className="grid size-12 shrink-0 place-items-center rounded-full border-2 border-[var(--primary)] bg-[var(--secondary)] text-sm font-bold text-[var(--secondary-foreground)] sm:size-16">
-          {user?.initials || "CC"}
+          {user?.initials || ""}
         </div>
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-sm font-bold text-[var(--foreground)] sm:text-base">{form.name}</h2>

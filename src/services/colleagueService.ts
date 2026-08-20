@@ -1,4 +1,5 @@
 import { apiClient } from "./apiClient"
+import { withCache, invalidateCachePrefix } from "./cache"
 import type { Colleague } from "@/types"
 
 // ─── Colleague Service ─────────────────────────────────────────────────────────
@@ -90,7 +91,7 @@ export interface ColleagueProfile {
   bookingDto: Array<{ dateOfBooking: string; startTime: string; endTime: string; floor: number; building: string }>
 }
 
-export async function getColleaguesPage(params: GetColleaguesParams = {}): Promise<ColleaguesPage> {
+export function getColleaguesPage(params: GetColleaguesParams = {}): Promise<ColleaguesPage> {
   const query = new URLSearchParams()
   if (params.search) query.set("search", params.search)
   if (params.status) query.set("status", params.status)
@@ -100,17 +101,38 @@ export async function getColleaguesPage(params: GetColleaguesParams = {}): Promi
   query.set("page", String(params.page ?? 0))
   query.set("size", String(params.size ?? 10))
 
-  const data = await apiClient.get<BePageResponse<BeColleagueResponse>>(`/users?${query.toString()}`)
-  return {
-    colleagues: (data.content ?? []).map(mapToColleague),
-    page: data.page,
-    size: data.size,
-    totalElements: data.totalElements,
-    totalPages: data.totalPages,
+  const queryStr = query.toString()
+  const hasFilters = params.search || params.status || params.floor != null || params.building || params.favorite != null
+
+  const fetch = async (): Promise<ColleaguesPage> => {
+    const data = await apiClient.get<BePageResponse<BeColleagueResponse>>(`/users?${queryStr}`)
+    return {
+      colleagues: (data.content ?? []).map(mapToColleague),
+      page: data.page,
+      size: data.size,
+      totalElements: data.totalElements,
+      totalPages: data.totalPages,
+    }
   }
+
+  // Cache only unfiltered pages for 30s — filtered/searched results are not cached
+  if (!hasFilters) {
+    return withCache(`colleagues:page:${queryStr}`, fetch, 30_000)
+  }
+  return fetch()
 }
 
+
 export async function getColleagues(params: GetColleaguesParams = {}): Promise<Colleague[]> {
+  // If no filters are applied, cache the full list for 2 minutes
+  // (used for AI context — avoids a 2s+ request on every page visit)
+  const isFullList = !params.search && !params.status && !params.floor && !params.building && params.favorite == null
+  if (isFullList) {
+    return withCache("colleagues:all", async () => {
+      const result = await getColleaguesPage({ size: params.size ?? 500 })
+      return result.colleagues
+    }, 120_000) // 2 min
+  }
   const result = await getColleaguesPage({ ...params, size: params.size ?? 500 })
   return result.colleagues
 }
@@ -124,6 +146,7 @@ export async function getFavoriteColleagues(): Promise<Colleague[]> {
   return data.map((c) => mapToColleague(c))
 }
 
+
 export async function getColleagueById(colleagueId: number): Promise<Colleague | null> {
   const data = await apiClient.get<BeColleagueResponse>(`/users/${colleagueId}`)
   return mapToColleague(data)
@@ -133,16 +156,12 @@ export function getColleagueProfile(colleagueId: number): Promise<ColleagueProfi
   return apiClient.get<ColleagueProfile>(`/users/${colleagueId}`)
 }
 
-export async function toggleFavoriteColleague(colleagueId: number): Promise<boolean> {
-  // Citim starea curentă pentru a decide add sau remove
-  const favorites = await getFavoriteColleagues()
-  const isFav = favorites.some((c) => c.id === colleagueId)
-
-  if (isFav) {
+export async function toggleFavoriteColleague(colleagueId: number, isFavorite: boolean): Promise<boolean> {
+  if (isFavorite) {
     await apiClient.delete(`/users/me/favorites/${colleagueId}`)
   } else {
     await apiClient.post(`/users/me/favorites/${colleagueId}`)
   }
-
-  return !isFav
+  invalidateCachePrefix("colleagues:")
+  return !isFavorite
 }
