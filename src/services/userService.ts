@@ -1,4 +1,5 @@
 import { apiClient } from "./apiClient"
+import { withCache, invalidateCache } from "./cache"
 import type { User, UserPreferences } from "@/types"
 
 interface BeMyAccountResponse {
@@ -37,8 +38,9 @@ function mapToUser(be: BeMyAccountResponse & { id?: number; userId?: number }): 
 }
 
 export async function getCurrentUser(): Promise<User> {
-  return mapToUser(await apiClient.get<BeMyAccountResponse>("/users/me"))
+  return withCache("currentUser", async () => mapToUser(await apiClient.get<BeMyAccountResponse>("/users/me")), 300_000) // 5 min
 }
+
 
 export async function updateUserProfile(
   _userId: number,
@@ -48,7 +50,9 @@ export async function updateUserProfile(
   if (updates.firstName !== undefined || updates.lastName !== undefined) body.fullname = `${updates.firstName ?? ""} ${updates.lastName ?? ""}`.trim()
   if (updates.email !== undefined) body.email = updates.email
   if (updates.department !== undefined) body.departmentName = updates.department
-  return mapToUser(await apiClient.patch<BeMyAccountResponse>("/users/me", body))
+  const result = mapToUser(await apiClient.patch<BeMyAccountResponse>("/users/me", body))
+  invalidateCache("currentUser")
+  return result
 }
 
 export async function updateUserPreferences(_userId: number, preferenceUpdates: Partial<UserPreferences>): Promise<User> {

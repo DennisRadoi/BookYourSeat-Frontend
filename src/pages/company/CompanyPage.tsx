@@ -51,7 +51,8 @@ export default function CompanyPage() {
 
   async function handleToggleFavorite(id: number) {
     try {
-      const isFavorite = await toggleFavoriteColleague(id)
+      const currentColleague = colleagues.find((c) => c.id === id)
+      const isFavorite = await toggleFavoriteColleague(id, currentColleague?.isFavorite ?? false)
       if (filters.favorite === "favorite" && !isFavorite) {
         setColleagues((current) => current.filter((colleague) => colleague.id !== id))
         setTotalElements((current) => Math.max(0, current - 1))

@@ -1,4 +1,5 @@
 import { apiClient } from "./apiClient"
+import { withCache, invalidateCache } from "./cache"
 import type { Notification } from "@/types"
 
 // ─── Notification Service ──────────────────────────────────────────────────────
@@ -60,13 +61,16 @@ export async function getCurrentUserId(): Promise<number> {
 
 // ─── API ───────────────────────────────────────────────────────────────────────
 
-export async function getNotifications(): Promise<Notification[]> {
-  const data = await apiClient.get<BeNotificationResponse[]>("/users/me/notifications")
-  return data.map(mapToNotification)
+export function getNotifications(): Promise<Notification[]> {
+  return withCache("notifications", async () => {
+    const data = await apiClient.get<BeNotificationResponse[]>("/users/me/notifications")
+    return data.map(mapToNotification)
+  }, 30_000) // 30s — notificările se schimbă frecvent
 }
 
 export async function markNotificationAsRead(notificationId: number): Promise<Notification> {
   await apiClient.put<void>(`/users/me/notifications/${notificationId}/read`)
+  invalidateCache("notifications")
   // BE returnează 200 fără body — reconstruim obiectul local
   return {
     id:       notificationId,
@@ -79,6 +83,7 @@ export async function markNotificationAsRead(notificationId: number): Promise<No
 
 export async function markAllNotificationsAsRead(): Promise<Notification[]> {
   await apiClient.put<void>("/users/me/notifications/read-all")
+  invalidateCache("notifications")
   // Returnăm lista actualizată
   return getNotifications()
 }

@@ -65,8 +65,18 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     } catch {
       // ignorăm erorile de parsare JSON
     }
+
+    // Token expirat sau invalid → delogăm și redirectăm la login
+    if (response.status === 401 || response.status === 403) {
+      localStorage.removeItem(TOKEN_KEY)
+      if (!window.location.pathname.startsWith("/login") && !window.location.pathname.startsWith("/register")) {
+        window.location.href = "/login"
+      }
+    }
+
     throw new ApiError(response.status, message)
   }
+
 
   // Răspuns fără body (ex: 204 No Content)
   const text = await response.text()

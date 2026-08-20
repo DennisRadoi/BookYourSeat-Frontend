@@ -1,10 +1,12 @@
 import { apiClient } from "./apiClient"
+import { withCache } from "./cache"
 
 interface BuildingResponse {
   id: number
   name: string
 }
 
-export async function getBuildings(): Promise<BuildingResponse[]> {
-  return apiClient.get<BuildingResponse[]>("/buildings")
+export function getBuildings(): Promise<BuildingResponse[]> {
+  return withCache("buildings", () => apiClient.get<BuildingResponse[]>("/buildings"), 300_000) // 5 min
 }
+
