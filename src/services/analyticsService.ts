@@ -44,12 +44,19 @@ export async function getAnalyticsDashboardData(): Promise<AnalyticsDashboardDat
     ),
   ])
 
+  let topBookings: TopBookingResponse[] = []
+  try {
+    topBookings = await apiClient.get<TopBookingResponse[]>("/analytics/top-bookings")
+  } catch (error) {
+    console.warn("Top bookings endpoint unavailable. Rendering analytics without top bookings.", error)
+  }
+
   return {
     kpis: [
-      { id: "totalBookings", label: "Rezervări luna curentă", value: String(monthly.totalBookings) },
-      { id: "roomOccupancy", label: "Ocupare săli conferință", value: `${today.conferenceRoomsOccupancyPercent}%` },
+      { id: "totalBookings", label: "Rezervari luna curenta", value: String(monthly.totalBookings) },
+      { id: "roomOccupancy", label: "Ocupare sali conferinta", value: `${today.conferenceRoomsOccupancyPercent}%` },
       { id: "deskOccupancy", label: "Ocupare birouri", value: `${today.officeOccupancyPercent}%` },
-      { id: "peopleInOffice", label: "Persoane în birou", value: String(today.peopleInOffice) },
+      { id: "peopleInOffice", label: "Persoane in birou", value: String(today.peopleInOffice) },
     ],
     weeklyBookings: weekly.days,
     topBookings: topBookings.slice(0, 5).map((entry) => ({
