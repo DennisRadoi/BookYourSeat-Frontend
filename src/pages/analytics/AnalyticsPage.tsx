@@ -165,6 +165,22 @@ interface TopBookingListProps {
 }
  
 function TopBookingList({ topBookings, totalBookings }: TopBookingListProps) {
+  if (topBookings.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h3 className="text-sm font-bold text-foreground">Top bookings</h3>
+          <span className="rounded-full bg-muted px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+            Total {totalBookings}
+          </span>
+        </div>
+        <div className="rounded-2xl border border-dashed border-border bg-muted/40 px-4 py-6 text-center text-sm text-muted-foreground">
+          Top bookings indisponibil momentan.
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4">
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -305,3 +321,4 @@ export default function AnalyticsPage() {
     </div>
   )
 }
+
