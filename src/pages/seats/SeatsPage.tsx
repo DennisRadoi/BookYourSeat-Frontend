@@ -8,8 +8,7 @@ import { formatDateIso } from "@/utils"
 import type { Location, Seat, RoomZoneType, RecurrenceType } from "@/types"
 import { PillButton } from "@/components/ui"
 
-// Shape that the dashboard (or any caller) can pass via router state
-// to jump straight to the map step with pre-filled context.
+
 export interface SeatsPageRouterState {
   jumpToSeat?: boolean
   date?: string          // "YYYY-MM-DD"
@@ -31,7 +30,6 @@ export default function SeatsPage(): ReactElement {
     routerState.jumpToSeat ? "seat" : "datetime",
   )
 
-  // Schedule state – pre-fill from router state if provided
   const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
     if (routerState.date) return new Date(`${routerState.date}T12:00:00`)
     const tomorrow = new Date()

@@ -10,6 +10,8 @@ export interface UserPreferences {
   preferredStartTime: string
   preferredDays: Weekday[]
   workPreferences: string[]
+  preferredLocation?: string 
+  favoriteColleagueIds?: number[]
 }
 
 export interface User {
@@ -23,6 +25,9 @@ export interface User {
   isOnline: boolean
   avatarUrl: string | null
   domiciliu?: string
+  isFirstTimeUser?: boolean
+  phone?: string    
+  hireDate?: string
   preferences: UserPreferences
 }
 
@@ -154,6 +159,7 @@ export interface Colleague {
   status: "La birou" | "Remote"
   isFavorite: boolean
   department?: string
+  avatarUrl?: string | null
 }
 
 export type NotificationType =

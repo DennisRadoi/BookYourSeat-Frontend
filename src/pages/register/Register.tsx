@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PasswordToggle } from "./components/PasswordToggle"
 import { register } from "@/services/authService"
+import { registerUser } from "@/services"
 
 export default function Register() {
   const [firstName, setFirstName] = useState("")
@@ -45,6 +46,14 @@ export default function Register() {
       window.location.assign("/onboarding")
     } catch (err) {
       setError(err instanceof Error ? err.message : "A apărut o eroare. Încearcă din nou.")
+      await registerUser({
+        firstName,
+        lastName,
+        email,
+      })
+      navigate("/onboarding")
+    } catch (error) {
+      console.error("Eroare la înregistrare:", error)
     } finally {
       setIsSubmitting(false)
     }

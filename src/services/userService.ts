@@ -57,6 +57,8 @@ export async function getCurrentUser(): Promise<User> {
 export async function updateUserProfile(
   _userId: number,
   updates: Partial<Pick<User, "firstName" | "lastName" | "email" | "department" | "domiciliu">>,
+  userId: number,
+  updates: Partial<Pick<User, "firstName" | "lastName" | "email" | "department" | "domiciliu" | "phone" | "hireDate" | "avatarUrl">>,
 ): Promise<User> {
   const body: Record<string, unknown> = {}
   if (updates.firstName !== undefined || updates.lastName !== undefined) {
@@ -116,4 +118,33 @@ export function updateUserAddress(address: AddressFormData): Promise<User> {
 
 export function getDepartments(): Promise<Array<{ id: number; name: string }>> {
   return apiClient.get<Array<{ id: number; name: string }>>("/departments")
+}
+
+export async function registerUser(userData: { firstName: string; lastName: string; email: string }): Promise<User> {
+  await delay()
+  const newUser: User = {
+    id: Date.now(),
+    firstName: userData.firstName,
+    lastName: userData.lastName,
+    initials: `${userData.firstName[0] || ""}${userData.lastName[0] || ""}`.toUpperCase(),
+    email: userData.email,
+    role: "User",
+    department: "General",
+    isOnline: true,
+    avatarUrl: null,
+    domiciliu: "",
+    isFirstTimeUser: true,
+    preferences: {
+      preferredFloor: 1,
+      preferredArea: "window",
+      preferredStartTime: "09:00",
+      preferredDays: [],
+      workPreferences: [],
+      preferredLocation: "",
+      favoriteColleagueIds: [],
+    },
+  }
+
+  users.push(newUser)
+  return newUser
 }

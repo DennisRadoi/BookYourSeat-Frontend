@@ -12,6 +12,7 @@ export const users: User[] = [
     isOnline: true,
     avatarUrl: null,
     domiciliu: "București, Nițu Vasile 58",
+    isFirstTimeUser: true,
     preferences: {
       preferredFloor: 1,
       preferredArea: "window",
