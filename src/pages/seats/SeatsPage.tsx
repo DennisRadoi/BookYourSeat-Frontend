@@ -7,6 +7,7 @@ import { getCurrentUser } from "@/services/userService"
 import { formatDateIso } from "@/utils"
 import type { Location, Seat, RoomZoneType, RecurrenceType } from "@/types"
 import { PillButton } from "@/components/ui"
+import { Modal, ModalBody, ModalFooter, ModalHeader } from "@/components/common"
 
 
 export interface SeatsPageRouterState {
@@ -57,6 +58,7 @@ export default function SeatsPage(): ReactElement {
   // Submission & Modal state
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState<boolean>(false)
+  const [bookingError, setBookingError] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<number | null>(null)
 
   // Fetch locations & current user on mount
@@ -155,6 +157,7 @@ export default function SeatsPage(): ReactElement {
     if (!selectedSeat || !selectedDate) return
 
     setIsSubmitting(true)
+    setBookingError(null)
     try {
       const activeLoc = locations.find((l) => l.building === selectedBuilding) || locations[0]
       await createReservation({
@@ -166,9 +169,30 @@ export default function SeatsPage(): ReactElement {
         startTime,
         endTime,
         status: "confirmed",
+        recurrenceFrequency: recurrence === "niciuna" ? null : recurrence,
+        recurrenceEndDate: recurrence === "niciuna" ? undefined : (endsOnDate || formatDateIso(selectedDate)),
+        recurrenceInterval: recurrence === "niciuna" ? undefined : repeatEvery,
       })
       setIsSuccessModalOpen(true)
     } catch (error) {
+      const message = error instanceof Error ? error.message : "Rezervarea nu a putut fi creată."
+      setBookingError(message)
+      // Păstrăm explicația și pe locul din hartă, astfel încât la hover să
+      // se vadă cine îl ocupă și în ce zile din serie apare conflictul.
+      setSelectedSeat((current) => current ? { ...current, isAvailable: false, unavailableReason: message } : current)
+      if (selectedSeat) {
+        setLocations((currentLocations) => currentLocations.map((location) => ({
+          ...location,
+          floors: location.floors.map((floor) => ({
+            ...floor,
+            seats: floor.seats?.map((seat) => seat.id === selectedSeat.id ? { ...seat, isAvailable: false, unavailableReason: message } : seat),
+            rooms: floor.rooms?.map((room) => ({
+              ...room,
+              seats: room.seats.map((seat) => seat.id === selectedSeat.id ? { ...seat, isAvailable: false, unavailableReason: message } : seat),
+            })),
+          })),
+        })))
+      }
       console.error("Eroare la crearea rezervării:", error)
     } finally {
       setIsSubmitting(false)
@@ -264,6 +288,17 @@ export default function SeatsPage(): ReactElement {
           />
         )}
       </div>
+      {bookingError && (
+        <Modal onClose={() => setBookingError(null)} maxWidth="sm">
+          <ModalHeader title="Seria recurentă nu a fost creată" onClose={() => setBookingError(null)} />
+          <ModalBody>
+            <p className="text-sm leading-relaxed text-[var(--foreground)]">{bookingError}</p>
+          </ModalBody>
+          <ModalFooter>
+            <PillButton type="button" onClick={() => setBookingError(null)} className="w-full">Am înțeles</PillButton>
+          </ModalFooter>
+        </Modal>
+      )}
     </div>
   )
 }

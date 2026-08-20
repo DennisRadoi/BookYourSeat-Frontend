@@ -4,7 +4,7 @@ import { Moon, Sun, LogOut, User, Menu } from "lucide-react"
 import { useLiveClock } from "@/hooks"
 import { IconButton } from "@/components/ui"
 import { useTheme } from "@/hooks/useTheme"
-import { getNotifications } from "@/services"
+import { getColleagues, getNotifications } from "@/services"
 
 function DateTimeSubtitle() {
   const currentDateTime = useLiveClock()
@@ -91,11 +91,15 @@ export default function Navbar({ onBurgerClick }: NavbarProps) {
   const navigate = useNavigate()
   const { isDark, toggle, setLight } = useTheme()
   const [unreadNotifications, setUnreadNotifications] = useState(0)
+  const [activeColleagues, setActiveColleagues] = useState(0)
 
   useEffect(() => {
     getNotifications()
       .then((notifications) => setUnreadNotifications(notifications.filter((notification) => notification.isUnread).length))
       .catch(() => setUnreadNotifications(0))
+    getColleagues({ size: 500 })
+      .then((colleagues) => setActiveColleagues(colleagues.filter((colleague) => colleague.status !== "OOO").length))
+      .catch(() => setActiveColleagues(0))
   }, [pathname])
 
   // keep backwards-compatible meta detection
@@ -104,6 +108,8 @@ export default function Navbar({ onBurgerClick }: NavbarProps) {
     : navMeta[pathname] ?? { title: "Book Your Seat", subtitle: () => null }
   const subtitle = pathname === "/notificari"
     ? <span className="flex items-center gap-1.5 text-sm text-[var(--muted-foreground)]"><NavBadge>{unreadNotifications}</NavBadge> notificări necitite</span>
+    : pathname === "/companie"
+    ? <span className="flex items-center gap-1.5 text-sm text-[var(--muted-foreground)]"><NavBadge>{activeColleagues}</NavBadge> colegi activi</span>
     : meta.subtitle()
 
   return (

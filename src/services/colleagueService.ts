@@ -49,7 +49,9 @@ function mapToColleague(c: BeColleagueResponse): Colleague {
     role:       c.role,
     color:      "#6366f1",
     floor:      colleagueLocation(c),
-    status:     (c.status === "La birou" || String(c.status).toLowerCase().includes("birou") || String(c.status).toLowerCase().includes("office") ? "La birou" : "Remote") as Colleague["status"],
+    status:     (String(c.status).toUpperCase() === "OOO"
+      ? "OOO"
+      : (c.status === "La birou" || String(c.status).toLowerCase().includes("birou") || String(c.status).toLowerCase().includes("office") ? "La birou" : "Remote")) as Colleague["status"],
     isFavorite: c.isFavorite,
   }
 }

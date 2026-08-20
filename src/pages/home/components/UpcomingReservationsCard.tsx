@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui"
 import { StatusBadge } from "./StatusBadge"
 import { EditReservationModal } from "./EditReservationModal"
-import { formatDateIso, MONTH_LABELS } from "@/utils"
+import { MONTH_LABELS } from "@/utils"
 import type { DetailedReservation } from "@/types"
 
 interface UpcomingReservationsCardProps {
@@ -16,19 +16,16 @@ export function UpcomingReservationsCard({
   reservations,
   onNavigateToSeats,
 }: UpcomingReservationsCardProps) {
-  const todayIso = formatDateIso(new Date())
   const [localReservations, setLocalReservations] = useState<DetailedReservation[]>([])
   const [editingReservation, setEditingReservation] = useState<DetailedReservation | null>(null)
 
   // Sync from parent when reservations load/change
   useEffect(() => {
-    setLocalReservations(reservations.filter((reservation) => reservation.status !== "cancelled"))
+    setLocalReservations(reservations)
   }, [reservations])
 
-  const upcomingReservations = localReservations
-    .filter((r) => r.date >= todayIso && r.status !== "cancelled")
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(0, 5) // show up to 5
+  const userReservations = [...localReservations]
+    .sort((a, b) => b.date.localeCompare(a.date) || b.startTime.localeCompare(a.startTime))
 
   const handleSaved = useCallback((updated: DetailedReservation) => {
     setLocalReservations((prev) =>
@@ -50,11 +47,11 @@ export function UpcomingReservationsCard({
         <CardHeader className="flex flex-row items-center justify-between pb-0">
           <h2 className="text-[15px] font-bold text-[var(--foreground)]">Rezervările mele</h2>
           <span className="text-[12px] text-[var(--muted-foreground)] font-medium">
-            {upcomingReservations.length} viitoare
+            {userReservations.length} rezervări
           </span>
         </CardHeader>
         <CardContent>
-          {upcomingReservations.length === 0 ? (
+          {userReservations.length === 0 ? (
             <div className="flex flex-col items-center gap-2.5 py-5 text-[13px] text-[var(--muted-foreground)]">
               <CalendarCheck size={18} className="text-[var(--primary)]" />
               <span>Nu ai rezervări viitoare</span>
@@ -68,7 +65,7 @@ export function UpcomingReservationsCard({
             </div>
           ) : (
             <div className="flex flex-col gap-2.5">
-              {upcomingReservations.map((reservation) => {
+              {userReservations.map((reservation) => {
                 const accentColor =
                   reservation.status === "confirmed"
                     ? "var(--primary)"
