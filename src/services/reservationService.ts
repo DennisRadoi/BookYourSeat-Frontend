@@ -72,6 +72,16 @@ function findLocationInfo(seatId: number, locationsList?: Location[]) {
   return null
 }
 
+function findRoomInfo(roomId: number, locationsList?: Location[]) {
+  for (const loc of locationsList ?? []) {
+    for (const floor of loc.floors) {
+      const room = floor.rooms?.find((item) => item.id === roomId)
+      if (room) return { loc, floor, room }
+    }
+  }
+  return null
+}
+
 // ─── Mapare răspuns BE → Reservation FE ───────────────────────────────────────
 
 function mapToReservation(b: BeBookingResponse, locationsList?: Location[]): Reservation {
@@ -95,7 +105,9 @@ function mapToReservation(b: BeBookingResponse, locationsList?: Location[]): Res
 function mapToDetailedReservation(b: BeBookingResponse, locationsList?: Location[]): DetailedReservation {
   const r = mapToReservation(b, locationsList)
   const seatId = b.seatId ?? 0
-  const info = findLocationInfo(seatId, locationsList)
+  const seatInfo = b.seatId != null ? findLocationInfo(seatId, locationsList) : null
+  const roomInfo = b.roomId != null ? findRoomInfo(b.roomId, locationsList) : null
+  const info = seatInfo ?? roomInfo
 
   return {
     ...r,
@@ -114,12 +126,19 @@ function mapToDetailedReservation(b: BeBookingResponse, locationsList?: Location
           name: info.floor.name,
         }
       : null,
-    seat: info?.seat
+    seat: seatInfo?.seat
       ? {
-          id: info.seat.id,
-          code: info.seat.code,
-          area: info.seat.area,
-          type: info.seat.type,
+          id: seatInfo.seat.id,
+          code: seatInfo.seat.code,
+          area: seatInfo.seat.area,
+          type: seatInfo.seat.type,
+        }
+      : roomInfo?.room
+      ? {
+          id: roomInfo.room.id,
+          code: `Sala ${roomInfo.room.name}`,
+          area: "team",
+          type: "standard",
         }
       : {
           id: seatId,

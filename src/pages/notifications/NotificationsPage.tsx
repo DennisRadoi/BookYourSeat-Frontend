@@ -32,6 +32,8 @@ export default function NotificationsPage() {
   const [notificationsList, setNotificationsList] = useState<Notification[]>([])
   const [selectedNotif, setSelectedNotif] = useState<Notification | null>(null)
   const [pendingInvitationId, setPendingInvitationId] = useState<number | null>(null)
+  const [invitationError, setInvitationError] = useState<string | null>(null)
+  const [isResponding, setIsResponding] = useState(false)
 
   useEffect(() => {
     async function loadNotifications() {
@@ -58,6 +60,7 @@ export default function NotificationsPage() {
   async function handleNotificationClick(notif: Notification) {
     setSelectedNotif(notif)
     setPendingInvitationId(null)
+    setInvitationError(null)
     if (notif.isUnread) {
       try {
         const updated = await markNotificationAsRead(notif.id)
@@ -79,11 +82,18 @@ export default function NotificationsPage() {
 
   async function respondToInvitation(status: "ACCEPTATA" | "REFUZATA") {
     if (!pendingInvitationId) return
+    setInvitationError(null)
+    setIsResponding(true)
     try {
       await answerInvitation(pendingInvitationId, status)
       setPendingInvitationId(null)
       setSelectedNotif(null)
-    } catch (error) { console.error("Eroare la răspunsul invitației:", error) }
+    } catch (error) {
+      console.error("Eroare la răspunsul invitației:", error)
+      setInvitationError(error instanceof Error ? error.message : "Nu s-a putut răspunde invitației.")
+    } finally {
+      setIsResponding(false)
+    }
   }
 
   const totalNotifications = notificationsList.length
@@ -138,9 +148,6 @@ export default function NotificationsPage() {
                   </p>
                 </div>
 
-                <span className="text-[11px] sm:text-xs text-[var(--muted-foreground)] font-medium whitespace-nowrap shrink-0 pl-1">
-                  {notif.time}
-                </span>
               </div>
             )
           })}
@@ -162,15 +169,15 @@ export default function NotificationsPage() {
                   return <SelectedIcon size={20} strokeWidth={2.5} />
                 })()}
               </div>
-              <span className="text-xs font-medium text-[var(--muted-foreground)]">{selectedNotif.time}</span>
             </div>
 
             <p className="text-sm text-[var(--foreground)] leading-relaxed break-words">
               {selectedNotif.text}
             </p>
+            {invitationError && <p className="mt-3 rounded-md bg-[var(--destructive)]/10 p-2 text-xs font-medium text-[var(--destructive)]">{invitationError}</p>}
           </ModalBody>
           <ModalFooter>
-            {pendingInvitationId && <><Button className="flex-1" onClick={() => respondToInvitation("ACCEPTATA")}>Acceptă</Button><Button variant="outline" className="flex-1" onClick={() => respondToInvitation("REFUZATA")}>Refuză</Button></>}
+            {pendingInvitationId && <><Button className="flex-1" isLoading={isResponding} disabled={isResponding} onClick={() => respondToInvitation("ACCEPTATA")}>Acceptă</Button><Button variant="outline" className="flex-1" disabled={isResponding} onClick={() => respondToInvitation("REFUZATA")}>Refuză</Button></>}
             <Button
               className="w-full bg-[var(--primary)] hover:bg-[var(--sidebar-accent-hover)] text-[var(--primary-foreground)]"
               onClick={() => setSelectedNotif(null)}

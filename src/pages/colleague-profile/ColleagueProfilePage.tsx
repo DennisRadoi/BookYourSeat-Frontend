@@ -28,14 +28,23 @@ export default function ColleagueProfilePage() {
   const [profile, setProfile] = useState<ColleagueProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [inviteOpen, setInviteOpen] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
     const id = Number(colleagueId)
     if (!Number.isInteger(id)) { setLoading(false); return }
-    getColleagueProfile(id).then(setProfile).catch((error) => console.error("Nu s-a putut încărca profilul colegului:", error)).finally(() => setLoading(false))
+    setLoadError(null)
+    getColleagueProfile(id)
+      .then(setProfile)
+      .catch((error) => {
+        console.error("Nu s-a putut încărca profilul colegului:", error)
+        setLoadError(error instanceof Error ? error.message : "Profilul nu a putut fi încărcat.")
+      })
+      .finally(() => setLoading(false))
   }, [colleagueId])
 
   if (loading) return <div className="grid min-h-[280px] place-items-center text-sm text-[var(--muted-foreground)]">Se încarcă profilul colegului…</div>
+  if (loadError) return <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--destructive)]">{loadError}</div>
   if (!profile || !colleagueId) return <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)]">Colegul căutat nu a fost găsit.</div>
 
   const initials = profile.fullname.split(" ").map((part) => part[0]).join("").slice(0, 2)

@@ -20,9 +20,13 @@ export function WeeklyCalendarCard({
 }: WeeklyCalendarCardProps) {
   const today = new Date()
   const todayIso = formatDateIso(today)
+  const threeDaysFromNow = new Date(today)
+  threeDaysFromNow.setDate(today.getDate() + 3)
+  const latestUpcomingDateIso = formatDateIso(threeDaysFromNow)
   const weekDays = getWeekDays(today)
 
-  const selectedDayReservations = reservations.filter((r) => r.date === selectedDate)
+  const upcomingReservations = reservations.filter((r) => r.date >= todayIso && r.date <= latestUpcomingDateIso && r.status !== "cancelled")
+  const selectedDayReservations = upcomingReservations.filter((r) => r.date === selectedDate)
   const selectedDateObject = new Date(`${selectedDate}T12:00:00`)
   const selectedDayName = DAY_LABELS_FULL[selectedDateObject.getDay()]
 
@@ -40,7 +44,7 @@ export function WeeklyCalendarCard({
             const dayIso = formatDateIso(day)
             const isToday = dayIso === todayIso
             const isSelected = dayIso === selectedDate
-            const hasReservationDot = reservations.some((r) => r.date === dayIso && r.status !== "cancelled")
+            const hasReservationDot = upcomingReservations.some((r) => r.date === dayIso)
 
             return (
               <PillButton
