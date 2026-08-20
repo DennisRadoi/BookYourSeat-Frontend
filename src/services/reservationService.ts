@@ -1,5 +1,6 @@
 import { apiClient } from "./apiClient"
 import { getLocations } from "./locationService"
+import { invalidateCachePrefix } from "./cache"
 import type { Location, DetailedReservation, Reservation, ReservationStatus } from "@/types"
 
 // ─── Reservation Service ───────────────────────────────────────────────────────
@@ -202,6 +203,7 @@ export async function createReservation(
     recurrenceIntervalOfRecurrence: reservationData.recurrenceInterval ?? null
   }
   const data = await apiClient.post<BeBookingResponse>("/bookings", body)
+  invalidateCachePrefix("locations:") // seat availability changed
   return mapToReservation(data)
 }
 
@@ -225,5 +227,6 @@ export async function updateReservation(
 
 export async function cancelReservation(reservationId: number): Promise<boolean> {
   await apiClient.put<unknown>(`/bookings/${reservationId}/cancel`)
+  invalidateCachePrefix("locations:") // seat freed up
   return true
 }

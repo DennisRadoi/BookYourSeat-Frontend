@@ -175,7 +175,7 @@ export function EditReservationModal({
           <PillGroup
             options={STATUS_OPTIONS}
             value={status}
-            onChange={setStatus}
+            onChange={(val) => setStatus(val)}
           />
         </FormField>
 
