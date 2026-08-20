@@ -19,4 +19,4 @@ export const availableWorkspaceTypes = [
   "Lângă cafenea",
   "Colțuri izolate",
 ]
-export const availableWeekdays = ["Lu", "Ma", "Mi", "Jo", "Vi", "Sâ", "Du"]
+export const availableWeekdays = ["Lu", "Ma", "Mi", "Jo", "Vi"]
