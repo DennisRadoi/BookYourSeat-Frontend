@@ -34,9 +34,9 @@ export default function SetariPage() {
         setSelectedBuilding((settings as typeof settings & { preferredBuilding?: string }).preferredBuilding ?? "")
         const dayLabels: Record<string, string> = {
           monday: "Lu", tuesday: "Ma", wednesday: "Mi", thursday: "Jo",
-          friday: "Vi", saturday: "Sâ", sunday: "Du",
+          friday: "Vi",
         }
-        setSelectedDays(new Set(settings.preferredDays.map((day) => dayLabels[day])))
+        setSelectedDays(new Set(settings.preferredDays.map((day) => dayLabels[day]).filter(Boolean)))
       } catch (error) {
         console.error("Eroare la încărcarea setărilor:", error)
       }
@@ -72,8 +72,8 @@ export default function SetariPage() {
         defaultEndTime: endTime,
         preferredDays: Array.from(selectedDays).map((day) => ({
           Lu: "monday", Ma: "tuesday", Mi: "wednesday", Jo: "thursday",
-          Vi: "friday", "Sâ": "saturday", Du: "sunday",
-        })[day]).filter((day): day is "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday" => Boolean(day)),
+          Vi: "friday",
+        })[day]).filter((day): day is "monday" | "tuesday" | "wednesday" | "thursday" | "friday" => Boolean(day)),
       })
       setIsSaved(true)
       setTimeout(() => setIsSaved(false), 2500)

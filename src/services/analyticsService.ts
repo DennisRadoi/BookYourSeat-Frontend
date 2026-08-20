@@ -23,18 +23,24 @@ interface MonthlyBookingsResponse {
 
 interface TopBookingResponse {
   employeeName: string
-  seatCount: number
-  occupancyPercentage: number
+  bookingCount?: number
+  percentage?: number
+  // Compatibilitate cu backendul nerestartat, care poate expune încă vechile nume.
+  seatCount?: number
+  occupancyPercentage?: number
 }
 
-/** Analytics data is loaded only from backend endpoints. */
+/** Datele Analytics sunt citite exclusiv din endpointurile backendului. */
 export async function getAnalyticsDashboardData(): Promise<AnalyticsDashboardData> {
   const now = new Date()
-  const [today, weekly, monthly] = await Promise.all([
+  const [today, weekly, monthly, topBookings] = await Promise.all([
     apiClient.get<TodayAnalyticsResponse>("/analytics/today"),
     apiClient.get<WeeklyBookingsResponse>("/analytics/bookings/current-week"),
     apiClient.get<MonthlyBookingsResponse>(
       `/analytics/bookings/total?year=${now.getFullYear()}&month=${now.getMonth() + 1}`,
+    ),
+    apiClient.get<TopBookingResponse[]>(
+      `/analytics/top-bookings?year=${now.getFullYear()}&month=${now.getMonth() + 1}`,
     ),
   ])
 
@@ -53,13 +59,10 @@ export async function getAnalyticsDashboardData(): Promise<AnalyticsDashboardDat
       { id: "peopleInOffice", label: "Persoane in birou", value: String(today.peopleInOffice) },
     ],
     weeklyBookings: weekly.days,
-    occupancyTrend: [{ label: "Azi", value: today.officeOccupancyPercent }],
-    // Backend does not expose zone-level aggregation yet.
-    zoneSegments: [],
-    topBookings: topBookings.map((entry) => ({
+    topBookings: topBookings.slice(0, 5).map((entry) => ({
       name: entry.employeeName,
-      seats: entry.seatCount,
-      percent: entry.occupancyPercentage,
+      bookings: entry.bookingCount ?? entry.seatCount ?? 0,
+      percent: entry.percentage ?? entry.occupancyPercentage ?? 0,
     })),
   }
 }

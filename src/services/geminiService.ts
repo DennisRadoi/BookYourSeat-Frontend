@@ -135,10 +135,11 @@ function calculateFallbackResult(
   liveWeather?: WeatherInsight,
 ): AIInsightsData {
   const targetTime = ctx.user.preferences.preferredStartTime || "09:00"
-  const totalDelay = routeData.trafficDelayMin || 14
-  const incidentLocations = routeData.incidents.map((i) => i.location).join(" și pe ") || "Pasajul Basarab și Bd. Iuliu Maniu"
-
-  const defaultExplanation = `Traficul este mai intens pe ${incidentLocations}, unde întârzierile estimate sunt de aproximativ ${totalDelay} minute în total.\n\nPentru a ajunge la birou la ora dorită (${targetTime}), recomandăm plecarea la ${routeData.departureTime}.\nCondițiile meteo nu indică riscuri suplimentare.`
+  const totalDelay = routeData.trafficDelayMin
+  const incidentLocations = routeData.incidents.map((i) => i.location).join(" și pe ")
+  const defaultExplanation = routeData.isLive
+    ? `Traficul este mai intens pe ${incidentLocations || "traseul selectat"}, unde întârzierile estimate sunt de aproximativ ${totalDelay} minute în total.\n\nPentru a ajunge la birou la ora dorită (${targetTime}), recomandăm plecarea la ${routeData.departureTime}.\nCondițiile meteo nu indică riscuri suplimentare.`
+    : `${routeData.unavailableReason || "Datele live pentru traseu nu sunt disponibile."} Adaugă VITE_GOOGLE_MAPS_API_KEY cu Routes API activat pentru a calcula ora reală de plecare.`
 
   const trafficAlerts = routeData.incidents.map((inc, index) => ({
     id: String(index + 1),
@@ -162,7 +163,7 @@ function calculateFallbackResult(
       aiExplanation: defaultExplanation,
       incidents: routeData.incidents,
     },
-    trafficAlerts: trafficAlerts.length > 0 ? trafficAlerts : defaultInsights.trafficAlerts,
+    trafficAlerts,
   }
 }
 

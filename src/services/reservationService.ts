@@ -177,6 +177,7 @@ export async function createReservation(
     recurrenceFrequency?: "zilnic" | "saptamanal" | "lunar" | null
     recurrenceEndDate?: string
     recurrenceInterval?: number
+    recurrenceDaysOfWeek?: string
   },
 ): Promise<Reservation> {
   // ID-ul selectat trebuie să existe în backend; harta vizuală nu are voie să
@@ -199,7 +200,7 @@ export async function createReservation(
     startTime: formattedStartTime,
     endTime: formattedEndTime,
     recurrenceFrequency: reservationData.recurrenceFrequency ?? null,
-    recurrenceDaysOfWeek: null,
+    recurrenceDaysOfWeek: reservationData.recurrenceDaysOfWeek ?? null,
     recurrenceIntervalOfRecurrence: reservationData.recurrenceInterval ?? null
   }
   const data = await apiClient.post<BeBookingResponse>("/bookings", body)

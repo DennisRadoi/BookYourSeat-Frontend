@@ -40,6 +40,7 @@ export default function SeatsPage(): ReactElement {
   const [startTime, setStartTime] = useState<string>(routerState.startTime ?? "09:00")
   const [endTime, setEndTime] = useState<string>(routerState.endTime ?? "10:00")
   const [recurrence, setRecurrence] = useState<RecurrenceType>("niciuna")
+  const [recurrenceDays, setRecurrenceDays] = useState<string[]>([])
   const [repeatEvery, setRepeatEvery] = useState<number>(1)
   const [endsMode, setEndsMode] = useState<"niciodata" | "la_data" | "dupa">("la_data")
   const [endsOnDate, setEndsOnDate] = useState<string>("")
@@ -152,6 +153,14 @@ export default function SeatsPage(): ReactElement {
     setCurrentStep("seat")
   }
 
+  function handleRecurrenceChange(nextRecurrence: RecurrenceType) {
+    setRecurrence(nextRecurrence)
+    if ((nextRecurrence === "saptamanal" || nextRecurrence === "lunar") && recurrenceDays.length === 0 && selectedDate) {
+      const dayCodes = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"]
+      setRecurrenceDays([dayCodes[selectedDate.getDay()]])
+    }
+  }
+
   // Confirm Reservation handler
   async function handleConfirmReservation() {
     if (!selectedSeat || !selectedDate) return
@@ -172,6 +181,7 @@ export default function SeatsPage(): ReactElement {
         recurrenceFrequency: recurrence === "niciuna" ? null : recurrence,
         recurrenceEndDate: recurrence === "niciuna" ? undefined : (endsOnDate || formatDateIso(selectedDate)),
         recurrenceInterval: recurrence === "niciuna" ? undefined : repeatEvery,
+        recurrenceDaysOfWeek: recurrence === "niciuna" ? undefined : recurrenceDays.join(","),
       })
       setIsSuccessModalOpen(true)
     } catch (error) {
@@ -251,7 +261,9 @@ export default function SeatsPage(): ReactElement {
             endTime={endTime}
             onEndTimeChange={setEndTime}
             recurrence={recurrence}
-            onRecurrenceChange={setRecurrence}
+            onRecurrenceChange={handleRecurrenceChange}
+            recurrenceDays={recurrenceDays}
+            onRecurrenceDaysChange={setRecurrenceDays}
             repeatEvery={repeatEvery}
             onRepeatEveryChange={setRepeatEvery}
             endsMode={endsMode}

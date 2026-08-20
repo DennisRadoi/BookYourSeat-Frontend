@@ -13,6 +13,8 @@ interface DateTimeSelectionStepProps {
   onEndTimeChange: (t: string) => void
   recurrence: RecurrenceType
   onRecurrenceChange: (r: RecurrenceType) => void
+  recurrenceDays: string[]
+  onRecurrenceDaysChange: (days: string[]) => void
   repeatEvery: number
   onRepeatEveryChange: (n: number) => void
   endsMode: "niciodata" | "la_data" | "dupa"
@@ -33,6 +35,8 @@ export function DateTimeSelectionStep({
   onEndTimeChange,
   recurrence,
   onRecurrenceChange,
+  recurrenceDays,
+  onRecurrenceDaysChange,
   repeatEvery,
   onRepeatEveryChange,
   onEndsModeChange,
@@ -201,6 +205,28 @@ export function DateTimeSelectionStep({
                   {recurrence === "zilnic" ? "zi(le)" : recurrence === "saptamanal" ? "săptămână(i)" : "lună(i)"}
                 </span>
               </div>
+
+              {(recurrence === "saptamanal" || recurrence === "lunar") && (
+                <div>
+                  <p className="mb-2 text-xs font-medium text-[var(--muted-foreground)]">În fiecare</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      ["MONDAY", "Lu"], ["TUESDAY", "Ma"], ["WEDNESDAY", "Mi"], ["THURSDAY", "Jo"], ["FRIDAY", "Vi"],
+                    ].map(([day, label]) => (
+                      <PillButton
+                        key={day}
+                        type="button"
+                        size="xs"
+                        isActive={recurrenceDays.includes(day)}
+                        onClick={() => onRecurrenceDaysChange(recurrenceDays.includes(day) ? recurrenceDays.filter((item) => item !== day) : [...recurrenceDays, day])}
+                        className="h-8 w-8 min-w-0 rounded-full p-0 text-[11px] font-bold"
+                      >
+                        {label}
+                      </PillButton>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2 text-sm">
                 <label className="flex items-center gap-2.5">

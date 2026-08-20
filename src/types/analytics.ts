@@ -10,27 +10,14 @@ export interface AnalyticsWeeklyBooking {
   conferenceRoomBookings: number
 }
 
-export interface AnalyticsZoneSegment {
-  label: string
-  value: number
-  color: string
-}
-
-export interface AnalyticsOccupancyPoint {
-  label: string
-  value: number
-}
-
 export interface AnalyticsTopBooking {
   name: string
-  seats: number
+  bookings: number
   percent: number
 }
 
 export interface AnalyticsDashboardData {
   kpis: AnalyticsKpi[]
   weeklyBookings: AnalyticsWeeklyBooking[]
-  zoneSegments: AnalyticsZoneSegment[]
-  occupancyTrend: AnalyticsOccupancyPoint[]
   topBookings: AnalyticsTopBooking[]
 }
