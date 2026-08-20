@@ -16,11 +16,14 @@ interface BeMySettingsResponse {
   reminderBeforeBooking: boolean
   bookingConfirmationOnEmail: boolean
   preferredBuilding: string | null
+  isActive: boolean
 }
+
+type UserSettingsWithActivity = UserSettings & { isActive: boolean; preferredBuilding?: string }
 
 // ─── Mapare BE → UserSettings FE ──────────────────────────────────────────────
 
-function mapToUserSettings(be: BeMySettingsResponse): UserSettings {
+function mapToUserSettings(be: BeMySettingsResponse): UserSettingsWithActivity {
   return {
     autoReserve:          be.reminderBeforeBooking ?? false,
     notificationsEnabled: be.bookingConfirmationOnEmail ?? true,
@@ -30,6 +33,7 @@ function mapToUserSettings(be: BeMySettingsResponse): UserSettings {
     preferredArea:        be.nearWindow ? "window" : be.quietPlace ? "quiet" : "open",
     preferredDays:        parseDays(be.daysOfWeek),
     ...(be.preferredBuilding ? { preferredBuilding: be.preferredBuilding } : {}),
+    isActive:              be.isActive ?? true,
   }
 }
 
@@ -74,12 +78,12 @@ function formatDays(days: Weekday[]): string {
 
 // ─── API ───────────────────────────────────────────────────────────────────────
 
-export async function getUserSettings(): Promise<UserSettings> {
+export async function getUserSettings(): Promise<UserSettingsWithActivity> {
   const data = await apiClient.get<BeMySettingsResponse>("/users/me/settings")
   return mapToUserSettings(data)
 }
 
-export async function updateUserSettings(settingsUpdate: Partial<UserSettings>): Promise<UserSettings> {
+export async function updateUserSettings(settingsUpdate: Partial<UserSettingsWithActivity>): Promise<UserSettingsWithActivity> {
   const body: Record<string, unknown> = {}
 
   if (settingsUpdate.defaultStartTime !== undefined)
@@ -92,6 +96,10 @@ export async function updateUserSettings(settingsUpdate: Partial<UserSettings>):
     body.receivesNotificationOnEmail = settingsUpdate.notificationsEnabled
   if (settingsUpdate.autoReserve !== undefined)
     body.reminderBeforeBooking = settingsUpdate.autoReserve
+  if (settingsUpdate.isActive !== undefined)
+    body.isActive = settingsUpdate.isActive
+  if (settingsUpdate.preferredBuilding !== undefined)
+    body.preferredBuilding = settingsUpdate.preferredBuilding
 
   const data = await apiClient.patch<BeMySettingsResponse>("/users/me/settings/preferences", body)
   return mapToUserSettings(data)

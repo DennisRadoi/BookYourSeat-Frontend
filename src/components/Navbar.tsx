@@ -4,7 +4,7 @@ import { Moon, Sun, LogOut, User, Menu } from "lucide-react"
 import { useLiveClock } from "@/hooks"
 import { IconButton } from "@/components/ui"
 import { useTheme } from "@/hooks/useTheme"
-import { getColleagues, getNotifications } from "@/services"
+import { getActiveColleagueCount, getNotifications } from "@/services"
 
 function DateTimeSubtitle() {
   const currentDateTime = useLiveClock()
@@ -94,12 +94,16 @@ export default function Navbar({ onBurgerClick }: NavbarProps) {
   const [activeColleagues, setActiveColleagues] = useState(0)
 
   useEffect(() => {
-    getNotifications()
-      .then((notifications) => setUnreadNotifications(notifications.filter((notification) => notification.isUnread).length))
-      .catch(() => setUnreadNotifications(0))
-    getColleagues({ size: 500 })
-      .then((colleagues) => setActiveColleagues(colleagues.filter((colleague) => colleague.status !== "OOO").length))
-      .catch(() => setActiveColleagues(0))
+    if (pathname === "/notificari") {
+      getNotifications()
+        .then((notifications) => setUnreadNotifications(notifications.filter((notification) => notification.isUnread).length))
+        .catch(() => setUnreadNotifications(0))
+    }
+    if (pathname === "/companie") {
+      getActiveColleagueCount()
+        .then(setActiveColleagues)
+        .catch(() => setActiveColleagues(0))
+    }
   }, [pathname])
 
   // keep backwards-compatible meta detection

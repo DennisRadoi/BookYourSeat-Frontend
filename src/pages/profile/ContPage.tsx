@@ -1,11 +1,12 @@
 import { Pencil, X, Check } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { answerInvitation, getCurrentUser, getMyInvitations, updateUserAddress, updateUserProfile, updateUserPreferences, type AddressFormData } from "@/services"
 import type { InvitationDirection, OfficeInvitation } from "@/services"
 import type { User } from "@/types"
 import { ProfileField } from "./components/ProfileField"
 import { AlertBanner } from "@/components/common"
 import { Button, IconButton } from "@/components/ui"
+import { isValidPostalCode } from "@/lib/validation"
 
 export default function ContPage() {
   const [user, setUser] = useState<User | null>(null)
@@ -14,11 +15,13 @@ export default function ContPage() {
   const [newPreference, setNewPreference] = useState("")
   const [savedSuccess, setSavedSuccess] = useState(false)
   const [saveError, setSaveError] = useState(false)
+  const [addressError, setAddressError] = useState<string | null>(null)
   const [invitationDirection, setInvitationDirection] = useState<InvitationDirection>("received")
   const [invitations, setInvitations] = useState<OfficeInvitation[]>([])
   const [invitationsLoading, setInvitationsLoading] = useState(true)
   const [invitationError, setInvitationError] = useState<string | null>(null)
   const [respondingInvitationId, setRespondingInvitationId] = useState<number | null>(null)
+  const addressCardRef = useRef<HTMLElement | null>(null)
   const [address, setAddress] = useState<AddressFormData>({ county: "", locality: "", street: "", number: "", apartmentBlock: "", floor: "", postalCode: "" })
   const [form, setForm] = useState({
     name: "Claudiu Ciupitu",
@@ -71,15 +74,37 @@ export default function ContPage() {
   }
 
   async function handleToggleEdit() {
+    if (!editing) {
+      setEditing(true)
+      requestAnimationFrame(() => addressCardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }))
+      return
+    }
+
+    const trimmedAddress = Object.fromEntries(Object.entries(address).map(([key, value]) => [key, value.trim()])) as AddressFormData
+    const hasAddressChanges = Object.values(trimmedAddress).some(Boolean)
+    if (hasAddressChanges && trimmedAddress.county && !trimmedAddress.locality) {
+      setAddressError("Pentru schimbarea județului trebuie să completezi și localitatea.")
+      return
+    }
+    if (hasAddressChanges && trimmedAddress.locality && (!trimmedAddress.street || !trimmedAddress.number || !trimmedAddress.postalCode)) {
+      setAddressError("Pentru schimbarea localității, strada, numărul și codul poștal sunt obligatorii.")
+      return
+    }
+    if (hasAddressChanges && trimmedAddress.postalCode && !isValidPostalCode(trimmedAddress.postalCode)) {
+      setAddressError("Codul poștal trebuie să conțină exact 6 cifre.")
+      return
+    }
+
     if (editing && user) {
       try {
         setSaveError(false)
+        setAddressError(null)
         const nameParts = form.name.split(" ")
         const firstName = nameParts[0] || user.firstName
         const lastName = nameParts.slice(1).join(" ") || user.lastName
 
         await updateUserProfile(user.id, { firstName, lastName, email: form.email, department: form.department, domiciliu: form.domiciliu })
-        if (address.county && address.locality && address.street && address.number && address.postalCode) await updateUserAddress(address)
+        if (hasAddressChanges) await updateUserAddress(trimmedAddress)
         await updateUserPreferences(user.id, { workPreferences: preferences })
         setSavedSuccess(true)
         setTimeout(() => setSavedSuccess(false), 2500)
@@ -89,7 +114,7 @@ export default function ContPage() {
         return
       }
     }
-    setEditing((val) => !val)
+    setEditing(false)
   }
 
   function removePreference(preference: string) {
@@ -176,8 +201,9 @@ export default function ContPage() {
         </div>
       </section>
 
-      <section className="rounded-xl bg-[var(--card)] p-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)] sm:p-5">
+      <section ref={addressCardRef} className="rounded-xl bg-[var(--card)] p-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)] sm:p-5">
         <h3 className="text-xs font-bold text-[var(--foreground)]">Adresă</h3>
+        {addressError && <p className="mt-3 rounded-md bg-[var(--destructive)]/10 p-2 text-xs font-medium text-[var(--destructive)]">{addressError}</p>}
         <div className="mt-4 grid gap-3 sm:grid-cols-2">{([['county','Județ'],['locality','Localitate'],['street','Stradă'],['number','Număr'],['apartmentBlock','Bloc'],['floor','Etaj'],['postalCode','Cod poștal']] as Array<[keyof AddressFormData,string]>).map(([key,label]) => <ProfileField key={key} label={label} value={address[key]} disabled={!editing} onChange={(value) => setAddress((current) => ({ ...current, [key]: value }))} />)}</div>
       </section>
 

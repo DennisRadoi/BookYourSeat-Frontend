@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PasswordToggle } from "./components/PasswordToggle"
 import { register } from "@/services/authService"
+import { isValidPassword } from "@/lib/validation"
 
 export default function Register() {
   const [firstName, setFirstName] = useState("")
@@ -30,8 +31,8 @@ export default function Register() {
       setError("Parolele nu coincid.")
       return
     }
-    if (password.length < 8) {
-      setError("Parola trebuie să aibă cel puțin 8 caractere.")
+    if (!isValidPassword(password)) {
+      setError("Parola trebuie să aibă cel puțin 8 caractere din care cel puțin o literă și un simbol.")
       return
     }
     if (!acceptedTerms) {
@@ -144,7 +145,7 @@ export default function Register() {
                 />
               </div>
               <p id="password-help" className="mt-1 text-xs text-muted-foreground">
-                Minim 8 caractere, o literă mare și un număr.
+                Minim 8 caractere, o literă și un simbol.
               </p>
             </div>
             <div className="w-full flex-1">

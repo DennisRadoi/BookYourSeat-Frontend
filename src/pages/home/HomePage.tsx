@@ -32,9 +32,8 @@ export default function HomePage() {
   const loadData = useCallback(async () => {
     try {
       const today = new Date()
-      const [userData, allColleagues, favoriteColleagues] = await Promise.all([
+      const [userData, favoriteColleagues] = await Promise.all([
         getCurrentUser(),
-        getColleagues(),
         getFavoriteColleagues(),
       ])
       setCurrentUser(userData)
@@ -42,6 +41,10 @@ export default function HomePage() {
 
       const userReservations = await getDetailedReservationsByUserId(userData.id)
       setReservations(userReservations)
+
+      // Datele esențiale sunt deja afișate. Cererea mare pentru colegi este
+      // necesară doar pentru insight-uri și nu mai blochează dashboardul.
+      const allColleagues = await getColleagues()
 
       const context: InsightContext = {
         user: {

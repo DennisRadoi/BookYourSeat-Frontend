@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react"
 import { Check } from "lucide-react"
-import { changeCurrentUserPassword, getBuildings, getUserSettings, updatePreferredBuilding, updateUserSettings } from "@/services"
+import { changeCurrentUserPassword, getBuildings, getUserSettings, updateUserSettings } from "@/services"
 import { availableWeekdays } from "@/data"
 import { PasswordField } from "@/components/common/PasswordField"
 import { ToggleRow } from "./components/ToggleRow"
 import { Button, PillButton } from "@/components/ui"
+import { isValidPassword, passwordRequirementsMessage } from "@/lib/validation"
 
 export default function SetariPage() {
   const [selectedBuilding, setSelectedBuilding] = useState("")
@@ -12,7 +13,7 @@ export default function SetariPage() {
   const [selectedDays, setSelectedDays] = useState(new Set(availableWeekdays.slice(0, 5)))
   const [emailConfirmation, setEmailConfirmation] = useState(true)
   const [dailyReminder, setDailyReminder] = useState(true)
-  const [nearbyColleague, setNearbyColleague] = useState(false)
+  const [isActive, setIsActive] = useState(true)
   const [startTime, setStartTime] = useState("09:00")
   const [endTime, setEndTime] = useState("18:00")
   const [showPassword, setShowPassword] = useState(false)
@@ -27,8 +28,9 @@ export default function SetariPage() {
         const settings = await getUserSettings()
         setEmailConfirmation(settings.notificationsEnabled)
         setDailyReminder(settings.autoReserve)
-        setStartTime(settings.defaultStartTime)
-        setEndTime(settings.defaultEndTime)
+        setStartTime(/^\d{2}:\d{2}$/.test(settings.defaultStartTime) ? settings.defaultStartTime : "09:00")
+        setEndTime(/^\d{2}:\d{2}$/.test(settings.defaultEndTime) ? settings.defaultEndTime : "18:00")
+        setIsActive((settings as typeof settings & { isActive?: boolean }).isActive ?? true)
         setSelectedBuilding((settings as typeof settings & { preferredBuilding?: string }).preferredBuilding ?? "")
         const dayLabels: Record<string, string> = {
           monday: "Lu", tuesday: "Ma", wednesday: "Mi", thursday: "Jo",
@@ -64,6 +66,8 @@ export default function SetariPage() {
       await updateUserSettings({
         notificationsEnabled: emailConfirmation,
         autoReserve: dailyReminder,
+        isActive,
+        ...(selectedBuilding ? { preferredBuilding: selectedBuilding } : {}),
         defaultStartTime: startTime,
         defaultEndTime: endTime,
         preferredDays: Array.from(selectedDays).map((day) => ({
@@ -71,7 +75,6 @@ export default function SetariPage() {
           Vi: "friday", "Sâ": "saturday", Du: "sunday",
         })[day]).filter((day): day is "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday" => Boolean(day)),
       })
-      if (selectedBuilding) await updatePreferredBuilding(selectedBuilding)
       setIsSaved(true)
       setTimeout(() => setIsSaved(false), 2500)
     } catch (error) {
@@ -80,6 +83,11 @@ export default function SetariPage() {
   }
 
   async function handleChangePassword() {
+    setPasswordMessage("")
+    if (!isValidPassword(newPassword)) {
+      setPasswordMessage(passwordRequirementsMessage)
+      return
+    }
     try {
       await changeCurrentUserPassword(currentPassword, newPassword)
       setCurrentPassword("")
@@ -206,7 +214,7 @@ export default function SetariPage() {
               <div className="mt-3">
                 <PasswordField
                   label="Parola nouă"
-                  placeholder="Minim 8 caractere"
+                  placeholder="Minim 8 caractere printre care o litera si un simbol"
                   showPassword={showPassword}
                   onToggle={() => setShowPassword((show) => !show)}
                   value={newPassword}
@@ -244,11 +252,17 @@ export default function SetariPage() {
               onChange={setDailyReminder}
             />
             <ToggleRow
+              title="Sunt disponibil pentru colegi"
+              description="Dezactivează pentru a apărea OOO în aplicație"
+              enabled={isActive}
+              onChange={setIsActive}
+            />
+            {/* <ToggleRow
               title="Coleg rezervă în apropiere"
               description="Când un coleg e în aceeași zonă cu tine"
               enabled={nearbyColleague}
               onChange={setNearbyColleague}
-            />
+            /> */}
           </div>
         </fieldset>
       </div>

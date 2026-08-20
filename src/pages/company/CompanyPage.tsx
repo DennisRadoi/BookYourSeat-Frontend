@@ -14,6 +14,7 @@ export default function CompanyPage() {
   const navigate = useNavigate()
   const [colleagues, setColleagues] = useState<Colleague[]>([])
   const [query, setQuery] = useState("")
+  const [debouncedQuery, setDebouncedQuery] = useState("")
   const [filters, setFilters] = useState<CompanyFilters>(initialFilters)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [page, setPage] = useState(0)
@@ -28,9 +29,14 @@ export default function CompanyPage() {
   }, [])
 
   useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedQuery(query), 300)
+    return () => window.clearTimeout(timer)
+  }, [query])
+
+  useEffect(() => {
     let active = true
     getColleaguesPage({
-      search: query.trim() || undefined,
+      search: debouncedQuery.trim() || undefined,
       status: filters.status === "all" ? undefined : filters.status,
       building: filters.building === "all" ? undefined : filters.building,
       favorite: filters.favorite === "all" ? undefined : filters.favorite === "favorite",
@@ -44,7 +50,7 @@ export default function CompanyPage() {
     }).catch((error) => console.error("Eroare la încărcarea colegilor:", error))
       .finally(() => active && setIsLoading(false))
     return () => { active = false }
-  }, [query, filters, page, pageSize])
+  }, [debouncedQuery, filters, page, pageSize])
 
   function updateQuery(value: string) { setQuery(value); setPage(0) }
   function updateFilters(value: CompanyFilters) { setFilters(value); setPage(0) }
