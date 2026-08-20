@@ -1,4 +1,3 @@
-import { useEffect } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { Moon, Sun, LogOut, User, Menu } from "lucide-react"
 import { useLiveClock } from "@/hooks"

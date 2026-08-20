@@ -32,6 +32,7 @@ interface BePageResponse<T> {
 // ─── Mapare BE → Colleague FE ──────────────────────────────────────────────────
 
 function colleagueLocation(c: BeColleagueResponse): string {
+  if (String(c.status).toLowerCase().includes("remote") || String(c.location).toLowerCase() === "remote") return "—"
   const parts = [c.building, c.location != null ? `Etaj ${c.location}` : null, c.room].filter(Boolean)
   return parts.join(" · ") || "—"
 }
@@ -126,7 +127,7 @@ export function getColleagueProfile(colleagueId: number): Promise<ColleagueProfi
   return apiClient.get<ColleagueProfile>(`/users/${colleagueId}`)
 }
 
-export async function toggleFavoriteColleague(colleagueId: number): Promise<Colleague> {
+export async function toggleFavoriteColleague(colleagueId: number): Promise<boolean> {
   // Citim starea curentă pentru a decide add sau remove
   const favorites = await getFavoriteColleagues()
   const isFav = favorites.some((c) => c.id === colleagueId)
@@ -137,8 +138,5 @@ export async function toggleFavoriteColleague(colleagueId: number): Promise<Coll
     await apiClient.post(`/users/me/favorites/${colleagueId}`)
   }
 
-  // Returnăm colegul cu starea actualizată
-  const updated = await getColleagueById(colleagueId)
-  if (!updated) throw new Error(`Colegul cu ID-ul ${colleagueId} nu a fost găsit.`)
-  return { ...updated, isFavorite: !isFav }
+  return !isFav
 }

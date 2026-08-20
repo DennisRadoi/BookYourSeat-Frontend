@@ -84,12 +84,20 @@ export function RoomSeatSelectionStep({
     return currentFloor.rooms.some((r) => r.type === "birouri")
   }, [currentFloor])
 
-  // Auto-switch to conferinte if floor has no birouri
+  const hasConferinteOnFloor = useMemo(() => {
+    if (!currentFloor?.rooms) return false
+    return currentFloor.rooms.some((r) => r.type === "conferinte")
+  }, [currentFloor])
+
+  // Keep the selected zone valid for the selected floor.
   useEffect(() => {
-    if (!hasBirouriOnFloor && selectedZoneType === "birouri") {
+    if (!hasBirouriOnFloor && hasConferinteOnFloor && selectedZoneType === "birouri") {
       onSelectZoneType("conferinte")
     }
-  }, [hasBirouriOnFloor, selectedZoneType, onSelectZoneType])
+    if (!hasConferinteOnFloor && hasBirouriOnFloor && selectedZoneType === "conferinte") {
+      onSelectZoneType("birouri")
+    }
+  }, [hasBirouriOnFloor, hasConferinteOnFloor, selectedZoneType, onSelectZoneType])
 
   // Reset notice when floor or building changes
   useEffect(() => {
@@ -197,6 +205,11 @@ export function RoomSeatSelectionStep({
   }, [seats, selectedSeat, onSelectSeat, isWholeRoomSelected])
 
   const roomDisplayName = currentRoom?.name || currentFloor?.name || "Sală"
+  const roomCapacity = useMemo(
+    () => seats.filter((seat) => seat.unavailableReason !== "Nu se poate rezerva").length,
+    [seats],
+  )
+  const isRoomAvailable = useMemo(() => !seats.some((seat) => Boolean(seat.occupiedBy)), [seats])
 
   function handleToggleWholeRoom() {
     if (isWholeRoomSelected) {
@@ -296,7 +309,7 @@ export function RoomSeatSelectionStep({
               Birouri {!hasBirouriOnFloor && <span className="text-[10px] ml-1 opacity-75">(0)</span>}
             </FilterPill>
 
-            <FilterPill
+            {hasConferinteOnFloor && <FilterPill
               active={selectedZoneType === "conferinte"}
               variant="dark"
               onClick={() => {
@@ -305,7 +318,7 @@ export function RoomSeatSelectionStep({
               }}
             >
               Sali conferinte
-            </FilterPill>
+            </FilterPill>}
           </div>
 
           {/* Right: Search Bar */}
@@ -373,7 +386,8 @@ export function RoomSeatSelectionStep({
             isWholeRoomSelected={isWholeRoomSelected}
             onToggleWholeRoom={handleToggleWholeRoom}
             roomName={currentRoom?.name}
-            totalRoomSeats={seats.length}
+            roomCapacity={roomCapacity}
+            isRoomAvailable={isRoomAvailable}
           />
         </div>
       </div>
@@ -390,6 +404,8 @@ export function RoomSeatSelectionStep({
         startTime={startTime}
         endTime={endTime}
         recurrence={recurrence}
+        roomName={currentRoom?.name}
+        isConferenceRoom={selectedZoneType === "conferinte"}
       />
     </div>
   )

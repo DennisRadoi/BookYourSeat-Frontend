@@ -6,7 +6,7 @@ export type TimeSlotListProps = {
   selected: string
   onSelect: (t: string) => void
   isDisabled?: (t: string) => boolean
-  containerRef?: React.RefObject<HTMLDivElement>
+  containerRef?: React.RefObject<HTMLDivElement | null>
   dataAttr?: string
 }
 

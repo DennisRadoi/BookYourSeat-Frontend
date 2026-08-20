@@ -14,6 +14,8 @@ interface ReservationSuccessModalProps {
   startTime: string
   endTime: string
   recurrence: RecurrenceType
+  roomName?: string
+  isConferenceRoom?: boolean
   onBookAnother: () => void
 }
 
@@ -27,11 +29,17 @@ export function ReservationSuccessModal({
   startTime,
   endTime,
   recurrence,
+  roomName,
+  isConferenceRoom = false,
   onBookAnother,
 }: ReservationSuccessModalProps): ReactElement | null {
   const navigate = useNavigate()
 
   if (!isOpen || !seat) return null
+
+  const locationLabel = isConferenceRoom && roomName
+    ? `Sala ${roomName} · ${buildingName}`
+    : `Loc ${seat.code} · ${buildingName} ${floorName}`
 
   const formattedDate = date
     ? date.toLocaleDateString("ro-RO", {
@@ -83,7 +91,7 @@ export function ReservationSuccessModal({
               <MapPin size={15} className="text-[var(--primary)]" /> Locație
             </span>
             <span className="font-bold text-[var(--foreground)]">
-              Loc {seat.code} · {buildingName} {floorName}
+              {locationLabel}
             </span>
           </div>
 

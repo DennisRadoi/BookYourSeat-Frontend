@@ -19,7 +19,8 @@ interface SeatSummaryCardProps {
   isWholeRoomSelected?: boolean
   onToggleWholeRoom?: () => void
   roomName?: string
-  totalRoomSeats?: number
+  roomCapacity?: number
+  isRoomAvailable?: boolean
 }
 
 export function SeatSummaryCard({
@@ -37,7 +38,8 @@ export function SeatSummaryCard({
   isWholeRoomSelected = false,
   onToggleWholeRoom,
   roomName,
-  totalRoomSeats,
+  roomCapacity = 0,
+  isRoomAvailable = true,
 }: SeatSummaryCardProps): ReactElement {
   const formattedDate = selectedDate
     ? selectedDate.toLocaleDateString("ro-RO", {
@@ -82,6 +84,7 @@ export function SeatSummaryCard({
               size="xs"
               variant={isWholeRoomSelected ? "secondary" : "default"}
               onClick={onToggleWholeRoom}
+              disabled={!isRoomAvailable && !isWholeRoomSelected}
               leftIcon={isWholeRoomSelected ? <CheckCircle size={14} /> : <Users size={14} />}
               className="w-full font-bold text-xs shadow-xs"
             >
@@ -117,7 +120,7 @@ export function SeatSummaryCard({
             <MetricIconTile
               icon={<Users size={20} />}
               subtitle={<span className="uppercase tracking-wider font-medium">Capacitate</span>}
-              title={<span>Toate cele {totalRoomSeats || 0} locuri rezervate</span>}
+              title={<span>Toate cele {roomCapacity} locuri rezervabile</span>}
             />
           )}
 
@@ -155,7 +158,7 @@ export function SeatSummaryCard({
           type="button"
           id="confirm-reservation-btn"
           onClick={onConfirm}
-          disabled={!selectedSeat}
+          disabled={!selectedSeat || (isWholeRoomSelected && !isRoomAvailable)}
           isLoading={isSubmitting}
           className="w-full py-3.5 h-auto text-sm font-bold rounded-xl active:scale-[0.99] transition-all"
         >
