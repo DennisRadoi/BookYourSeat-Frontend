@@ -62,14 +62,6 @@ function SetariSubtitle() {
   return <span className="text-sm text-[var(--muted-foreground)]">Preferințe aplicație</span>
 }
 
-function SeatsSubtitle() {
-  return (
-    <span className="flex items-center gap-1.5 text-sm text-[var(--muted-foreground)]">
-      <NavBadge>8</NavBadge> locuri disponibile astăzi
-    </span>
-  )
-}
-
 type NavMeta = { title: string; subtitle: () => React.ReactNode }
 
 const navMeta: Record<string, NavMeta> = {
@@ -79,7 +71,7 @@ const navMeta: Record<string, NavMeta> = {
   "/analytics": { title: "Analytics", subtitle: () => <AnalyticsSubtitle /> },
   "/cont": { title: "Contul meu", subtitle: () => <ContSubtitle /> },
   "/setari": { title: "Setări", subtitle: () => <SetariSubtitle /> },
-  "/seats": { title: "Rezervare loc", subtitle: () => <SeatsSubtitle /> },
+  "/seats": { title: "Rezervare loc", subtitle: () => null },
 }
 
 interface NavbarProps {
