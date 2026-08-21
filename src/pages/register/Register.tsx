@@ -32,7 +32,7 @@ export default function Register() {
       return
     }
     if (!isValidPassword(password)) {
-      setError("Parola trebuie să aibă cel puțin 8 caractere din care cel puțin o literă și un simbol.")
+      setError("Parola trebuie să aibă cel puțin 8 caractere din care cel puțin o literă, o cifră și un simbol.")
       return
     }
     if (!acceptedTerms) {

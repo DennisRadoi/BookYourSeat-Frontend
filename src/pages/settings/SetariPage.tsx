@@ -214,7 +214,7 @@ export default function SetariPage() {
               <div className="mt-3">
                 <PasswordField
                   label="Parola nouă"
-                  placeholder="Minim 8 caractere printre care o litera si un simbol"
+                  placeholder="Minim 8 caractere printre care o litera, o cifra si un simbol"
                   showPassword={showPassword}
                   onToggle={() => setShowPassword((show) => !show)}
                   value={newPassword}

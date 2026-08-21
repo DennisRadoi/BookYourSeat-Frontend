@@ -44,12 +44,6 @@ export async function getAnalyticsDashboardData(): Promise<AnalyticsDashboardDat
     ),
   ])
 
-  let topBookings: TopBookingResponse[] = []
-  try {
-    topBookings = await apiClient.get<TopBookingResponse[]>("/analytics/top-bookings")
-  } catch (error) {
-    console.warn("Top bookings endpoint unavailable. Rendering analytics without top bookings.", error)
-  }
 
   return {
     kpis: [
