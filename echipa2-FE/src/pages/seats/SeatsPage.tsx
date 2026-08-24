@@ -2,14 +2,12 @@ import { useEffect, useState, type ReactElement } from "react"
 import { useLocation } from "react-router-dom"
 import { DateTimeSelectionStep, RoomSeatSelectionStep } from "./maps/components"
 import { getLocations } from "@/services/locationService"
-import { createReservation, cancelReservation } from "@/services/reservationService"
+import { createReservation } from "@/services/reservationService"
 import { getCurrentUser } from "@/services/userService"
 import { formatDateIso } from "@/utils"
 import type { Location, Seat, RoomZoneType, RecurrenceType } from "@/types"
 import { PillButton } from "@/components/ui"
 import { Modal, ModalBody, ModalFooter, ModalHeader } from "@/components/common"
-
-
 
 
 export interface SeatsPageRouterState {
@@ -22,7 +20,6 @@ export interface SeatsPageRouterState {
   zoneType?: RoomZoneType
   roomId?: number
   targetSeatCode?: string
-  editingReservationId?: number
 }
 
 export default function SeatsPage(): ReactElement {
@@ -110,24 +107,13 @@ export default function SeatsPage(): ReactElement {
     refreshAvailability()
   }, [selectedDate, startTime, endTime])
 
-// Explicitly sync routerState parameters when routerState changes
-useEffect(() => {
-  if (routerState.date) setSelectedDate(new Date(`${routerState.date}T12:00:00`))
-  if (routerState.startTime) setStartTime(routerState.startTime)
-  if (routerState.endTime) setEndTime(routerState.endTime)
-  if (routerState.building) setSelectedBuilding(routerState.building)
-  if (routerState.floorId) setSelectedFloorId(routerState.floorId)
-  if (routerState.zoneType) setSelectedZoneType(routerState.zoneType)
-  if (routerState.roomId) setSelectedRoomId(routerState.roomId)
-}, [
-  routerState.date,
-  routerState.startTime,
-  routerState.endTime,
-  routerState.building,
-  routerState.floorId,
-  routerState.zoneType,
-  routerState.roomId,
-])
+  // Explicitly sync routerState parameters when routerState changes
+  useEffect(() => {
+    if (routerState.building) setSelectedBuilding(routerState.building)
+    if (routerState.floorId) setSelectedFloorId(routerState.floorId)
+    if (routerState.zoneType) setSelectedZoneType(routerState.zoneType)
+    if (routerState.roomId) setSelectedRoomId(routerState.roomId)
+  }, [routerState.building, routerState.floorId, routerState.zoneType, routerState.roomId])
 
   // Auto-select target seat from routerState if provided
   useEffect(() => {
@@ -182,8 +168,6 @@ useEffect(() => {
     setIsSubmitting(true)
     setBookingError(null)
     try {
-      if (routerState.editingReservationId) {
-      await cancelReservation(routerState.editingReservationId) }
       const activeLoc = locations.find((l) => l.building === selectedBuilding) || locations[0]
       await createReservation({
         userId: currentUserId || 1,
