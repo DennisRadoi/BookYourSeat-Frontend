@@ -99,21 +99,17 @@ export function EditReservationModal({
     }
   }
 
- function handleChangeSeat() {
-  if (!reservation) return
-  const state: SeatsPageRouterState = {
-    jumpToSeat: true,
-    date: date,
-    startTime: startTime,
-    endTime: endTime,
-    editingReservationId: reservation.id, 
-    building: reservation.location?.building,
-    floorId: reservation.floor?.id,
-    targetSeatCode: reservation.seat?.code,
+  function handleChangeSeat() {
+    if (!reservation) return
+    const state: SeatsPageRouterState = {
+      jumpToSeat: true,
+      date: reservation.date,
+      startTime: reservation.startTime,
+      endTime: reservation.endTime,
+    }
+    onClose()
+    navigate("/seats", { state })
   }
-  onClose()
-  navigate("/seats", { state })
-}
 
   return (
     <Modal onClose={onClose}>
