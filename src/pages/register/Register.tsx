@@ -145,7 +145,7 @@ export default function Register() {
                 />
               </div>
               <p id="password-help" className="mt-1 text-xs text-muted-foreground">
-                Minim 8 caractere, o literă și un simbol.
+                Minim 8 caractere, o literă, o cifră și un simbol.
               </p>
             </div>
             <div className="w-full flex-1">

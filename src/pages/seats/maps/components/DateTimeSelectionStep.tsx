@@ -176,7 +176,7 @@ export function DateTimeSelectionStep({
           <h4 className="font-semibold text-base text-[var(--card-foreground)] mb-3">Recurență</h4>
 
           <div className="flex flex-wrap items-center gap-2.5 mb-4">
-            {(["niciuna", "zilnic", "saptamanal", "lunar"] as RecurrenceType[]).map((r) => (
+            {(["niciuna", "zilnic", "saptamanal"] as RecurrenceType[]).map((r) => (
               <PillButton
                 key={r}
                 type="button"
