@@ -39,22 +39,16 @@ function colleagueLocation(c: BeColleagueResponse): string {
   return parts.join(" · ") || "—"
 }
 
+export function getProfilePhotoUrl(profilePhoto: string | null | undefined): string | null {
+  if (!profilePhoto) return null
+  if (profilePhoto.startsWith("data:") || profilePhoto.startsWith("http")) return profilePhoto
+  const apiBase = import.meta.env.DEV ? "/backend" : (import.meta.env.VITE_API_BASE_URL || "http://localhost:8081")
+  if (profilePhoto.startsWith("/")) return `${apiBase.replace(/\/api$/, "")}${profilePhoto}`
+  return `${apiBase.replace(/\/api$/, "")}/api/uploads/profile-photos/${profilePhoto}`
+}
+
 function mapToColleague(c: BeColleagueResponse): Colleague {
-  // build avatarUrl from profilePhoto if present
-  let avatarUrl: string | null = null
-  if (c.profilePhoto) {
-    if (c.profilePhoto.startsWith("data:")) {
-      avatarUrl = c.profilePhoto
-    } else if (c.profilePhoto.startsWith("http")) {
-      avatarUrl = c.profilePhoto
-    } else if (c.profilePhoto.startsWith("/")) {
-      const apiBase = import.meta.env.DEV ? "/backend" : (import.meta.env.VITE_API_BASE_URL || "http://localhost:8081")
-      avatarUrl = `${apiBase.replace(/\/api$/, "")}${c.profilePhoto}`
-    } else {
-      const apiBase = import.meta.env.DEV ? "/backend" : (import.meta.env.VITE_API_BASE_URL || "http://localhost:8081")
-      avatarUrl = `${apiBase.replace(/\/api$/, "")}/api/uploads/profile-photos/${c.profilePhoto}`
-    }
-  }
+  const avatarUrl = getProfilePhotoUrl(c.profilePhoto)
 
   return {
     id:         c.id,
