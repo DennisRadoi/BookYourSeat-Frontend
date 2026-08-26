@@ -1,4 +1,5 @@
 import { MapPin, Star } from "lucide-react"
+import { useState } from "react"
 import type { Colleague } from "@/types"
 import { getInitials } from "@/utils"
 import { Button, IconButton } from "@/components/ui"
@@ -21,7 +22,21 @@ function ColleagueCard({ colleague, onToggleFavorite, onViewProfile }: { colleag
   return <article className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm"><div className="flex items-start gap-3"><Person colleague={colleague} /><FavoriteButton colleague={colleague} onToggleFavorite={onToggleFavorite} /></div><div className="mt-4 flex flex-wrap items-center gap-2"><StatusBadge status={colleague.status} /><span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--muted-foreground)]"><MapPin size={14} className="text-[var(--primary)]" />{colleague.floor}</span></div><ProfileButton className="mt-4 h-10 w-full rounded-lg bg-[var(--secondary)] text-center hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)]" onClick={() => onViewProfile(colleague)} /></article>
 }
 
-function Person({ colleague }: { colleague: Colleague }) { return <div className="flex min-w-0 flex-1 items-center gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-full border-2 border-[var(--primary)] bg-[var(--secondary)] text-xs font-bold text-[var(--secondary-foreground)]">{getInitials(colleague.name)}</span><div className="min-w-0"><p className="truncate text-sm font-bold text-[var(--foreground)]">{colleague.name}</p><p className="mt-0.5 truncate text-xs text-[var(--muted-foreground)]">{colleague.role}</p></div></div> }
+function Person({ colleague }: { colleague: Colleague }) {
+  const [imgError, setImgError] = useState(false)
+  return <div className="flex min-w-0 flex-1 items-center gap-3">{
+    colleague.avatarUrl && !imgError ? (
+      <img
+        src={colleague.avatarUrl}
+        alt={colleague.name}
+        className="size-10 shrink-0 rounded-full border-2 border-[var(--primary)] object-cover"
+        onError={() => setImgError(true)}
+      />
+    ) : (
+      <span className="grid size-10 shrink-0 place-items-center rounded-full border-2 border-[var(--primary)] bg-[var(--secondary)] text-xs font-bold text-[var(--secondary-foreground)]">{getInitials(colleague.name)}</span>
+    )
+  }<div className="min-w-0"><p className="truncate text-sm font-bold text-[var(--foreground)]">{colleague.name}</p><p className="mt-0.5 truncate text-xs text-[var(--muted-foreground)]">{colleague.role}</p></div></div>
+}
 
 function FavoriteButton({ colleague, onToggleFavorite }: { colleague: Colleague; onToggleFavorite: (id: number) => void }) { return <IconButton type="button" size="xs" variant="ghost" className={`shrink-0 rounded-md p-1.5 leading-none transition ${colleague.isFavorite ? "text-[var(--warning)]" : "text-[var(--border)] hover:text-[var(--warning)]"}`} onClick={() => onToggleFavorite(colleague.id)} aria-label={`${colleague.isFavorite ? "Elimină" : "Adaugă"} ${colleague.name} la favorite`}><Star size={20} fill={colleague.isFavorite ? "currentColor" : "none"} /></IconButton> }
 

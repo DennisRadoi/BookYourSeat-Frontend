@@ -4,6 +4,7 @@ import { AuthLayout } from "@/layouts"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PasswordToggle } from "./components/PasswordToggle"
+import { PasswordRequirementsHint } from "@/components/common"
 import { register } from "@/services/authService"
 import { isValidPassword } from "@/lib/validation"
 
@@ -125,51 +126,53 @@ export default function Register() {
               <label htmlFor="password" className="mb-1.5 block text-xs font-medium text-muted-foreground">
                 Parolă
               </label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  name="new-password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  minLength={8}
-                  placeholder="********"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  className="h-14 w-full pr-12 px-4 text-lg shadow-sm"
-                  aria-describedby="password-help"
-                />
-                <PasswordToggle
-                  isVisible={showPassword}
-                  onToggle={() => setShowPassword((value) => !value)}
-                  label={showPassword ? "Ascunde parola" : "Arată parola"}
-                />
-              </div>
-              <p id="password-help" className="mt-1 text-xs text-muted-foreground">
-                Minim 8 caractere, o literă, o cifră și un simbol.
-              </p>
+              <PasswordRequirementsHint id="password-requirements" password={password}>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    name="new-password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    minLength={8}
+                    placeholder="********"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    className="h-14 w-full pr-12 px-4 text-lg shadow-sm"
+                    aria-describedby="password-requirements"
+                  />
+                  <PasswordToggle
+                    isVisible={showPassword}
+                    onToggle={() => setShowPassword((value) => !value)}
+                    label={showPassword ? "Ascunde parola" : "Arată parola"}
+                  />
+                </div>
+              </PasswordRequirementsHint>
             </div>
             <div className="w-full flex-1">
               <label htmlFor="confirmPassword" className="mb-1.5 block text-xs font-medium text-muted-foreground">
                 Confirmă parola
               </label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  name="confirm-password"
-                  type={showConfirmPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  minLength={8}
-                  placeholder="********"
-                  value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
-                  className="h-14 w-full pr-12 px-4 text-lg shadow-sm"
-                />
-                <PasswordToggle
-                  isVisible={showConfirmPassword}
-                  onToggle={() => setShowConfirmPassword((value) => !value)}
-                  label={showConfirmPassword ? "Ascunde parola" : "Arată parola"}
-                />
-              </div>
+              <PasswordRequirementsHint id="confirm-password-requirements" password={confirmPassword}>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    name="confirm-password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    minLength={8}
+                    placeholder="********"
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    className="h-14 w-full pr-12 px-4 text-lg shadow-sm"
+                    aria-describedby="confirm-password-requirements"
+                  />
+                  <PasswordToggle
+                    isVisible={showConfirmPassword}
+                    onToggle={() => setShowConfirmPassword((value) => !value)}
+                    label={showConfirmPassword ? "Ascunde parola" : "Arată parola"}
+                  />
+                </div>
+              </PasswordRequirementsHint>
             </div>
           </div>
 

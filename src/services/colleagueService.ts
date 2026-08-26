@@ -20,6 +20,7 @@ interface BeColleagueResponse {
   building?: string | null
   room?: string | null
   isFavorite: boolean
+  profilePhoto?: string | null
 }
 
 interface BePageResponse<T> {
@@ -39,6 +40,22 @@ function colleagueLocation(c: BeColleagueResponse): string {
 }
 
 function mapToColleague(c: BeColleagueResponse): Colleague {
+  // build avatarUrl from profilePhoto if present
+  let avatarUrl: string | null = null
+  if (c.profilePhoto) {
+    if (c.profilePhoto.startsWith("data:")) {
+      avatarUrl = c.profilePhoto
+    } else if (c.profilePhoto.startsWith("http")) {
+      avatarUrl = c.profilePhoto
+    } else if (c.profilePhoto.startsWith("/")) {
+      const apiBase = import.meta.env.DEV ? "/backend" : (import.meta.env.VITE_API_BASE_URL || "http://localhost:8081")
+      avatarUrl = `${apiBase.replace(/\/api$/, "")}${c.profilePhoto}`
+    } else {
+      const apiBase = import.meta.env.DEV ? "/backend" : (import.meta.env.VITE_API_BASE_URL || "http://localhost:8081")
+      avatarUrl = `${apiBase.replace(/\/api$/, "")}/api/uploads/profile-photos/${c.profilePhoto}`
+    }
+  }
+
   return {
     id:         c.id,
     initials:   c.fullname
@@ -54,6 +71,7 @@ function mapToColleague(c: BeColleagueResponse): Colleague {
       ? "OOO"
       : (c.status === "La birou" || String(c.status).toLowerCase().includes("birou") || String(c.status).toLowerCase().includes("office") ? "La birou" : "Remote")) as Colleague["status"],
     isFavorite: c.isFavorite,
+    avatarUrl:  avatarUrl,
   }
 }
 

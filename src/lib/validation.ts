@@ -7,9 +7,10 @@ export function isValidPassword(password: string) {
 }
 
 export function isValidPhoneNumber(phoneNumber: string) {
-  return /^\d{10}$/.test(phoneNumber)
+  return isValidInternationalPhoneNumber(phoneNumber)
 }
 
 export function isValidPostalCode(postalCode: string) {
   return /^\d{6}$/.test(postalCode)
 }
+import { isValidPhoneNumber as isValidInternationalPhoneNumber } from "react-phone-number-input"

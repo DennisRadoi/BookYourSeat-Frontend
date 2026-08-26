@@ -1,5 +1,0 @@
-export * from "./etaj0_relaxare"
-export * from "./etaj0_standup"
-export * from "./etaj1_birou"
-export * from "./etaj1_404"
-export * from "./etaj2_birou"
