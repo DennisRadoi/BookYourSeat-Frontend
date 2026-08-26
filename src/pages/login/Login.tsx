@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { AuthLayout } from "@/layouts"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { PasswordRequirementsHint } from "@/components/common"
 import { login } from "@/services/authService"
 import { useTheme } from "@/hooks/useTheme"
 
@@ -88,15 +89,18 @@ export default function Login() {
                 Ai uitat parola?
               </Link>
             </div>
-            <Input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="h-14 px-4 text-lg shadow-sm"
-            />
+            <PasswordRequirementsHint id="password-requirements" password={password}>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                className="h-14 px-4 text-lg shadow-sm"
+                aria-describedby="password-requirements"
+              />
+            </PasswordRequirementsHint>
           </div>
 
           {error && (

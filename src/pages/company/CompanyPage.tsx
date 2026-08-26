@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { CompanyToolbar } from "./components/CompanyToolbar"
 import { ColleaguesTable } from "./components/ColleaguesTable"
 import type { CompanyFilters } from "./components/CompanyFilterPopover"
 import { getBuildings, getColleaguesPage, toggleFavoriteColleague } from "@/services"
+import { invalidateCachePrefix } from "@/services/cache"
 import type { Colleague } from "@/types"
 import { Button } from "@/components/ui"
 
@@ -33,24 +34,120 @@ export default function CompanyPage() {
     return () => window.clearTimeout(timer)
   }, [query])
 
-  useEffect(() => {
-    let active = true
-    getColleaguesPage({
-      search: debouncedQuery.trim() || undefined,
-      status: filters.status === "all" ? undefined : filters.status,
-      building: filters.building === "all" ? undefined : filters.building,
-      favorite: filters.favorite === "all" ? undefined : filters.favorite === "favorite",
-      page,
-      size: pageSize,
-    }).then((result) => {
-      if (!active) return
+  const sseRef = useRef<EventSource | null>(null)
+
+  async function fetchColleagues() {
+    setIsLoading(true)
+    try {
+      const result = await getColleaguesPage({
+        search: debouncedQuery.trim() || undefined,
+        status: filters.status === "all" ? undefined : filters.status,
+        building: filters.building === "all" ? undefined : filters.building,
+        favorite: filters.favorite === "all" ? undefined : filters.favorite === "favorite",
+        page,
+        size: pageSize,
+      })
       setColleagues(result.colleagues)
       setTotalPages(result.totalPages)
       setTotalElements(result.totalElements)
-    }).catch((error) => console.error("Eroare la încărcarea colegilor:", error))
-      .finally(() => active && setIsLoading(false))
-    return () => { active = false }
+    } catch (error) {
+      console.error("Eroare la încărcarea colegilor:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchColleagues()
   }, [debouncedQuery, filters, page, pageSize])
+
+  useEffect(() => {
+    // Subscribe to server-sent events for real-time updates (cookie-based auth assumed)
+    const apiBase = import.meta.env.DEV ? "/backend" : (import.meta.env.VITE_API_BASE_URL || "http://localhost:8081")
+    const baseNoApi = apiBase.replace(/\/api$/, "")
+    const url = `${baseNoApi}/users/stream`
+
+    let retryAttempt = 0
+    let reconnectTimer: number | null = null
+    let es: EventSource | null = null
+
+    const cleanupEs = () => {
+      if (es) {
+        try { es.close() } catch (e) { /* ignore */ }
+        es = null
+      }
+      if (reconnectTimer != null) {
+        clearTimeout(reconnectTimer)
+        reconnectTimer = null
+      }
+    }
+
+    const createEs = () => {
+      cleanupEs()
+      try {
+        es = new EventSource(url)
+        sseRef.current = es
+      } catch (err) {
+        console.error("Failed to create EventSource", err)
+        scheduleReconnect()
+        return
+      }
+
+      const onUserUpdated = (e: MessageEvent) => {
+        try {
+          const payload = JSON.parse(e.data) as { userId: number; profilePhoto?: string | null }
+          const { userId, profilePhoto } = payload
+          // Build avatarUrl from profilePhoto (or null)
+          const avatarUrl = profilePhoto ? `${baseNoApi}/api/uploads/profile-photos/${profilePhoto}` : null
+
+          // Update local colleagues state optimistically
+          setColleagues((current) => current.map((c) => c.id === userId ? { ...c, avatarUrl } : c))
+
+          // Ensure cached pages don't remain stale — invalidate cached colleagues entries so future page navigations use fresh data
+          invalidateCachePrefix("colleagues:")
+        } catch (err) {
+          console.error("Error handling SSE user-updated event", err)
+        }
+      }
+
+      const onOpen = () => {
+        retryAttempt = 0
+        console.debug && console.debug("SSE connected")
+      }
+
+      const onError = (err: Event) => {
+        console.warn("SSE error, scheduling reconnect", err)
+        // Close and schedule reconnect with backoff
+        try { es?.close() } catch (e) { /* ignore */ }
+        sseRef.current = null
+        scheduleReconnect()
+      }
+
+      es.addEventListener("user-updated", onUserUpdated as EventListener)
+      es.addEventListener("open", onOpen as EventListener)
+      es.addEventListener("error", onError as EventListener)
+    }
+
+    const scheduleReconnect = () => {
+      if (reconnectTimer != null) return
+      retryAttempt = Math.min(retryAttempt + 1, 10)
+      const delay = Math.min(30_000, Math.pow(2, retryAttempt) * 1000)
+      reconnectTimer = window.setTimeout(() => {
+        reconnectTimer = null
+        createEs()
+      }, delay)
+      console.debug && console.debug(`SSE reconnect scheduled in ${delay}ms`)
+    }
+
+    // start
+    createEs()
+
+    return () => {
+      cleanupEs()
+      sseRef.current = null
+    }
+  }, [])
+
 
   function updateQuery(value: string) { setQuery(value); setPage(0) }
   function updateFilters(value: CompanyFilters) { setFilters(value); setPage(0) }

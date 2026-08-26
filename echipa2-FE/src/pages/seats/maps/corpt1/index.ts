@@ -1,7 +1,0 @@
-export * from "./etaj0_relaxare"
-export * from "./etaj0_standup"
-export * from "./etaj1_sala_evenimente"
-export * from "./etaj1_side_evenimente"
-export * from "./etaj1_la_terasa"
-export * from "./etaj2_gaming"
-export * from "./etaj2_tenis"

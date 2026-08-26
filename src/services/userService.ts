@@ -1,11 +1,34 @@
 import { apiClient, getToken } from "./apiClient"
-import { withCache, invalidateCache } from "./cache"
+import { withCache, invalidateCache, invalidateCachePrefix } from "./cache"
 import type { User, UserPreferences } from "@/types"
+
+const PROFILE_PHOTO_STORAGE_KEY = "profile_photo_data_url"
+
+function getStoredProfilePhoto(): string | null {
+  try {
+    return localStorage.getItem(PROFILE_PHOTO_STORAGE_KEY)
+  } catch {
+    return null
+  }
+}
+
+function setStoredProfilePhoto(avatarUrl: string | null): void {
+  try {
+    if (avatarUrl) {
+      localStorage.setItem(PROFILE_PHOTO_STORAGE_KEY, avatarUrl)
+      return
+    }
+    localStorage.removeItem(PROFILE_PHOTO_STORAGE_KEY)
+  } catch {
+    // Ignore storage errors in browsers that block localStorage access.
+  }
+}
 
 interface BeMyAccountResponse {
   firstName: string
   lastName: string
   email: string
+  phoneNumber?: string | null
   departmentName: string | null
   formatedAdress: string | null
   profilePhoto: string | null
@@ -16,16 +39,40 @@ interface BeMyAccountResponse {
 
 function mapToUser(be: BeMyAccountResponse & { id?: number; userId?: number }): User {
   const initials = (be.firstName?.[0] ?? "").toUpperCase() + (be.lastName?.[0] ?? "").toUpperCase()
+  const storedProfilePhoto = getStoredProfilePhoto()
+  
+  // Construct the full profile photo URL from the filename
+  let avatarUrl: string | null = null
+  if (be.profilePhoto) {
+  // Accept data URLs (stored in DB), full URLs, absolute server paths or filenames
+  if (be.profilePhoto.startsWith("data:")) {
+      avatarUrl = be.profilePhoto
+  } else if (be.profilePhoto.startsWith("http")) {
+    avatarUrl = be.profilePhoto
+  } else if (be.profilePhoto.startsWith("/")) {
+    // profilePhoto is a rooted path (e.g. /api/uploads/profile-photos/xyz)
+    const apiBase = import.meta.env.DEV ? "/backend" : (import.meta.env.VITE_API_BASE_URL || "http://localhost:8081")
+    avatarUrl = `${apiBase.replace(/\/api$/, "")}${be.profilePhoto}`
+  } else {
+    // Construct the URL from the filename
+    const apiBase = import.meta.env.DEV ? "/backend" : (import.meta.env.VITE_API_BASE_URL || "http://localhost:8081")
+    avatarUrl = `${apiBase.replace(/\/api$/, "")}/api/uploads/profile-photos/${be.profilePhoto}`
+  }
+  } else if (storedProfilePhoto) {
+  avatarUrl = storedProfilePhoto
+  }
+
   return {
     id: be.id ?? be.userId ?? 0,
     firstName: be.firstName,
     lastName: be.lastName,
     initials,
     email: be.email,
+    phone: be.phoneNumber ?? undefined,
     role: "",
     department: be.departmentName ?? "",
     isOnline: true,
-    avatarUrl: be.profilePhoto ?? null,
+    avatarUrl,
     domiciliu: be.formatedAdress ?? undefined,
     preferences: {
       preferredFloor: 1,
@@ -86,6 +133,38 @@ export async function getCurrentUser(): Promise<User> {
 
 
 
+export async function uploadProfilePhoto(file: File): Promise<string> {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Doar fișierele imagine sunt permise.")
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error("Poza de profil trebuie să fie mai mică de 5 MB.")
+  }
+
+  const formData = new FormData()
+  formData.append("file", file)
+
+  try {
+    const response = await apiClient.postFormData<string>("/users/me/profile-photo", formData)
+    invalidateCache("currentUser")
+  // Invalidate colleagues cache so lists refresh with the new avatar
+  invalidateCachePrefix("colleagues")
+  return response
+  } catch (error) {
+  throw error
+  }
+}
+
+export async function removeProfilePhoto(): Promise<void> {
+  try {
+    await apiClient.delete<void>("/users/me/profile-photo")
+    invalidateCache("currentUser")
+  } catch (error) {
+    throw error
+  }
+}
+
 export async function updateUserProfile(
   _userId: number,
   updates: Partial<Pick<User, "firstName" | "lastName" | "email" | "department" | "domiciliu" | "phone" | "hireDate" | "avatarUrl">>,
@@ -93,7 +172,14 @@ export async function updateUserProfile(
   const body: Record<string, unknown> = {}
   if (updates.firstName !== undefined || updates.lastName !== undefined) body.fullname = `${updates.firstName ?? ""} ${updates.lastName ?? ""}`.trim()
   if (updates.email !== undefined) body.email = updates.email
+  if (updates.phone !== undefined) body.phoneNumber = updates.phone
   if (updates.department !== undefined) body.departmentName = updates.department
+  if (updates.avatarUrl === null) {
+    setStoredProfilePhoto(null)
+  } else if (updates.avatarUrl !== undefined) {
+    setStoredProfilePhoto(updates.avatarUrl)
+    body.profilePhoto = updates.avatarUrl
+  }
   const result = mapToUser(await apiClient.patch<BeMyAccountResponse>("/users/me", body))
   invalidateCache("currentUser")
   return result

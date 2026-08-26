@@ -1,10 +1,10 @@
-import { Pencil, X, Check } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
-import { answerInvitation, getCurrentUser, getMyInvitations, updateUserAddress, updateUserProfile, updateUserPreferences, type AddressFormData } from "@/services"
+import { Camera, Pencil, X, Check, Trash2 } from "lucide-react"
+import { useEffect, useRef, useState, type ChangeEvent } from "react"
+import { answerInvitation, getCurrentUser, getMyInvitations, removeProfilePhoto, updateUserAddress, updateUserProfile, updateUserPreferences, uploadProfilePhoto, type AddressFormData } from "@/services"
 import type { InvitationDirection, OfficeInvitation } from "@/services"
 import type { User } from "@/types"
 import { ProfileField } from "./components/ProfileField"
-import { AlertBanner } from "@/components/common"
+import { AlertBanner, PhoneNumberField, PostalCodeHint } from "@/components/common"
 import { Button, IconButton } from "@/components/ui"
 import { isValidPostalCode } from "@/lib/validation"
 
@@ -16,6 +16,8 @@ export default function ContPage() {
   const [newPreference, setNewPreference] = useState("")
   const [savedSuccess, setSavedSuccess] = useState(false)
   const [saveError, setSaveError] = useState(false)
+  const [profilePhotoError, setProfilePhotoError] = useState<string | null>(null)
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
   const [addressError, setAddressError] = useState<string | null>(null)
   const [invitationDirection, setInvitationDirection] = useState<InvitationDirection>("received")
   const [invitations, setInvitations] = useState<OfficeInvitation[]>([])
@@ -23,12 +25,14 @@ export default function ContPage() {
   const [invitationError, setInvitationError] = useState<string | null>(null)
   const [respondingInvitationId, setRespondingInvitationId] = useState<number | null>(null)
   const addressCardRef = useRef<HTMLElement | null>(null)
+  const profilePhotoInputRef = useRef<HTMLInputElement | null>(null)
   const [address, setAddress] = useState<AddressFormData>({ county: "", locality: "", street: "", number: "", apartmentBlock: "", floor: "", postalCode: "" })
   const [form, setForm] = useState({
     name: "",
     email: "",
     department: "",
     domiciliu: "",
+    phone: "",
   })
 
   useEffect(() => {
@@ -42,6 +46,7 @@ export default function ContPage() {
           email: currentUser.email,
           department: currentUser.department || "",
           domiciliu: currentUser.domiciliu || "",
+          phone: currentUser.phone || "",
         })
       } catch (err) {
         console.error("Error loading user in ContPage:", err)
@@ -76,6 +81,44 @@ export default function ContPage() {
     }
   }
 
+  async function handleProfilePhotoChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setProfilePhotoError(null)
+    event.target.value = ""
+
+    try {
+      setIsUploadingPhoto(true)
+      const filename = await uploadProfilePhoto(file)
+      // Construct the full URL for display
+      const apiBase = import.meta.env.DEV ? "/backend" : (import.meta.env.VITE_API_BASE_URL || "http://localhost:8081")
+      const avatarUrl = `${apiBase.replace(/\/api$/, "")}/api/uploads/profile-photos/${filename}`
+      setUser((currentUser) => currentUser ? { ...currentUser, avatarUrl } : currentUser)
+      setSavedSuccess(true)
+      setTimeout(() => setSavedSuccess(false), 2500)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Nu s-a putut încărca poza de profil."
+      setProfilePhotoError(message)
+    } finally {
+      setIsUploadingPhoto(false)
+    }
+  }
+
+  async function handleRemoveProfilePhoto() {
+    setProfilePhotoError(null)
+
+    try {
+      await removeProfilePhoto()
+      setUser((currentUser) => currentUser ? { ...currentUser, avatarUrl: null } : currentUser)
+      setSavedSuccess(true)
+      setTimeout(() => setSavedSuccess(false), 2500)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Nu s-a putut elimina poza de profil."
+      setProfilePhotoError(message)
+    }
+  }
+
   async function handleToggleEdit() {
     if (!editing) {
       setEditing(true)
@@ -106,7 +149,7 @@ export default function ContPage() {
         const firstName = nameParts[0] || user.firstName
         const lastName = nameParts.slice(1).join(" ") || user.lastName
 
-        await updateUserProfile(user.id, { firstName, lastName, email: form.email, department: form.department, domiciliu: form.domiciliu })
+        await updateUserProfile(user.id, { firstName, lastName, email: form.email, department: form.department, domiciliu: form.domiciliu, phone: form.phone })
         if (hasAddressChanges) await updateUserAddress(trimmedAddress)
         await updateUserPreferences(user.id, { workPreferences: preferences })
         setSavedSuccess(true)
@@ -150,8 +193,40 @@ export default function ContPage() {
   return (
     <section className="w-full max-w-[760px] space-y-5 text-[var(--foreground)] sm:space-y-6">
       <div className="flex flex-col gap-4 rounded-xl bg-[var(--card)] p-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)] sm:flex-row sm:items-center sm:p-5">
-        <div className="grid size-12 shrink-0 place-items-center rounded-full border-2 border-[var(--primary)] bg-[var(--secondary)] text-sm font-bold text-[var(--secondary-foreground)] sm:size-16">
-          {user?.initials || ""}
+        <div className="relative shrink-0">
+          <button
+            type="button"
+            onClick={() => profilePhotoInputRef.current?.click()}
+            disabled={isUploadingPhoto}
+            className="group relative grid size-12 overflow-hidden rounded-full border-2 border-[var(--primary)] bg-[var(--secondary)] text-sm font-bold text-[var(--secondary-foreground)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70 sm:size-16"
+            aria-label="Schimbă poza de profil"
+          >
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt="Poza de profil" className="h-full w-full object-cover" />
+            ) : (
+              <span>{user?.initials || ""}</span>
+            )}
+            <span className="absolute inset-0 grid place-items-center bg-black/25 text-white opacity-0 transition-opacity group-hover:opacity-100">
+              <Camera size={18} />
+            </span>
+          </button>
+          {editing && user?.avatarUrl && (
+            <button
+              type="button"
+              onClick={handleRemoveProfilePhoto}
+              className="absolute -bottom-1 -right-1 grid place-items-center rounded-full border border-[var(--border)] bg-[var(--card)] p-1 text-[var(--destructive)] shadow-sm hover:bg-[var(--muted)]"
+              aria-label="Șterge poza de profil"
+            >
+              <Trash2 size={12} />
+            </button>
+          )}
+          <input
+            ref={profilePhotoInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            className="hidden"
+            onChange={handleProfilePhotoChange}
+          />
         </div>
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-sm font-bold text-[var(--foreground)] sm:text-base">{form.name}</h2>
@@ -183,6 +258,16 @@ export default function ContPage() {
           Profilul nu a putut fi salvat. Verifică datele și încearcă din nou.
         </AlertBanner>
       )}
+      {profilePhotoError && (
+        <AlertBanner variant="error">
+          {profilePhotoError}
+        </AlertBanner>
+      )}
+      {isUploadingPhoto && (
+        <AlertBanner variant="info">
+          Se încarcă poza de profil...
+        </AlertBanner>
+      )}
 
       <section className="rounded-xl bg-[var(--card)] p-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)] sm:p-5">
         <h3 className="text-xs font-bold text-[var(--foreground)]">Informații personale & Domiciliu (Ruta AI)</h3>
@@ -190,6 +275,7 @@ export default function ContPage() {
           <ProfileField label="Nume complet" value={form.name} disabled={!editing} onChange={(name) => setForm({ ...form, name })} />
           <ProfileField label="Email" type="email" value={form.email} disabled={!editing} onChange={(email) => setForm({ ...form, email })} />
           <ProfileField label="Departament" value={form.department} disabled={!editing} placeholder="ex: Engineering" onChange={(department) => setForm({ ...form, department })} />
+          <label className="block min-w-0 text-[10px] font-medium text-[var(--muted-foreground)]">Telefon<PhoneNumberField value={form.phone} disabled={!editing} onChange={(phone) => setForm({ ...form, phone })} /></label>
           <ProfileField label="Adresă domiciliu (Plecare)" value={form.domiciliu} disabled={!editing} placeholder="ex: București, Nițu Vasile 58" onChange={(domiciliu) => setForm({ ...form, domiciliu })} />
         </div>
       </section>
@@ -224,7 +310,7 @@ export default function ContPage() {
       <section ref={addressCardRef} className="rounded-xl bg-[var(--card)] p-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)] sm:p-5">
         <h3 className="text-xs font-bold text-[var(--foreground)]">Adresă</h3>
         {addressError && <p className="mt-3 rounded-md bg-[var(--destructive)]/10 p-2 text-xs font-medium text-[var(--destructive)]">{addressError}</p>}
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">{([['county','Județ'],['locality','Localitate'],['street','Stradă'],['number','Număr'],['apartmentBlock','Bloc'],['floor','Etaj'],['postalCode','Cod poștal']] as Array<[keyof AddressFormData,string]>).map(([key,label]) => <ProfileField key={key} label={label} value={address[key]} disabled={!editing} onChange={(value) => setAddress((current) => ({ ...current, [key]: value }))} />)}</div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">{([['county','Județ'],['locality','Localitate'],['street','Stradă'],['number','Număr'],['apartmentBlock','Bloc'],['floor','Etaj'],['postalCode','Cod poștal']] as Array<[keyof AddressFormData,string]>).map(([key,label]) => key === "postalCode" ? <label key={key} className="block min-w-0 text-[10px] font-medium text-[var(--muted-foreground)]">{label}<PostalCodeHint id="profile-postal-code-help" postalCode={address.postalCode}><input value={address.postalCode} disabled={!editing} inputMode="numeric" maxLength={6} aria-describedby="profile-postal-code-help" onChange={(event) => setAddress((current) => ({ ...current, postalCode: event.target.value.replace(/\D/g, "") }))} className="mt-1 h-9 w-full rounded-lg border border-[var(--border)] bg-[var(--card)] px-2.5 text-xs text-[var(--foreground)] outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/15 disabled:cursor-not-allowed disabled:bg-[var(--muted)]" /></PostalCodeHint></label> : <ProfileField key={key} label={label} value={address[key]} disabled={!editing} onChange={(value) => setAddress((current) => ({ ...current, [key]: value }))} />)}</div>
       </section>
 
       <section className="rounded-xl bg-[var(--card)] p-4 shadow-[0_1px_4px_rgba(0,0,0,0.07)] sm:p-5">
